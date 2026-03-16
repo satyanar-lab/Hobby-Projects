@@ -1,0 +1,9 @@
+../Core/Src/lcd_i2c.c:13:13:lcd_send_command	1
+../Core/Src/lcd_i2c.c:22:13:lcd_send_data	1
+../Core/Src/lcd_i2c.c:35:6:RGB_LCD_Init	2
+../Core/Src/lcd_i2c.c:66:6:RGB_LCD_Clear	1
+../Core/Src/lcd_i2c.c:75:6:RGB_LCD_SetCursor	1
+../Core/Src/lcd_i2c.c:84:6:RGB_LCD_SetRGB	1
+../Core/Src/lcd_i2c.c:98:6:RGB_LCD_Print	2
+../Core/Src/lcd_i2c.c:109:6:RGB_LCD_Printf	1
+../Core/Src/lcd_i2c.c:120:6:displaySpeed	3
