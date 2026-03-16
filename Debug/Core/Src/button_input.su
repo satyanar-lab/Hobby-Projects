@@ -1,2 +1,0 @@
-../Core/Src/button_input.c:7:6:ADC_ButtonInit	8	static
-../Core/Src/button_input.c:11:8:GetButton	24	static
