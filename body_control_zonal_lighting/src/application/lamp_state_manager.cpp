@@ -1,6 +1,10 @@
 #include "body_control/lighting/application/lamp_state_manager.hpp"
 
-namespace body_control::lighting::application
+namespace body_control
+{
+namespace lighting
+{
+namespace application
 {
 
 LampStateManager::LampStateManager() noexcept
@@ -10,11 +14,16 @@ LampStateManager::LampStateManager() noexcept
 
 void LampStateManager::Reset() noexcept
 {
-    lamp_status_cache_[0] = {domain::LampFunction::kLeftIndicator, domain::LampOutputState::kOff, false, 0U};
-    lamp_status_cache_[1] = {domain::LampFunction::kRightIndicator, domain::LampOutputState::kOff, false, 0U};
-    lamp_status_cache_[2] = {domain::LampFunction::kHazardLamp, domain::LampOutputState::kOff, false, 0U};
-    lamp_status_cache_[3] = {domain::LampFunction::kParkLamp, domain::LampOutputState::kOff, false, 0U};
-    lamp_status_cache_[4] = {domain::LampFunction::kHeadLamp, domain::LampOutputState::kOff, false, 0U};
+    for (std::size_t index = 0U; index < kManagedLampCount; ++index)
+    {
+        lamp_status_cache_[index] = domain::LampStatus {};
+    }
+
+    lamp_status_cache_[0U].function = domain::LampFunction::kLeftIndicator;
+    lamp_status_cache_[1U].function = domain::LampFunction::kRightIndicator;
+    lamp_status_cache_[2U].function = domain::LampFunction::kHazardLamp;
+    lamp_status_cache_[3U].function = domain::LampFunction::kParkLamp;
+    lamp_status_cache_[4U].function = domain::LampFunction::kHeadLamp;
 }
 
 bool LampStateManager::UpdateLampStatus(
@@ -22,8 +31,7 @@ bool LampStateManager::UpdateLampStatus(
 {
     std::size_t index {0U};
 
-    if ((!domain::IsValidLampStatus(lamp_status)) ||
-        (!TryGetIndex(lamp_status.function, index)))
+    if (!TryGetIndex(lamp_status.function, index))
     {
         return false;
     }
@@ -63,13 +71,8 @@ bool LampStateManager::IsFunctionActive(
 ArbitrationContext LampStateManager::GetArbitrationContext() const noexcept
 {
     ArbitrationContext context {};
-
-    context.left_indicator_active = IsFunctionActive(domain::LampFunction::kLeftIndicator);
-    context.right_indicator_active = IsFunctionActive(domain::LampFunction::kRightIndicator);
-    context.hazard_lamp_active = IsFunctionActive(domain::LampFunction::kHazardLamp);
-    context.park_lamp_active = IsFunctionActive(domain::LampFunction::kParkLamp);
-    context.head_lamp_active = IsFunctionActive(domain::LampFunction::kHeadLamp);
-
+    context.hazard_lamp_active =
+        IsFunctionActive(domain::LampFunction::kHazardLamp);
     return context;
 }
 
@@ -77,43 +80,43 @@ bool LampStateManager::TryGetIndex(
     const domain::LampFunction function,
     std::size_t& index) noexcept
 {
-    bool is_valid {true};
-
     switch (function)
     {
     case domain::LampFunction::kLeftIndicator:
         index = 0U;
-        break;
+        return true;
 
     case domain::LampFunction::kRightIndicator:
         index = 1U;
-        break;
+        return true;
 
     case domain::LampFunction::kHazardLamp:
         index = 2U;
-        break;
+        return true;
 
     case domain::LampFunction::kParkLamp:
         index = 3U;
-        break;
+        return true;
 
     case domain::LampFunction::kHeadLamp:
         index = 4U;
-        break;
+        return true;
 
+    case domain::LampFunction::kUnknown:
     default:
-        is_valid = false;
         break;
     }
 
-    return is_valid;
+    index = 0U;
+    return false;
 }
 
 bool LampStateManager::IsOutputStateActive(
     const domain::LampOutputState output_state) noexcept
 {
-    return (output_state == domain::LampOutputState::kOn) ||
-           (output_state == domain::LampOutputState::kBlinking);
+    return output_state != domain::LampOutputState::kOff;
 }
 
-}  // namespace body_control::lighting::application
+}  // namespace application
+}  // namespace lighting
+}  // namespace body_control

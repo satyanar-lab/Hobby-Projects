@@ -154,6 +154,78 @@ application/central_zone_controller.cpp.s:
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/application/central_zone_controller.cpp.s
 .PHONY : application/central_zone_controller.cpp.s
 
+application/command_arbitrator.o: application/command_arbitrator.cpp.o
+.PHONY : application/command_arbitrator.o
+
+# target to build an object file
+application/command_arbitrator.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/application/command_arbitrator.cpp.o
+.PHONY : application/command_arbitrator.cpp.o
+
+application/command_arbitrator.i: application/command_arbitrator.cpp.i
+.PHONY : application/command_arbitrator.i
+
+# target to preprocess a source file
+application/command_arbitrator.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/application/command_arbitrator.cpp.i
+.PHONY : application/command_arbitrator.cpp.i
+
+application/command_arbitrator.s: application/command_arbitrator.cpp.s
+.PHONY : application/command_arbitrator.s
+
+# target to generate assembly for a file
+application/command_arbitrator.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/application/command_arbitrator.cpp.s
+.PHONY : application/command_arbitrator.cpp.s
+
+application/lamp_state_manager.o: application/lamp_state_manager.cpp.o
+.PHONY : application/lamp_state_manager.o
+
+# target to build an object file
+application/lamp_state_manager.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/application/lamp_state_manager.cpp.o
+.PHONY : application/lamp_state_manager.cpp.o
+
+application/lamp_state_manager.i: application/lamp_state_manager.cpp.i
+.PHONY : application/lamp_state_manager.i
+
+# target to preprocess a source file
+application/lamp_state_manager.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/application/lamp_state_manager.cpp.i
+.PHONY : application/lamp_state_manager.cpp.i
+
+application/lamp_state_manager.s: application/lamp_state_manager.cpp.s
+.PHONY : application/lamp_state_manager.s
+
+# target to generate assembly for a file
+application/lamp_state_manager.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/application/lamp_state_manager.cpp.s
+.PHONY : application/lamp_state_manager.cpp.s
+
+application/node_health_monitor.o: application/node_health_monitor.cpp.o
+.PHONY : application/node_health_monitor.o
+
+# target to build an object file
+application/node_health_monitor.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/application/node_health_monitor.cpp.o
+.PHONY : application/node_health_monitor.cpp.o
+
+application/node_health_monitor.i: application/node_health_monitor.cpp.i
+.PHONY : application/node_health_monitor.i
+
+# target to preprocess a source file
+application/node_health_monitor.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/application/node_health_monitor.cpp.i
+.PHONY : application/node_health_monitor.cpp.i
+
+application/node_health_monitor.s: application/node_health_monitor.cpp.s
+.PHONY : application/node_health_monitor.s
+
+# target to generate assembly for a file
+application/node_health_monitor.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/application/node_health_monitor.cpp.s
+.PHONY : application/node_health_monitor.cpp.s
+
 application/rear_lighting_function_manager.o: application/rear_lighting_function_manager.cpp.o
 .PHONY : application/rear_lighting_function_manager.o
 
@@ -177,6 +249,30 @@ application/rear_lighting_function_manager.s: application/rear_lighting_function
 application/rear_lighting_function_manager.cpp.s:
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/application/rear_lighting_function_manager.cpp.s
 .PHONY : application/rear_lighting_function_manager.cpp.s
+
+domain/lighting_payload_codec.o: domain/lighting_payload_codec.cpp.o
+.PHONY : domain/lighting_payload_codec.o
+
+# target to build an object file
+domain/lighting_payload_codec.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.o
+.PHONY : domain/lighting_payload_codec.cpp.o
+
+domain/lighting_payload_codec.i: domain/lighting_payload_codec.cpp.i
+.PHONY : domain/lighting_payload_codec.i
+
+# target to preprocess a source file
+domain/lighting_payload_codec.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.i
+.PHONY : domain/lighting_payload_codec.cpp.i
+
+domain/lighting_payload_codec.s: domain/lighting_payload_codec.cpp.s
+.PHONY : domain/lighting_payload_codec.s
+
+# target to generate assembly for a file
+domain/lighting_payload_codec.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.s
+.PHONY : domain/lighting_payload_codec.cpp.s
 
 hmi/hmi_command_mapper.o: hmi/hmi_command_mapper.cpp.o
 .PHONY : hmi/hmi_command_mapper.o
@@ -250,6 +346,150 @@ hmi/main_window.cpp.s:
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.s
 .PHONY : hmi/main_window.cpp.s
 
+platform/linux/linux_clock.o: platform/linux/linux_clock.cpp.o
+.PHONY : platform/linux/linux_clock.o
+
+# target to build an object file
+platform/linux/linux_clock.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o
+.PHONY : platform/linux/linux_clock.cpp.o
+
+platform/linux/linux_clock.i: platform/linux/linux_clock.cpp.i
+.PHONY : platform/linux/linux_clock.i
+
+# target to preprocess a source file
+platform/linux/linux_clock.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.i
+.PHONY : platform/linux/linux_clock.cpp.i
+
+platform/linux/linux_clock.s: platform/linux/linux_clock.cpp.s
+.PHONY : platform/linux/linux_clock.s
+
+# target to generate assembly for a file
+platform/linux/linux_clock.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.s
+.PHONY : platform/linux/linux_clock.cpp.s
+
+platform/linux/linux_logger.o: platform/linux/linux_logger.cpp.o
+.PHONY : platform/linux/linux_logger.o
+
+# target to build an object file
+platform/linux/linux_logger.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o
+.PHONY : platform/linux/linux_logger.cpp.o
+
+platform/linux/linux_logger.i: platform/linux/linux_logger.cpp.i
+.PHONY : platform/linux/linux_logger.i
+
+# target to preprocess a source file
+platform/linux/linux_logger.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.i
+.PHONY : platform/linux/linux_logger.cpp.i
+
+platform/linux/linux_logger.s: platform/linux/linux_logger.cpp.s
+.PHONY : platform/linux/linux_logger.s
+
+# target to generate assembly for a file
+platform/linux/linux_logger.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.s
+.PHONY : platform/linux/linux_logger.cpp.s
+
+platform/linux/process_signal_handler.o: platform/linux/process_signal_handler.cpp.o
+.PHONY : platform/linux/process_signal_handler.o
+
+# target to build an object file
+platform/linux/process_signal_handler.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o
+.PHONY : platform/linux/process_signal_handler.cpp.o
+
+platform/linux/process_signal_handler.i: platform/linux/process_signal_handler.cpp.i
+.PHONY : platform/linux/process_signal_handler.i
+
+# target to preprocess a source file
+platform/linux/process_signal_handler.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.i
+.PHONY : platform/linux/process_signal_handler.cpp.i
+
+platform/linux/process_signal_handler.s: platform/linux/process_signal_handler.cpp.s
+.PHONY : platform/linux/process_signal_handler.s
+
+# target to generate assembly for a file
+platform/linux/process_signal_handler.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.s
+.PHONY : platform/linux/process_signal_handler.cpp.s
+
+platform/stm32/ethernet_link_supervisor.o: platform/stm32/ethernet_link_supervisor.cpp.o
+.PHONY : platform/stm32/ethernet_link_supervisor.o
+
+# target to build an object file
+platform/stm32/ethernet_link_supervisor.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.o
+.PHONY : platform/stm32/ethernet_link_supervisor.cpp.o
+
+platform/stm32/ethernet_link_supervisor.i: platform/stm32/ethernet_link_supervisor.cpp.i
+.PHONY : platform/stm32/ethernet_link_supervisor.i
+
+# target to preprocess a source file
+platform/stm32/ethernet_link_supervisor.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.i
+.PHONY : platform/stm32/ethernet_link_supervisor.cpp.i
+
+platform/stm32/ethernet_link_supervisor.s: platform/stm32/ethernet_link_supervisor.cpp.s
+.PHONY : platform/stm32/ethernet_link_supervisor.s
+
+# target to generate assembly for a file
+platform/stm32/ethernet_link_supervisor.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.s
+.PHONY : platform/stm32/ethernet_link_supervisor.cpp.s
+
+platform/stm32/gpio_output_driver.o: platform/stm32/gpio_output_driver.cpp.o
+.PHONY : platform/stm32/gpio_output_driver.o
+
+# target to build an object file
+platform/stm32/gpio_output_driver.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.o
+.PHONY : platform/stm32/gpio_output_driver.cpp.o
+
+platform/stm32/gpio_output_driver.i: platform/stm32/gpio_output_driver.cpp.i
+.PHONY : platform/stm32/gpio_output_driver.i
+
+# target to preprocess a source file
+platform/stm32/gpio_output_driver.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.i
+.PHONY : platform/stm32/gpio_output_driver.cpp.i
+
+platform/stm32/gpio_output_driver.s: platform/stm32/gpio_output_driver.cpp.s
+.PHONY : platform/stm32/gpio_output_driver.s
+
+# target to generate assembly for a file
+platform/stm32/gpio_output_driver.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.s
+.PHONY : platform/stm32/gpio_output_driver.cpp.s
+
+platform/stm32/stm32_diagnostic_logger.o: platform/stm32/stm32_diagnostic_logger.cpp.o
+.PHONY : platform/stm32/stm32_diagnostic_logger.o
+
+# target to build an object file
+platform/stm32/stm32_diagnostic_logger.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.o
+.PHONY : platform/stm32/stm32_diagnostic_logger.cpp.o
+
+platform/stm32/stm32_diagnostic_logger.i: platform/stm32/stm32_diagnostic_logger.cpp.i
+.PHONY : platform/stm32/stm32_diagnostic_logger.i
+
+# target to preprocess a source file
+platform/stm32/stm32_diagnostic_logger.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.i
+.PHONY : platform/stm32/stm32_diagnostic_logger.cpp.i
+
+platform/stm32/stm32_diagnostic_logger.s: platform/stm32/stm32_diagnostic_logger.cpp.s
+.PHONY : platform/stm32/stm32_diagnostic_logger.s
+
+# target to generate assembly for a file
+platform/stm32/stm32_diagnostic_logger.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.s
+.PHONY : platform/stm32/stm32_diagnostic_logger.cpp.s
+
 service/rear_lighting_service_consumer.o: service/rear_lighting_service_consumer.cpp.o
 .PHONY : service/rear_lighting_service_consumer.o
 
@@ -297,6 +537,54 @@ service/rear_lighting_service_provider.s: service/rear_lighting_service_provider
 service/rear_lighting_service_provider.cpp.s:
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.s
 .PHONY : service/rear_lighting_service_provider.cpp.s
+
+transport/ethernet/ethernet_frame_adapter.o: transport/ethernet/ethernet_frame_adapter.cpp.o
+.PHONY : transport/ethernet/ethernet_frame_adapter.o
+
+# target to build an object file
+transport/ethernet/ethernet_frame_adapter.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/ethernet/ethernet_frame_adapter.cpp.o
+.PHONY : transport/ethernet/ethernet_frame_adapter.cpp.o
+
+transport/ethernet/ethernet_frame_adapter.i: transport/ethernet/ethernet_frame_adapter.cpp.i
+.PHONY : transport/ethernet/ethernet_frame_adapter.i
+
+# target to preprocess a source file
+transport/ethernet/ethernet_frame_adapter.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/ethernet/ethernet_frame_adapter.cpp.i
+.PHONY : transport/ethernet/ethernet_frame_adapter.cpp.i
+
+transport/ethernet/ethernet_frame_adapter.s: transport/ethernet/ethernet_frame_adapter.cpp.s
+.PHONY : transport/ethernet/ethernet_frame_adapter.s
+
+# target to generate assembly for a file
+transport/ethernet/ethernet_frame_adapter.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/ethernet/ethernet_frame_adapter.cpp.s
+.PHONY : transport/ethernet/ethernet_frame_adapter.cpp.s
+
+transport/ethernet/udp_transport_adapter.o: transport/ethernet/udp_transport_adapter.cpp.o
+.PHONY : transport/ethernet/udp_transport_adapter.o
+
+# target to build an object file
+transport/ethernet/udp_transport_adapter.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/ethernet/udp_transport_adapter.cpp.o
+.PHONY : transport/ethernet/udp_transport_adapter.cpp.o
+
+transport/ethernet/udp_transport_adapter.i: transport/ethernet/udp_transport_adapter.cpp.i
+.PHONY : transport/ethernet/udp_transport_adapter.i
+
+# target to preprocess a source file
+transport/ethernet/udp_transport_adapter.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/ethernet/udp_transport_adapter.cpp.i
+.PHONY : transport/ethernet/udp_transport_adapter.cpp.i
+
+transport/ethernet/udp_transport_adapter.s: transport/ethernet/udp_transport_adapter.cpp.s
+.PHONY : transport/ethernet/udp_transport_adapter.s
+
+# target to generate assembly for a file
+transport/ethernet/udp_transport_adapter.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/ethernet/udp_transport_adapter.cpp.s
+.PHONY : transport/ethernet/udp_transport_adapter.cpp.s
 
 transport/someip_message_builder.o: transport/someip_message_builder.cpp.o
 .PHONY : transport/someip_message_builder.o
@@ -346,6 +634,78 @@ transport/someip_message_parser.cpp.s:
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.s
 .PHONY : transport/someip_message_parser.cpp.s
 
+transport/vsomeip/vsomeip_client_adapter.o: transport/vsomeip/vsomeip_client_adapter.cpp.o
+.PHONY : transport/vsomeip/vsomeip_client_adapter.o
+
+# target to build an object file
+transport/vsomeip/vsomeip_client_adapter.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.o
+.PHONY : transport/vsomeip/vsomeip_client_adapter.cpp.o
+
+transport/vsomeip/vsomeip_client_adapter.i: transport/vsomeip/vsomeip_client_adapter.cpp.i
+.PHONY : transport/vsomeip/vsomeip_client_adapter.i
+
+# target to preprocess a source file
+transport/vsomeip/vsomeip_client_adapter.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.i
+.PHONY : transport/vsomeip/vsomeip_client_adapter.cpp.i
+
+transport/vsomeip/vsomeip_client_adapter.s: transport/vsomeip/vsomeip_client_adapter.cpp.s
+.PHONY : transport/vsomeip/vsomeip_client_adapter.s
+
+# target to generate assembly for a file
+transport/vsomeip/vsomeip_client_adapter.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.s
+.PHONY : transport/vsomeip/vsomeip_client_adapter.cpp.s
+
+transport/vsomeip/vsomeip_runtime_manager.o: transport/vsomeip/vsomeip_runtime_manager.cpp.o
+.PHONY : transport/vsomeip/vsomeip_runtime_manager.o
+
+# target to build an object file
+transport/vsomeip/vsomeip_runtime_manager.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.o
+.PHONY : transport/vsomeip/vsomeip_runtime_manager.cpp.o
+
+transport/vsomeip/vsomeip_runtime_manager.i: transport/vsomeip/vsomeip_runtime_manager.cpp.i
+.PHONY : transport/vsomeip/vsomeip_runtime_manager.i
+
+# target to preprocess a source file
+transport/vsomeip/vsomeip_runtime_manager.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.i
+.PHONY : transport/vsomeip/vsomeip_runtime_manager.cpp.i
+
+transport/vsomeip/vsomeip_runtime_manager.s: transport/vsomeip/vsomeip_runtime_manager.cpp.s
+.PHONY : transport/vsomeip/vsomeip_runtime_manager.s
+
+# target to generate assembly for a file
+transport/vsomeip/vsomeip_runtime_manager.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.s
+.PHONY : transport/vsomeip/vsomeip_runtime_manager.cpp.s
+
+transport/vsomeip/vsomeip_server_adapter.o: transport/vsomeip/vsomeip_server_adapter.cpp.o
+.PHONY : transport/vsomeip/vsomeip_server_adapter.o
+
+# target to build an object file
+transport/vsomeip/vsomeip_server_adapter.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.o
+.PHONY : transport/vsomeip/vsomeip_server_adapter.cpp.o
+
+transport/vsomeip/vsomeip_server_adapter.i: transport/vsomeip/vsomeip_server_adapter.cpp.i
+.PHONY : transport/vsomeip/vsomeip_server_adapter.i
+
+# target to preprocess a source file
+transport/vsomeip/vsomeip_server_adapter.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.i
+.PHONY : transport/vsomeip/vsomeip_server_adapter.cpp.i
+
+transport/vsomeip/vsomeip_server_adapter.s: transport/vsomeip/vsomeip_server_adapter.cpp.s
+.PHONY : transport/vsomeip/vsomeip_server_adapter.s
+
+# target to generate assembly for a file
+transport/vsomeip/vsomeip_server_adapter.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.s
+.PHONY : transport/vsomeip/vsomeip_server_adapter.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -358,9 +718,21 @@ help:
 	@echo "... application/central_zone_controller.o"
 	@echo "... application/central_zone_controller.i"
 	@echo "... application/central_zone_controller.s"
+	@echo "... application/command_arbitrator.o"
+	@echo "... application/command_arbitrator.i"
+	@echo "... application/command_arbitrator.s"
+	@echo "... application/lamp_state_manager.o"
+	@echo "... application/lamp_state_manager.i"
+	@echo "... application/lamp_state_manager.s"
+	@echo "... application/node_health_monitor.o"
+	@echo "... application/node_health_monitor.i"
+	@echo "... application/node_health_monitor.s"
 	@echo "... application/rear_lighting_function_manager.o"
 	@echo "... application/rear_lighting_function_manager.i"
 	@echo "... application/rear_lighting_function_manager.s"
+	@echo "... domain/lighting_payload_codec.o"
+	@echo "... domain/lighting_payload_codec.i"
+	@echo "... domain/lighting_payload_codec.s"
 	@echo "... hmi/hmi_command_mapper.o"
 	@echo "... hmi/hmi_command_mapper.i"
 	@echo "... hmi/hmi_command_mapper.s"
@@ -370,18 +742,51 @@ help:
 	@echo "... hmi/main_window.o"
 	@echo "... hmi/main_window.i"
 	@echo "... hmi/main_window.s"
+	@echo "... platform/linux/linux_clock.o"
+	@echo "... platform/linux/linux_clock.i"
+	@echo "... platform/linux/linux_clock.s"
+	@echo "... platform/linux/linux_logger.o"
+	@echo "... platform/linux/linux_logger.i"
+	@echo "... platform/linux/linux_logger.s"
+	@echo "... platform/linux/process_signal_handler.o"
+	@echo "... platform/linux/process_signal_handler.i"
+	@echo "... platform/linux/process_signal_handler.s"
+	@echo "... platform/stm32/ethernet_link_supervisor.o"
+	@echo "... platform/stm32/ethernet_link_supervisor.i"
+	@echo "... platform/stm32/ethernet_link_supervisor.s"
+	@echo "... platform/stm32/gpio_output_driver.o"
+	@echo "... platform/stm32/gpio_output_driver.i"
+	@echo "... platform/stm32/gpio_output_driver.s"
+	@echo "... platform/stm32/stm32_diagnostic_logger.o"
+	@echo "... platform/stm32/stm32_diagnostic_logger.i"
+	@echo "... platform/stm32/stm32_diagnostic_logger.s"
 	@echo "... service/rear_lighting_service_consumer.o"
 	@echo "... service/rear_lighting_service_consumer.i"
 	@echo "... service/rear_lighting_service_consumer.s"
 	@echo "... service/rear_lighting_service_provider.o"
 	@echo "... service/rear_lighting_service_provider.i"
 	@echo "... service/rear_lighting_service_provider.s"
+	@echo "... transport/ethernet/ethernet_frame_adapter.o"
+	@echo "... transport/ethernet/ethernet_frame_adapter.i"
+	@echo "... transport/ethernet/ethernet_frame_adapter.s"
+	@echo "... transport/ethernet/udp_transport_adapter.o"
+	@echo "... transport/ethernet/udp_transport_adapter.i"
+	@echo "... transport/ethernet/udp_transport_adapter.s"
 	@echo "... transport/someip_message_builder.o"
 	@echo "... transport/someip_message_builder.i"
 	@echo "... transport/someip_message_builder.s"
 	@echo "... transport/someip_message_parser.o"
 	@echo "... transport/someip_message_parser.i"
 	@echo "... transport/someip_message_parser.s"
+	@echo "... transport/vsomeip/vsomeip_client_adapter.o"
+	@echo "... transport/vsomeip/vsomeip_client_adapter.i"
+	@echo "... transport/vsomeip/vsomeip_client_adapter.s"
+	@echo "... transport/vsomeip/vsomeip_runtime_manager.o"
+	@echo "... transport/vsomeip/vsomeip_runtime_manager.i"
+	@echo "... transport/vsomeip/vsomeip_runtime_manager.s"
+	@echo "... transport/vsomeip/vsomeip_server_adapter.o"
+	@echo "... transport/vsomeip/vsomeip_server_adapter.i"
+	@echo "... transport/vsomeip/vsomeip_server_adapter.s"
 .PHONY : help
 
 

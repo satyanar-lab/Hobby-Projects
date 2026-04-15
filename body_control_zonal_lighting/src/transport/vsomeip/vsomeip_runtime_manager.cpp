@@ -1,45 +1,40 @@
-#include "body_control/lighting/transport/vsomeip/vsomeip_runtime_manager.hpp"
+#include <memory>
 
-namespace body_control::lighting::transport::vsomeip
+#include "body_control/lighting/transport/transport_adapter_interface.hpp"
+
+namespace body_control
+{
+namespace lighting
+{
+namespace transport
+{
+namespace ethernet
 {
 
-bool VsomeipRuntimeManager::Initialize()
+std::unique_ptr<TransportAdapterInterface>
+CreateCentralZoneControllerUdpTransportAdapter();
+
+std::unique_ptr<TransportAdapterInterface>
+CreateRearLightingNodeUdpTransportAdapter();
+
+}  // namespace ethernet
+
+namespace vsomeip
 {
-    is_initialized_ = true;
-    return true;
+
+std::unique_ptr<TransportAdapterInterface>
+CreateCentralZoneControllerRuntimeAdapter()
+{
+    return ethernet::CreateCentralZoneControllerUdpTransportAdapter();
 }
 
-void VsomeipRuntimeManager::Shutdown() noexcept
+std::unique_ptr<TransportAdapterInterface>
+CreateRearLightingNodeRuntimeAdapter()
 {
-    is_initialized_ = false;
-    available_service_id_ = 0U;
-    available_instance_id_ = 0U;
-    service_available_ = false;
+    return ethernet::CreateRearLightingNodeUdpTransportAdapter();
 }
 
-bool VsomeipRuntimeManager::IsInitialized() const noexcept
-{
-    return is_initialized_;
-}
-
-void VsomeipRuntimeManager::SetServiceAvailability(
-    const std::uint16_t service_id,
-    const std::uint16_t instance_id,
-    const bool is_available) noexcept
-{
-    available_service_id_ = service_id;
-    available_instance_id_ = instance_id;
-    service_available_ = is_available;
-}
-
-bool VsomeipRuntimeManager::IsServiceAvailable(
-    const std::uint16_t service_id,
-    const std::uint16_t instance_id) const noexcept
-{
-    return is_initialized_ &&
-           service_available_ &&
-           (available_service_id_ == service_id) &&
-           (available_instance_id_ == instance_id);
-}
-
-}  // namespace body_control::lighting::transport::vsomeip
+}  // namespace vsomeip
+}  // namespace transport
+}  // namespace lighting
+}  // namespace body_control

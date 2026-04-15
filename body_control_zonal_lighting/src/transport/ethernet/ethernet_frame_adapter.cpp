@@ -1,97 +1,208 @@
-#include "body_control/lighting/transport/ethernet/ethernet_frame_adapter.hpp"
+#include <arpa/inet.h>
 
-namespace body_control::lighting::transport::ethernet
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <vector>
+
+#include "body_control/lighting/transport/transport_adapter_interface.hpp"
+
+namespace body_control
 {
+namespace lighting
+{
+namespace transport
+{
+namespace ethernet
+{
+
 namespace
 {
 
-constexpr std::size_t kEthernetFrameHeaderLength {8U};
+constexpr std::uint16_t kFrameVersion {1U};
+constexpr std::uint16_t kFlagIsEventMask {0x0001U};
+constexpr std::uint16_t kFlagIsReliableMask {0x0002U};
 
-void WriteUint16BigEndian(
-    const std::uint16_t value,
-    std::uint8_t* destination) noexcept
+struct EthernetFrameHeader
 {
-    destination[0] = static_cast<std::uint8_t>((value >> 8U) & 0xFFU);
-    destination[1] = static_cast<std::uint8_t>(value & 0xFFU);
+    std::uint16_t version;
+    std::uint16_t message_kind;
+    std::uint16_t service_id;
+    std::uint16_t instance_id;
+    std::uint16_t method_or_event_id;
+    std::uint16_t client_id;
+    std::uint16_t session_id;
+    std::uint16_t flags;
+    std::uint32_t payload_length;
+};
+
+constexpr std::size_t kEthernetFrameHeaderSize = sizeof(EthernetFrameHeader);
+
+std::uint16_t BuildFlags(
+    const TransportMessage& transport_message) noexcept
+{
+    std::uint16_t flags {0U};
+
+    if (transport_message.is_event)
+    {
+        flags =
+            static_cast<std::uint16_t>(flags | kFlagIsEventMask);
+    }
+
+    if (transport_message.is_reliable)
+    {
+        flags =
+            static_cast<std::uint16_t>(flags | kFlagIsReliableMask);
+    }
+
+    return flags;
 }
 
-[[nodiscard]] std::uint16_t ReadUint16BigEndian(
-    const std::uint8_t* source) noexcept
+void EncodeHeaderToNetworkOrder(
+    EthernetFrameHeader& frame_header) noexcept
 {
-    return static_cast<std::uint16_t>(
-        (static_cast<std::uint16_t>(source[0]) << 8U) |
-        static_cast<std::uint16_t>(source[1]));
+    frame_header.version = htons(frame_header.version);
+    frame_header.message_kind = htons(frame_header.message_kind);
+    frame_header.service_id = htons(frame_header.service_id);
+    frame_header.instance_id = htons(frame_header.instance_id);
+    frame_header.method_or_event_id = htons(frame_header.method_or_event_id);
+    frame_header.client_id = htons(frame_header.client_id);
+    frame_header.session_id = htons(frame_header.session_id);
+    frame_header.flags = htons(frame_header.flags);
+    frame_header.payload_length = htonl(frame_header.payload_length);
+}
+
+void DecodeHeaderFromNetworkOrder(
+    EthernetFrameHeader& frame_header) noexcept
+{
+    frame_header.version = ntohs(frame_header.version);
+    frame_header.message_kind = ntohs(frame_header.message_kind);
+    frame_header.service_id = ntohs(frame_header.service_id);
+    frame_header.instance_id = ntohs(frame_header.instance_id);
+    frame_header.method_or_event_id = ntohs(frame_header.method_or_event_id);
+    frame_header.client_id = ntohs(frame_header.client_id);
+    frame_header.session_id = ntohs(frame_header.session_id);
+    frame_header.flags = ntohs(frame_header.flags);
+    frame_header.payload_length = ntohl(frame_header.payload_length);
 }
 
 }  // namespace
 
-EthernetFrameAdapterStatus EthernetFrameAdapter::BuildFrame(
+std::vector<std::uint8_t> EncodeTransportMessage(
     const TransportMessage& transport_message,
-    EthernetFrame& ethernet_frame) const noexcept
+    const std::uint16_t message_kind)
 {
-    if ((transport_message.payload_length > 0U) &&
-        (transport_message.payload_data == nullptr))
+    const std::size_t payload_length = transport_message.payload.size();
+    const std::size_t frame_length = kEthernetFrameHeaderSize + payload_length;
+
+    std::vector<std::uint8_t> frame_bytes(frame_length, 0U);
+
+    EthernetFrameHeader frame_header {};
+    frame_header.version = kFrameVersion;
+    frame_header.message_kind = message_kind;
+    frame_header.service_id = transport_message.service_id;
+    frame_header.instance_id = transport_message.instance_id;
+    frame_header.method_or_event_id = transport_message.method_or_event_id;
+    frame_header.client_id = transport_message.client_id;
+    frame_header.session_id = transport_message.session_id;
+    frame_header.flags = BuildFlags(transport_message);
+    frame_header.payload_length =
+        static_cast<std::uint32_t>(payload_length);
+
+    EncodeHeaderToNetworkOrder(frame_header);
+
+    std::memcpy(
+        frame_bytes.data(),
+        &frame_header,
+        kEthernetFrameHeaderSize);
+
+    if (payload_length > 0U)
     {
-        return EthernetFrameAdapterStatus::kInvalidArgument;
+        std::memcpy(
+            frame_bytes.data() + kEthernetFrameHeaderSize,
+            transport_message.payload.data(),
+            payload_length);
     }
 
-    if ((kEthernetFrameHeaderLength + transport_message.payload_length) >
-        ethernet_frame.frame_data.size())
-    {
-        return EthernetFrameAdapterStatus::kFrameTooLarge;
-    }
-
-    ethernet_frame.frame_data.fill(0U);
-
-    WriteUint16BigEndian(transport_message.service_id, &ethernet_frame.frame_data[0]);
-    WriteUint16BigEndian(transport_message.instance_id, &ethernet_frame.frame_data[2]);
-    WriteUint16BigEndian(transport_message.message_id, &ethernet_frame.frame_data[4]);
-    WriteUint16BigEndian(
-        static_cast<std::uint16_t>(transport_message.payload_length),
-        &ethernet_frame.frame_data[6]);
-
-    for (std::size_t index {0U}; index < transport_message.payload_length; ++index)
-    {
-        ethernet_frame.frame_data[kEthernetFrameHeaderLength + index] =
-            transport_message.payload_data[index];
-    }
-
-    ethernet_frame.frame_length =
-        kEthernetFrameHeaderLength + transport_message.payload_length;
-
-    return EthernetFrameAdapterStatus::kSuccess;
+    return frame_bytes;
 }
 
-EthernetFrameAdapterStatus EthernetFrameAdapter::ParseFrame(
-    const EthernetFrame& ethernet_frame,
-    TransportMessage& transport_message) const noexcept
+bool DecodeTransportMessage(
+    const std::uint8_t* const frame_data,
+    const std::size_t frame_length,
+    TransportMessage& transport_message,
+    std::uint16_t& message_kind) noexcept
 {
-    if (ethernet_frame.frame_length < kEthernetFrameHeaderLength)
+    if ((frame_data == nullptr) || (frame_length < kEthernetFrameHeaderSize))
     {
-        return EthernetFrameAdapterStatus::kInvalidFrame;
+        return false;
     }
 
-    const std::uint16_t payload_length =
-        ReadUint16BigEndian(&ethernet_frame.frame_data[6]);
+    EthernetFrameHeader frame_header {};
+    std::memcpy(
+        &frame_header,
+        frame_data,
+        kEthernetFrameHeaderSize);
 
-    if ((kEthernetFrameHeaderLength + payload_length) > ethernet_frame.frame_length)
+    DecodeHeaderFromNetworkOrder(frame_header);
+
+    if (frame_header.version != kFrameVersion)
     {
-        return EthernetFrameAdapterStatus::kInvalidFrame;
+        return false;
     }
 
-    transport_message.service_id =
-        ReadUint16BigEndian(&ethernet_frame.frame_data[0]);
-    transport_message.instance_id =
-        ReadUint16BigEndian(&ethernet_frame.frame_data[2]);
-    transport_message.message_id =
-        ReadUint16BigEndian(&ethernet_frame.frame_data[4]);
-    transport_message.payload_length = payload_length;
-    transport_message.payload_data =
-        (payload_length > 0U)
-            ? &ethernet_frame.frame_data[kEthernetFrameHeaderLength]
-            : nullptr;
+    const std::size_t expected_frame_length =
+        kEthernetFrameHeaderSize +
+        static_cast<std::size_t>(frame_header.payload_length);
 
-    return EthernetFrameAdapterStatus::kSuccess;
+    if (frame_length != expected_frame_length)
+    {
+        return false;
+    }
+
+    transport_message.service_id = frame_header.service_id;
+    transport_message.instance_id = frame_header.instance_id;
+    transport_message.method_or_event_id = frame_header.method_or_event_id;
+    transport_message.client_id = frame_header.client_id;
+    transport_message.session_id = frame_header.session_id;
+    transport_message.is_event =
+        ((frame_header.flags & kFlagIsEventMask) != 0U);
+    transport_message.is_reliable =
+        ((frame_header.flags & kFlagIsReliableMask) != 0U);
+
+    transport_message.payload.clear();
+
+    if (frame_header.payload_length > 0U)
+    {
+        const std::uint8_t* const payload_start =
+            frame_data + kEthernetFrameHeaderSize;
+
+        transport_message.payload.resize(
+            static_cast<std::size_t>(frame_header.payload_length));
+
+        std::memcpy(
+            transport_message.payload.data(),
+            payload_start,
+            static_cast<std::size_t>(frame_header.payload_length));
+    }
+
+    message_kind = frame_header.message_kind;
+    return true;
 }
 
-}  // namespace body_control::lighting::transport::ethernet
+bool DecodeTransportMessage(
+    const std::vector<std::uint8_t>& frame_bytes,
+    TransportMessage& transport_message,
+    std::uint16_t& message_kind) noexcept
+{
+    return DecodeTransportMessage(
+        frame_bytes.data(),
+        frame_bytes.size(),
+        transport_message,
+        message_kind);
+}
+
+}  // namespace ethernet
+}  // namespace transport
+}  // namespace lighting
+}  // namespace body_control
