@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Snapshot Push Body Control Zonal Lighting",
+      "type": "shell",
+      "command": "${workspaceFolder}/tools/git_snapshot_push.sh",
+      "args": [
+        "${input:commitMessage}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "commitMessage",
+      "type": "promptString",
+      "description": "Enter commit message",
+      "default": "WIP: body_control_zonal_lighting snapshot"
+    }
+  ]
+}

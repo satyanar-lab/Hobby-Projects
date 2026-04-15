@@ -1,0 +1,158 @@
+[
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/application/central_zone_controller.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/application/central_zone_controller.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/application/central_zone_controller.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/application/central_zone_controller.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/application/command_arbitrator.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/application/command_arbitrator.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/application/command_arbitrator.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/application/command_arbitrator.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/application/lamp_state_manager.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/application/lamp_state_manager.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/application/lamp_state_manager.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/application/lamp_state_manager.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/application/node_health_monitor.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/application/node_health_monitor.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/application/node_health_monitor.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/application/node_health_monitor.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/application/rear_lighting_function_manager.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/application/rear_lighting_function_manager.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/application/rear_lighting_function_manager.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/application/rear_lighting_function_manager.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/domain/lighting_payload_codec.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/domain/lighting_payload_codec.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/domain/lighting_payload_codec.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/domain/lighting_payload_codec.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/hmi/hmi_command_mapper.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/hmi/hmi_command_mapper.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/hmi/hmi_command_mapper.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/hmi/hmi_command_mapper.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/hmi/hmi_view_model.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/hmi/hmi_view_model.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/hmi/hmi_view_model.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/hmi/hmi_view_model.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/hmi/main_window.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/hmi/main_window.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/hmi/main_window.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/hmi/main_window.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/platform/linux/linux_clock.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_clock.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_clock.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/platform/linux/linux_clock.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/platform/linux/linux_logger.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_logger.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_logger.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/platform/linux/linux_logger.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/platform/linux/process_signal_handler.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/process_signal_handler.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/process_signal_handler.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/platform/linux/process_signal_handler.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/platform/stm32/ethernet_link_supervisor.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/ethernet_link_supervisor.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/ethernet_link_supervisor.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/platform/stm32/ethernet_link_supervisor.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/platform/stm32/gpio_output_driver.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/gpio_output_driver.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/gpio_output_driver.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/platform/stm32/gpio_output_driver.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/stm32_diagnostic_logger.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/stm32_diagnostic_logger.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/service/rear_lighting_service_consumer.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/service/rear_lighting_service_consumer.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/service/rear_lighting_service_consumer.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/service/rear_lighting_service_consumer.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/service/rear_lighting_service_provider.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/service/rear_lighting_service_provider.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/service/rear_lighting_service_provider.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/service/rear_lighting_service_provider.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/transport/someip_message_builder.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_builder.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_builder.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/transport/someip_message_builder.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/transport/someip_message_parser.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_parser.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_parser.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/transport/someip_message_parser.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/vsomeip/vsomeip_client_adapter.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/vsomeip/vsomeip_client_adapter.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/vsomeip/vsomeip_runtime_manager.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/vsomeip/vsomeip_runtime_manager.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/vsomeip/vsomeip_server_adapter.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/vsomeip/vsomeip_server_adapter.cpp",
+  "output": "src/CMakeFiles/bczl_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/app",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_central_zone_controller.dir/central_zone_controller/main.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/app/central_zone_controller/main.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/app/central_zone_controller/main.cpp",
+  "output": "app/CMakeFiles/bczl_central_zone_controller.dir/central_zone_controller/main.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/app",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_diagnostic_console.dir/diagnostic_console/main.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/app/diagnostic_console/main.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/app/diagnostic_console/main.cpp",
+  "output": "app/CMakeFiles/bczl_diagnostic_console.dir/diagnostic_console/main.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/app",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_hmi_control_panel.dir/hmi_control_panel/main.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/app/hmi_control_panel/main.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/app/hmi_control_panel/main.cpp",
+  "output": "app/CMakeFiles/bczl_hmi_control_panel.dir/hmi_control_panel/main.cpp.o"
+},
+{
+  "directory": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/app",
+  "command": "/usr/bin/c++ -DBCZL_PROJECT_NAME=\\\"body_control_zonal_lighting\\\" -DBCZL_PROJECT_VERSION=\\\"1.0.0\\\" -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include -std=c++17 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -o CMakeFiles/bczl_rear_lighting_node_simulator.dir/rear_lighting_node_simulator/main.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/app/rear_lighting_node_simulator/main.cpp",
+  "file": "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/app/rear_lighting_node_simulator/main.cpp",
+  "output": "app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/rear_lighting_node_simulator/main.cpp.o"
+}
+]

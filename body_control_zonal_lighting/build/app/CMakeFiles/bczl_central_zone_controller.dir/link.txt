@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/bczl_central_zone_controller.dir/central_zone_controller/main.cpp.o -o bczl_central_zone_controller  ../src/libbczl_core.a 

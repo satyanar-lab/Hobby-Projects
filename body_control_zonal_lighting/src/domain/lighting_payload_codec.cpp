@@ -1,0 +1,196 @@
+#include "body_control/lighting/domain/lighting_payload_codec.hpp"
+
+namespace body_control::lighting::domain
+{
+namespace
+{
+
+constexpr std::uint8_t kBooleanFalseValue {0U};
+constexpr std::uint8_t kBooleanTrueValue {1U};
+
+void WriteUint16BigEndian(
+    const std::uint16_t value,
+    std::uint8_t& most_significant_byte,
+    std::uint8_t& least_significant_byte) noexcept
+{
+    most_significant_byte = static_cast<std::uint8_t>((value >> 8U) & 0xFFU);
+    least_significant_byte = static_cast<std::uint8_t>(value & 0xFFU);
+}
+
+[[nodiscard]] std::uint16_t ReadUint16BigEndian(
+    const std::uint8_t most_significant_byte,
+    const std::uint8_t least_significant_byte) noexcept
+{
+    return static_cast<std::uint16_t>(
+        (static_cast<std::uint16_t>(most_significant_byte) << 8U) |
+        static_cast<std::uint16_t>(least_significant_byte));
+}
+
+[[nodiscard]] bool IsValidBooleanByte(const std::uint8_t value) noexcept
+{
+    return (value == kBooleanFalseValue) || (value == kBooleanTrueValue);
+}
+
+[[nodiscard]] bool DecodeBooleanByte(const std::uint8_t value) noexcept
+{
+    return (value == kBooleanTrueValue);
+}
+
+}  // namespace
+
+PayloadCodecStatus EncodeLampCommand(
+    const LampCommand& command,
+    LampCommandPayloadBuffer& payload_buffer) noexcept
+{
+    if (!IsValidLampCommand(command))
+    {
+        return PayloadCodecStatus::kInvalidArgument;
+    }
+
+    payload_buffer.fill(0U);
+
+    payload_buffer[0] = static_cast<std::uint8_t>(command.function);
+    payload_buffer[1] = static_cast<std::uint8_t>(command.action);
+    payload_buffer[2] = static_cast<std::uint8_t>(command.source);
+    WriteUint16BigEndian(
+        command.sequence_counter,
+        payload_buffer[4],
+        payload_buffer[5]);
+
+    return PayloadCodecStatus::kSuccess;
+}
+
+PayloadCodecStatus DecodeLampCommand(
+    const std::uint8_t* payload_data,
+    const std::size_t payload_length,
+    LampCommand& command) noexcept
+{
+    if ((payload_data == nullptr) || (payload_length != kLampCommandPayloadLength))
+    {
+        return PayloadCodecStatus::kInvalidPayloadLength;
+    }
+
+    const LampCommand decoded_command {
+        static_cast<LampFunction>(payload_data[0]),
+        static_cast<LampCommandAction>(payload_data[1]),
+        static_cast<CommandSource>(payload_data[2]),
+        ReadUint16BigEndian(payload_data[4], payload_data[5])};
+
+    if (!IsValidLampCommand(decoded_command))
+    {
+        return PayloadCodecStatus::kInvalidPayloadValue;
+    }
+
+    command = decoded_command;
+    return PayloadCodecStatus::kSuccess;
+}
+
+PayloadCodecStatus EncodeLampStatus(
+    const LampStatus& status,
+    LampStatusPayloadBuffer& payload_buffer) noexcept
+{
+    if (!IsValidLampStatus(status))
+    {
+        return PayloadCodecStatus::kInvalidArgument;
+    }
+
+    payload_buffer.fill(0U);
+
+    payload_buffer[0] = static_cast<std::uint8_t>(status.function);
+    payload_buffer[1] = static_cast<std::uint8_t>(status.output_state);
+    payload_buffer[2] = status.command_applied ? kBooleanTrueValue : kBooleanFalseValue;
+    WriteUint16BigEndian(
+        status.last_sequence_counter,
+        payload_buffer[4],
+        payload_buffer[5]);
+
+    return PayloadCodecStatus::kSuccess;
+}
+
+PayloadCodecStatus DecodeLampStatus(
+    const std::uint8_t* payload_data,
+    const std::size_t payload_length,
+    LampStatus& status) noexcept
+{
+    if ((payload_data == nullptr) || (payload_length != kLampStatusPayloadLength))
+    {
+        return PayloadCodecStatus::kInvalidPayloadLength;
+    }
+
+    if (!IsValidBooleanByte(payload_data[2]))
+    {
+        return PayloadCodecStatus::kInvalidPayloadValue;
+    }
+
+    const LampStatus decoded_status {
+        static_cast<LampFunction>(payload_data[0]),
+        static_cast<LampOutputState>(payload_data[1]),
+        DecodeBooleanByte(payload_data[2]),
+        ReadUint16BigEndian(payload_data[4], payload_data[5])};
+
+    if (!IsValidLampStatus(decoded_status))
+    {
+        return PayloadCodecStatus::kInvalidPayloadValue;
+    }
+
+    status = decoded_status;
+    return PayloadCodecStatus::kSuccess;
+}
+
+PayloadCodecStatus EncodeNodeHealthStatus(
+    const NodeHealthStatus& status,
+    NodeHealthStatusPayloadBuffer& payload_buffer) noexcept
+{
+    if (!IsValidNodeHealthStatus(status))
+    {
+        return PayloadCodecStatus::kInvalidArgument;
+    }
+
+    payload_buffer.fill(0U);
+
+    payload_buffer[0] = static_cast<std::uint8_t>(status.health_state);
+    payload_buffer[1] = status.ethernet_link_available ? kBooleanTrueValue : kBooleanFalseValue;
+    payload_buffer[2] = status.service_available ? kBooleanTrueValue : kBooleanFalseValue;
+    payload_buffer[3] = status.lamp_driver_fault_present ? kBooleanTrueValue : kBooleanFalseValue;
+    WriteUint16BigEndian(
+        status.active_fault_count,
+        payload_buffer[4],
+        payload_buffer[5]);
+
+    return PayloadCodecStatus::kSuccess;
+}
+
+PayloadCodecStatus DecodeNodeHealthStatus(
+    const std::uint8_t* payload_data,
+    const std::size_t payload_length,
+    NodeHealthStatus& status) noexcept
+{
+    if ((payload_data == nullptr) || (payload_length != kNodeHealthStatusPayloadLength))
+    {
+        return PayloadCodecStatus::kInvalidPayloadLength;
+    }
+
+    if ((!IsValidBooleanByte(payload_data[1])) ||
+        (!IsValidBooleanByte(payload_data[2])) ||
+        (!IsValidBooleanByte(payload_data[3])))
+    {
+        return PayloadCodecStatus::kInvalidPayloadValue;
+    }
+
+    const NodeHealthStatus decoded_status {
+        static_cast<NodeHealthState>(payload_data[0]),
+        DecodeBooleanByte(payload_data[1]),
+        DecodeBooleanByte(payload_data[2]),
+        DecodeBooleanByte(payload_data[3]),
+        ReadUint16BigEndian(payload_data[4], payload_data[5])};
+
+    if (!IsValidNodeHealthStatus(decoded_status))
+    {
+        return PayloadCodecStatus::kInvalidPayloadValue;
+    }
+
+    status = decoded_status;
+    return PayloadCodecStatus::kSuccess;
+}
+
+}  // namespace body_control::lighting::domain

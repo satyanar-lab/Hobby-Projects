@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/bczl_diagnostic_console.dir/diagnostic_console/main.cpp.o -o bczl_diagnostic_console  ../src/libbczl_core.a 
