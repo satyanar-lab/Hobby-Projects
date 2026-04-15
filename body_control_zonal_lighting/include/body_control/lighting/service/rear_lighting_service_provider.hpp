@@ -1,70 +1,61 @@
-#ifndef BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_PROVIDER_HPP_
-#define BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_PROVIDER_HPP_
+#ifndef BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_PROVIDER_HPP
+#define BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_PROVIDER_HPP
 
-#include "body_control/lighting/domain/lamp_status_types.hpp"
+#include "body_control/lighting/application/rear_lighting_function_manager.hpp"
 #include "body_control/lighting/service/rear_lighting_service_interface.hpp"
+#include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
-namespace body_control::lighting::application
+namespace body_control
+{
+namespace lighting
+{
+namespace service
 {
 
-class RearLightingFunctionManager;
-
-}  // namespace body_control::lighting::application
-
-namespace body_control::lighting::transport
-{
-
-class TransportAdapterInterface;
-
-}  // namespace body_control::lighting::transport
-
-namespace body_control::lighting::service
-{
-
-/**
- * @brief Node-side service provider for rear lighting functionality.
- *
- * This component connects the node-side application logic with the transport
- * adapter that exposes the service over Ethernet / SOME-IP.
- */
-class RearLightingServiceProvider
+class RearLightingServiceProvider final
+    : public transport::TransportMessageHandlerInterface
 {
 public:
     RearLightingServiceProvider(
         application::RearLightingFunctionManager& rear_lighting_function_manager,
         transport::TransportAdapterInterface& transport_adapter) noexcept;
 
-    RearLightingServiceProvider(const RearLightingServiceProvider&) = delete;
-    RearLightingServiceProvider& operator=(const RearLightingServiceProvider&) = delete;
-    RearLightingServiceProvider(RearLightingServiceProvider&&) = delete;
-    RearLightingServiceProvider& operator=(RearLightingServiceProvider&&) = delete;
+    ServiceStatus Initialize();
+    ServiceStatus Shutdown();
 
-    ~RearLightingServiceProvider() = default;
+    void OnTransportMessageReceived(
+        const transport::TransportMessage& transport_message) override;
 
-    [[nodiscard]] ServiceStatus Initialize();
-    [[nodiscard]] ServiceStatus Shutdown();
-
-    [[nodiscard]] ServiceStatus HandleSetLampCommand(
-        const domain::LampCommand& command);
-
-    [[nodiscard]] ServiceStatus HandleGetLampStatus(
-        domain::LampFunction function);
-
-    [[nodiscard]] ServiceStatus HandleGetNodeHealth(
-        const domain::NodeHealthStatus& node_health_status);
-
-    [[nodiscard]] ServiceStatus PublishLampStatusEvent(
-        const domain::LampStatus& lamp_status);
-
-    [[nodiscard]] ServiceStatus PublishNodeHealthEvent(
-        const domain::NodeHealthStatus& node_health_status);
+    void OnTransportAvailabilityChanged(
+        bool is_available) override;
 
 private:
+    void HandleSetLampCommand(
+        const transport::TransportMessage& transport_message);
+
+    void HandleGetLampStatus(
+        const transport::TransportMessage& transport_message);
+
+    void HandleGetNodeHealth(
+        const transport::TransportMessage& transport_message);
+
+    void PublishLampStatusEvent(
+        const domain::LampStatus& lamp_status);
+
+    void PublishNodeHealthEvent(
+        const domain::NodeHealthStatus& node_health_status);
+
+    static ServiceStatus ConvertTransportStatus(
+        transport::TransportStatus transport_status) noexcept;
+
     application::RearLightingFunctionManager& rear_lighting_function_manager_;
     transport::TransportAdapterInterface& transport_adapter_;
-    bool is_initialized_ {false};
+    bool is_initialized_;
+    bool is_transport_available_;
 };
 
-}  // namespace body_control::lighting::service
+}  // namespace service
+}  // namespace lighting
+}  // namespace body_control
 
-#endif  // BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_PROVIDER_HPP_
+#endif  // BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_PROVIDER_HPP

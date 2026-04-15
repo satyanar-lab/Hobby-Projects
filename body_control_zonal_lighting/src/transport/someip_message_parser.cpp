@@ -1,91 +1,160 @@
 #include "body_control/lighting/transport/someip_message_parser.hpp"
 
-#include "body_control/lighting/domain/lighting_payload_codec.hpp"
+#include <cstddef>
+#include <cstdint>
+
 #include "body_control/lighting/domain/lighting_service_ids.hpp"
 
-namespace body_control::lighting::transport
+namespace body_control
+{
+namespace lighting
+{
+namespace transport
 {
 namespace
 {
 
-[[nodiscard]] bool IsRearLightingMessage(
-    const TransportMessage& message) noexcept
+std::uint8_t ReadUint8(
+    const std::vector<std::uint8_t>& payload,
+    const std::size_t index)
 {
-    return (message.service_id == domain::service_ids::kRearLightingServiceId) &&
-           (message.instance_id == domain::service_ids::kRearLightingServiceInstanceId);
+    if (index >= payload.size())
+    {
+        return 0U;
+    }
+
+    return payload[index];
+}
+
+std::uint32_t ReadUint32(
+    const std::vector<std::uint8_t>& payload,
+    const std::size_t index)
+{
+    if ((index + 3U) >= payload.size())
+    {
+        return 0U;
+    }
+
+    return (static_cast<std::uint32_t>(payload[index]) << 24U) |
+           (static_cast<std::uint32_t>(payload[index + 1U]) << 16U) |
+           (static_cast<std::uint32_t>(payload[index + 2U]) << 8U) |
+           static_cast<std::uint32_t>(payload[index + 3U]);
+}
+
+bool IsRearLightingMessage(
+    const TransportMessage& transport_message) noexcept
+{
+    return (transport_message.service_id ==
+            domain::rear_lighting_service::kServiceId) &&
+           (transport_message.instance_id ==
+            domain::rear_lighting_service::kInstanceId);
 }
 
 }  // namespace
 
-ParsedSomeIpMessage SomeIpMessageParser::Parse(
-    const TransportMessage& message) noexcept
+bool SomeipMessageParser::IsSetLampCommandRequest(
+    const TransportMessage& transport_message) noexcept
 {
-    ParsedSomeIpMessage parsed_message {};
-    parsed_message.message_type = SomeIpMessageType::kUnknown;
-    parsed_message.is_valid = false;
-
-    if (!IsRearLightingMessage(message))
-    {
-        return parsed_message;
-    }
-
-    switch (message.message_id)
-    {
-    case domain::service_ids::kSetLampCommandMethodId:
-        if (message.payload_length == domain::kLampCommandPayloadLength)
-        {
-            parsed_message.message_type = SomeIpMessageType::kSetLampCommandRequest;
-            parsed_message.is_valid = true;
-        }
-        break;
-
-    case domain::service_ids::kGetLampStatusMethodId:
-        if (message.payload_length == 1U)
-        {
-            parsed_message.message_type = SomeIpMessageType::kGetLampStatusRequest;
-            parsed_message.is_valid = true;
-        }
-        else if (message.payload_length == domain::kLampStatusPayloadLength)
-        {
-            parsed_message.message_type = SomeIpMessageType::kLampStatusResponse;
-            parsed_message.is_valid = true;
-        }
-        break;
-
-    case domain::service_ids::kGetNodeHealthMethodId:
-        if (message.payload_length == 0U)
-        {
-            parsed_message.message_type = SomeIpMessageType::kGetNodeHealthRequest;
-            parsed_message.is_valid = true;
-        }
-        else if (message.payload_length == domain::kNodeHealthStatusPayloadLength)
-        {
-            parsed_message.message_type = SomeIpMessageType::kNodeHealthResponse;
-            parsed_message.is_valid = true;
-        }
-        break;
-
-    case domain::service_ids::kLampStatusEventId:
-        if (message.payload_length == domain::kLampStatusPayloadLength)
-        {
-            parsed_message.message_type = SomeIpMessageType::kLampStatusEvent;
-            parsed_message.is_valid = true;
-        }
-        break;
-
-    case domain::service_ids::kNodeHealthEventId:
-        if (message.payload_length == domain::kNodeHealthStatusPayloadLength)
-        {
-            parsed_message.message_type = SomeIpMessageType::kNodeHealthEvent;
-            parsed_message.is_valid = true;
-        }
-        break;
-
-    default:
-        break;
-    }
-
-    return parsed_message;
+    return IsRearLightingMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::rear_lighting_service::kSetLampCommandMethodId);
 }
 
-}  // namespace body_control::lighting::transport
+bool SomeipMessageParser::IsGetLampStatusRequest(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsRearLightingMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::rear_lighting_service::kGetLampStatusMethodId);
+}
+
+bool SomeipMessageParser::IsGetNodeHealthRequest(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsRearLightingMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::rear_lighting_service::kGetNodeHealthMethodId);
+}
+
+bool SomeipMessageParser::IsLampStatusEvent(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsRearLightingMessage(transport_message) &&
+           transport_message.is_event &&
+           (transport_message.method_or_event_id ==
+            domain::rear_lighting_service::kLampStatusEventId);
+}
+
+bool SomeipMessageParser::IsNodeHealthEvent(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsRearLightingMessage(transport_message) &&
+           transport_message.is_event &&
+           (transport_message.method_or_event_id ==
+            domain::rear_lighting_service::kNodeHealthEventId);
+}
+
+domain::LampCommand SomeipMessageParser::ParseLampCommand(
+    const TransportMessage& transport_message)
+{
+    domain::LampCommand lamp_command {};
+
+    lamp_command.function = static_cast<domain::LampFunction>(
+        ReadUint8(transport_message.payload, 0U));
+    lamp_command.action = static_cast<domain::LampCommandAction>(
+        ReadUint8(transport_message.payload, 1U));
+    lamp_command.source = static_cast<domain::CommandSource>(
+        ReadUint8(transport_message.payload, 2U));
+    lamp_command.sequence_counter =
+        ReadUint32(transport_message.payload, 3U);
+
+    return lamp_command;
+}
+
+domain::LampFunction SomeipMessageParser::ParseLampFunction(
+    const TransportMessage& transport_message)
+{
+    return static_cast<domain::LampFunction>(
+        ReadUint8(transport_message.payload, 0U));
+}
+
+domain::LampStatus SomeipMessageParser::ParseLampStatus(
+    const TransportMessage& transport_message)
+{
+    domain::LampStatus lamp_status {};
+
+    lamp_status.function = static_cast<domain::LampFunction>(
+        ReadUint8(transport_message.payload, 0U));
+    lamp_status.output_state = static_cast<domain::LampOutputState>(
+        ReadUint8(transport_message.payload, 1U));
+    lamp_status.command_applied =
+        (ReadUint8(transport_message.payload, 2U) != 0U);
+    lamp_status.last_sequence_counter =
+        ReadUint32(transport_message.payload, 3U);
+
+    return lamp_status;
+}
+
+domain::NodeHealthStatus SomeipMessageParser::ParseNodeHealthStatus(
+    const TransportMessage& transport_message)
+{
+    domain::NodeHealthStatus node_health_status {};
+
+    node_health_status.node_state = static_cast<domain::NodeHealthState>(
+        ReadUint8(transport_message.payload, 0U));
+    node_health_status.ethernet_link_up =
+        (ReadUint8(transport_message.payload, 1U) != 0U);
+    node_health_status.service_available =
+        (ReadUint8(transport_message.payload, 2U) != 0U);
+    node_health_status.last_sequence_counter =
+        ReadUint32(transport_message.payload, 3U);
+
+    return node_health_status;
+}
+
+}  // namespace transport
+}  // namespace lighting
+}  // namespace body_control

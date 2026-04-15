@@ -1,0 +1,29 @@
+
+# Consider dependencies only in project.
+set(CMAKE_DEPENDS_IN_PROJECT_ONLY OFF)
+
+# The set of languages for which implicit dependencies are needed:
+set(CMAKE_DEPENDS_LANGUAGES
+  )
+
+# The set of dependency files which are needed:
+set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/test/integration/test_hazard_priority_behavior.cpp" "test/CMakeFiles/body_control_lighting_tests.dir/integration/test_hazard_priority_behavior.cpp.o" "gcc" "test/CMakeFiles/body_control_lighting_tests.dir/integration/test_hazard_priority_behavior.cpp.o.d"
+  "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/test/integration/test_node_timeout_behavior.cpp" "test/CMakeFiles/body_control_lighting_tests.dir/integration/test_node_timeout_behavior.cpp.o" "gcc" "test/CMakeFiles/body_control_lighting_tests.dir/integration/test_node_timeout_behavior.cpp.o.d"
+  "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/test/integration/test_request_response_path.cpp" "test/CMakeFiles/body_control_lighting_tests.dir/integration/test_request_response_path.cpp.o" "gcc" "test/CMakeFiles/body_control_lighting_tests.dir/integration/test_request_response_path.cpp.o.d"
+  "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/test/unit/test_command_arbitrator.cpp" "test/CMakeFiles/body_control_lighting_tests.dir/unit/test_command_arbitrator.cpp.o" "gcc" "test/CMakeFiles/body_control_lighting_tests.dir/unit/test_command_arbitrator.cpp.o.d"
+  "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/test/unit/test_lamp_state_manager.cpp" "test/CMakeFiles/body_control_lighting_tests.dir/unit/test_lamp_state_manager.cpp.o" "gcc" "test/CMakeFiles/body_control_lighting_tests.dir/unit/test_lamp_state_manager.cpp.o.d"
+  "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/test/unit/test_lighting_payload_codec.cpp" "test/CMakeFiles/body_control_lighting_tests.dir/unit/test_lighting_payload_codec.cpp.o" "gcc" "test/CMakeFiles/body_control_lighting_tests.dir/unit/test_lighting_payload_codec.cpp.o.d"
+  "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/test/unit/test_rear_lighting_function_manager.cpp" "test/CMakeFiles/body_control_lighting_tests.dir/unit/test_rear_lighting_function_manager.cpp.o" "gcc" "test/CMakeFiles/body_control_lighting_tests.dir/unit/test_rear_lighting_function_manager.cpp.o.d"
+  )
+
+# Targets to which this target links which contain Fortran sources.
+set(CMAKE_Fortran_TARGET_LINKED_INFO_FILES
+  )
+
+# Targets to which this target links which contain Fortran sources.
+set(CMAKE_Fortran_TARGET_FORWARD_LINKED_INFO_FILES
+  )
+
+# Fortran module output directory.
+set(CMAKE_Fortran_TARGET_MODULE_DIR "")

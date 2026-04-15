@@ -1,89 +1,83 @@
-#ifndef BODY_CONTROL_LIGHTING_APPLICATION_CENTRAL_ZONE_CONTROLLER_HPP_
-#define BODY_CONTROL_LIGHTING_APPLICATION_CENTRAL_ZONE_CONTROLLER_HPP_
+#ifndef BODY_CONTROL_LIGHTING_APPLICATION_CENTRAL_ZONE_CONTROLLER_HPP
+#define BODY_CONTROL_LIGHTING_APPLICATION_CENTRAL_ZONE_CONTROLLER_HPP
 
-#include <cstdint>
+#include <array>
+#include <cstddef>
 
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
+#include "body_control/lighting/service/rear_lighting_service_interface.hpp"
 
-namespace body_control::lighting::application
+namespace body_control
+{
+namespace lighting
+{
+namespace application
 {
 
-class LampStateManager;
-class NodeHealthMonitor;
-
-}  // namespace body_control::lighting::application
-
-namespace body_control::lighting::service
-{
-
-class RearLightingServiceConsumer;
-
-}  // namespace body_control::lighting::service
-
-namespace body_control::lighting::application
-{
-
-/**
- * @brief Result status for Central Zone Controller operations.
- */
 enum class ControllerStatus : std::uint8_t
 {
     kSuccess = 0U,
     kNotInitialized = 1U,
-    kInvalidArgument = 2U,
-    kServiceUnavailable = 3U,
-    kTransmissionFailed = 4U
+    kNotAvailable = 2U,
+    kInvalidArgument = 3U,
+    kServiceError = 4U
 };
 
-/**
- * @brief Central application component responsible for issuing commands to the
- *        Rear Lighting Node and caching the returned status information.
- */
-class CentralZoneController
+class CentralZoneController final
+    : public service::RearLightingServiceEventListenerInterface
 {
 public:
-    CentralZoneController(
-        service::RearLightingServiceConsumer& rear_lighting_service_consumer,
-        LampStateManager& lamp_state_manager,
-        NodeHealthMonitor& node_health_monitor) noexcept;
+    explicit CentralZoneController(
+        service::RearLightingServiceConsumerInterface& rear_lighting_service_consumer) noexcept;
 
-    CentralZoneController(const CentralZoneController&) = delete;
-    CentralZoneController& operator=(const CentralZoneController&) = delete;
-    CentralZoneController(CentralZoneController&&) = delete;
-    CentralZoneController& operator=(CentralZoneController&&) = delete;
+    ControllerStatus Initialize();
+    ControllerStatus Shutdown();
 
-    ~CentralZoneController() = default;
+    ControllerStatus SendLampCommand(
+        domain::LampFunction lamp_function,
+        domain::LampCommandAction lamp_command_action,
+        domain::CommandSource command_source);
 
-    [[nodiscard]] ControllerStatus Initialize();
-    [[nodiscard]] ControllerStatus Shutdown();
+    ControllerStatus RequestLampStatus(
+        domain::LampFunction lamp_function);
 
-    [[nodiscard]] ControllerStatus SendLampCommand(
-        domain::LampFunction function,
-        domain::LampCommandAction action,
-        domain::CommandSource source);
+    ControllerStatus RequestNodeHealth();
 
-    [[nodiscard]] ControllerStatus RequestLampStatus(
-        domain::LampFunction function);
+    bool GetCachedLampStatus(
+        domain::LampFunction lamp_function,
+        domain::LampStatus& lamp_status) const noexcept;
 
-    [[nodiscard]] ControllerStatus RequestNodeHealth();
+    domain::NodeHealthStatus GetCachedNodeHealthStatus() const noexcept;
 
-    void OnLampStatusReceived(const domain::LampStatus& lamp_status);
-    void OnNodeHealthReceived(const domain::NodeHealthStatus& node_health_status);
+    bool IsRearNodeAvailable() const noexcept;
 
-    [[nodiscard]] bool IsInitialized() const noexcept;
+    void OnLampStatusReceived(
+        const domain::LampStatus& lamp_status) override;
+
+    void OnNodeHealthStatusReceived(
+        const domain::NodeHealthStatus& node_health_status) override;
+
+    void OnServiceAvailabilityChanged(
+        bool is_service_available) override;
 
 private:
-    [[nodiscard]] std::uint16_t GetNextSequenceCounter() noexcept;
+    static ControllerStatus ConvertServiceStatus(
+        service::ServiceStatus service_status) noexcept;
 
-    service::RearLightingServiceConsumer& rear_lighting_service_consumer_;
-    LampStateManager& lamp_state_manager_;
-    NodeHealthMonitor& node_health_monitor_;
+    static std::size_t LampFunctionToIndex(
+        domain::LampFunction lamp_function) noexcept;
 
-    std::uint16_t next_sequence_counter_ {1U};
-    bool is_initialized_ {false};
+    service::RearLightingServiceConsumerInterface& rear_lighting_service_consumer_;
+    bool is_initialized_;
+    bool is_rear_node_available_;
+    std::uint32_t next_sequence_counter_;
+    std::array<domain::LampStatus, 5U> cached_lamp_statuses_;
+    domain::NodeHealthStatus cached_node_health_status_;
 };
 
-}  // namespace body_control::lighting::application
+}  // namespace application
+}  // namespace lighting
+}  // namespace body_control
 
-#endif  // BODY_CONTROL_LIGHTING_APPLICATION_CENTRAL_ZONE_CONTROLLER_HPP_
+#endif  // BODY_CONTROL_LIGHTING_APPLICATION_CENTRAL_ZONE_CONTROLLER_HPP

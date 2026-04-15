@@ -1,126 +1,91 @@
 #include "body_control/lighting/application/rear_lighting_function_manager.hpp"
 
-#include "body_control/lighting/domain/lighting_constants.hpp"
-
-namespace body_control::lighting::application
+namespace body_control
+{
+namespace lighting
+{
+namespace application
 {
 
 RearLightingFunctionManager::RearLightingFunctionManager() noexcept
+    : lamp_statuses_ {}
 {
-    Reset();
-}
+    lamp_statuses_[0U].function = domain::LampFunction::kLeftIndicator;
+    lamp_statuses_[0U].output_state = domain::LampOutputState::kOff;
 
-void RearLightingFunctionManager::Reset() noexcept
-{
-    lamp_status_cache_[0] = {domain::LampFunction::kLeftIndicator, domain::LampOutputState::kOff, false, 0U};
-    lamp_status_cache_[1] = {domain::LampFunction::kRightIndicator, domain::LampOutputState::kOff, false, 0U};
-    lamp_status_cache_[2] = {domain::LampFunction::kHazardLamp, domain::LampOutputState::kOff, false, 0U};
-    lamp_status_cache_[3] = {domain::LampFunction::kParkLamp, domain::LampOutputState::kOff, false, 0U};
-    lamp_status_cache_[4] = {domain::LampFunction::kHeadLamp, domain::LampOutputState::kOff, false, 0U};
+    lamp_statuses_[1U].function = domain::LampFunction::kRightIndicator;
+    lamp_statuses_[1U].output_state = domain::LampOutputState::kOff;
 
-    blink_phase_on_ = true;
-    blink_phase_elapsed_ = std::chrono::milliseconds {0};
+    lamp_statuses_[2U].function = domain::LampFunction::kHazardLamp;
+    lamp_statuses_[2U].output_state = domain::LampOutputState::kOff;
+
+    lamp_statuses_[3U].function = domain::LampFunction::kParkLamp;
+    lamp_statuses_[3U].output_state = domain::LampOutputState::kOff;
+
+    lamp_statuses_[4U].function = domain::LampFunction::kHeadLamp;
+    lamp_statuses_[4U].output_state = domain::LampOutputState::kOff;
 }
 
 bool RearLightingFunctionManager::ApplyCommand(
-    const domain::LampCommand& command) noexcept
+    const domain::LampCommand& lamp_command) noexcept
 {
-    std::size_t index {0U};
+    const std::size_t index = LampFunctionToIndex(lamp_command.function);
 
-    if ((!domain::IsValidLampCommand(command)) ||
-        (!TryGetIndex(command.function, index)))
+    if (index >= lamp_statuses_.size())
     {
         return false;
     }
 
-    lamp_status_cache_[index].command_applied = true;
-    lamp_status_cache_[index].last_sequence_counter = command.sequence_counter;
+    lamp_statuses_[index].function = lamp_command.function;
+    lamp_statuses_[index].command_applied = true;
+    lamp_statuses_[index].last_sequence_counter = lamp_command.sequence_counter;
 
-    if (command.action == domain::LampCommandAction::kDeactivate)
+    switch (lamp_command.action)
     {
-        lamp_status_cache_[index].output_state = domain::LampOutputState::kOff;
+    case domain::LampCommandAction::kActivate:
+        lamp_statuses_[index].output_state = domain::LampOutputState::kOn;
+        break;
 
-        if (command.function == domain::LampFunction::kHazardLamp)
-        {
-            lamp_status_cache_[0].output_state = domain::LampOutputState::kOff;
-            lamp_status_cache_[1].output_state = domain::LampOutputState::kOff;
-        }
+    case domain::LampCommandAction::kDeactivate:
+        lamp_statuses_[index].output_state = domain::LampOutputState::kOff;
+        break;
 
-        return true;
-    }
+    case domain::LampCommandAction::kToggle:
+        lamp_statuses_[index].output_state =
+            (lamp_statuses_[index].output_state == domain::LampOutputState::kOn)
+                ? domain::LampOutputState::kOff
+                : domain::LampOutputState::kOn;
+        break;
 
-    if (domain::IsBlinkingFunction(command.function))
-    {
-        lamp_status_cache_[index].output_state = domain::LampOutputState::kBlinking;
-
-        if (command.function == domain::LampFunction::kHazardLamp)
-        {
-            lamp_status_cache_[0].output_state = domain::LampOutputState::kBlinking;
-            lamp_status_cache_[1].output_state = domain::LampOutputState::kBlinking;
-        }
-    }
-    else
-    {
-        lamp_status_cache_[index].output_state = domain::LampOutputState::kOn;
+    case domain::LampCommandAction::kNoAction:
+    default:
+        return false;
     }
 
     return true;
-}
-
-void RearLightingFunctionManager::ProcessMainLoop(
-    const std::chrono::milliseconds elapsed_time) noexcept
-{
-    const bool blinking_active =
-        IsHazardActive() ||
-        IsLeftIndicatorActive() ||
-        IsRightIndicatorActive();
-
-    if (!blinking_active)
-    {
-        blink_phase_on_ = true;
-        blink_phase_elapsed_ = std::chrono::milliseconds {0};
-        UpdateSteadyOutputs();
-        return;
-    }
-
-    blink_phase_elapsed_ += elapsed_time;
-
-    const std::chrono::milliseconds current_phase_duration =
-        blink_phase_on_ ? domain::timing::kIndicatorOnTime
-                        : domain::timing::kIndicatorOffTime;
-
-    if (blink_phase_elapsed_ >= current_phase_duration)
-    {
-        blink_phase_on_ = !blink_phase_on_;
-        blink_phase_elapsed_ = std::chrono::milliseconds {0};
-    }
-
-    UpdateBlinkingOutputs();
-    UpdateSteadyOutputs();
 }
 
 bool RearLightingFunctionManager::GetLampStatus(
-    const domain::LampFunction function,
+    const domain::LampFunction lamp_function,
     domain::LampStatus& lamp_status) const noexcept
 {
-    std::size_t index {0U};
+    const std::size_t index = LampFunctionToIndex(lamp_function);
 
-    if (!TryGetIndex(function, index))
+    if (index >= lamp_statuses_.size())
     {
         return false;
     }
 
-    lamp_status = lamp_status_cache_[index];
+    lamp_status = lamp_statuses_[index];
     return true;
 }
 
-bool RearLightingFunctionManager::TryGetIndex(
-    const domain::LampFunction function,
-    std::size_t& index) noexcept
+std::size_t RearLightingFunctionManager::LampFunctionToIndex(
+    const domain::LampFunction lamp_function) noexcept
 {
-    bool is_valid {true};
+    std::size_t index {static_cast<std::size_t>(-1)};
 
-    switch (function)
+    switch (lamp_function)
     {
     case domain::LampFunction::kLeftIndicator:
         index = 0U;
@@ -142,64 +107,14 @@ bool RearLightingFunctionManager::TryGetIndex(
         index = 4U;
         break;
 
+    case domain::LampFunction::kUnknown:
     default:
-        is_valid = false;
         break;
     }
 
-    return is_valid;
+    return index;
 }
 
-void RearLightingFunctionManager::UpdateBlinkingOutputs() noexcept
-{
-    if (IsHazardActive())
-    {
-        lamp_status_cache_[0].output_state = domain::LampOutputState::kBlinking;
-        lamp_status_cache_[1].output_state = domain::LampOutputState::kBlinking;
-        lamp_status_cache_[2].output_state = domain::LampOutputState::kBlinking;
-        return;
-    }
-
-    if (IsLeftIndicatorActive())
-    {
-        lamp_status_cache_[0].output_state = domain::LampOutputState::kBlinking;
-    }
-
-    if (IsRightIndicatorActive())
-    {
-        lamp_status_cache_[1].output_state = domain::LampOutputState::kBlinking;
-    }
-}
-
-void RearLightingFunctionManager::UpdateSteadyOutputs() noexcept
-{
-    if (lamp_status_cache_[3].output_state != domain::LampOutputState::kOff)
-    {
-        lamp_status_cache_[3].output_state = domain::LampOutputState::kOn;
-    }
-
-    if (lamp_status_cache_[4].output_state != domain::LampOutputState::kOff)
-    {
-        lamp_status_cache_[4].output_state = domain::LampOutputState::kOn;
-    }
-}
-
-bool RearLightingFunctionManager::IsHazardActive() const noexcept
-{
-    return (lamp_status_cache_[2].output_state == domain::LampOutputState::kBlinking) ||
-           (lamp_status_cache_[2].output_state == domain::LampOutputState::kOn);
-}
-
-bool RearLightingFunctionManager::IsLeftIndicatorActive() const noexcept
-{
-    return (lamp_status_cache_[0].output_state == domain::LampOutputState::kBlinking) ||
-           (lamp_status_cache_[0].output_state == domain::LampOutputState::kOn);
-}
-
-bool RearLightingFunctionManager::IsRightIndicatorActive() const noexcept
-{
-    return (lamp_status_cache_[1].output_state == domain::LampOutputState::kBlinking) ||
-           (lamp_status_cache_[1].output_state == domain::LampOutputState::kOn);
-}
-
-}  // namespace body_control::lighting::application
+}  // namespace application
+}  // namespace lighting
+}  // namespace body_control

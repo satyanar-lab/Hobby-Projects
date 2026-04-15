@@ -26,6 +26,9 @@ BCZL_ENABLE_LINUX_SIMULATION:BOOL=ON
 //Enable SOME/IP transport targets
 BCZL_ENABLE_VSOMEIP:BOOL=ON
 
+//Build body control lighting tests
+BODY_CONTROL_LIGHTING_BUILD_TESTS:BOOL=ON
+
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=/usr/bin/addr2line
 
@@ -176,7 +179,7 @@ CMAKE_OBJCOPY:FILEPATH=/usr/bin/objcopy
 CMAKE_OBJDUMP:FILEPATH=/usr/bin/objdump
 
 //Value Computed by CMake
-CMAKE_PROJECT_DESCRIPTION:STATIC=Body Control Zonal Lighting over Automotive Ethernet
+CMAKE_PROJECT_DESCRIPTION:STATIC=Body Control Zonal Lighting over Ethernet using modern C++
 
 //Value Computed by CMake
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
@@ -394,7 +397,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=3
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=4
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP

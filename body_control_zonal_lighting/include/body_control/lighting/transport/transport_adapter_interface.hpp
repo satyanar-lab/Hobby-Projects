@@ -1,87 +1,65 @@
-#ifndef BODY_CONTROL_LIGHTING_TRANSPORT_TRANSPORT_ADAPTER_INTERFACE_HPP_
-#define BODY_CONTROL_LIGHTING_TRANSPORT_TRANSPORT_ADAPTER_INTERFACE_HPP_
+#ifndef BODY_CONTROL_LIGHTING_TRANSPORT_TRANSPORT_ADAPTER_INTERFACE_HPP
+#define BODY_CONTROL_LIGHTING_TRANSPORT_TRANSPORT_ADAPTER_INTERFACE_HPP
 
-#include <cstddef>
 #include <cstdint>
+#include <vector>
 
 #include "body_control/lighting/transport/transport_status.hpp"
 
-namespace body_control::lighting::transport
+namespace body_control
+{
+namespace lighting
+{
+namespace transport
 {
 
-/**
- * @brief Generic transport message container.
- */
 struct TransportMessage
 {
     std::uint16_t service_id {0U};
     std::uint16_t instance_id {0U};
     std::uint16_t method_or_event_id {0U};
-    const std::uint8_t* payload_data {nullptr};
-    std::size_t payload_length {0U};
+    std::uint16_t client_id {0U};
+    std::uint16_t session_id {0U};
+    bool is_event {false};
+    bool is_reliable {true};
+    std::vector<std::uint8_t> payload {};
 };
 
-/**
- * @brief Callback interface for transport-level message delivery.
- */
 class TransportMessageHandlerInterface
 {
 public:
     virtual ~TransportMessageHandlerInterface() = default;
 
-    virtual void OnRequestReceived(
-        const TransportMessage& message) = 0;
+    virtual void OnTransportMessageReceived(
+        const TransportMessage& transport_message) = 0;
 
-    virtual void OnResponseReceived(
-        const TransportMessage& message) = 0;
-
-    virtual void OnEventReceived(
-        const TransportMessage& message) = 0;
-
-    virtual void OnServiceAvailabilityChanged(
-        std::uint16_t service_id,
-        std::uint16_t instance_id,
+    virtual void OnTransportAvailabilityChanged(
         bool is_available) = 0;
 };
 
-/**
- * @brief Abstract transport adapter interface.
- *
- * This hides the underlying transport stack from the service layer.
- */
 class TransportAdapterInterface
 {
 public:
     virtual ~TransportAdapterInterface() = default;
 
-    [[nodiscard]] virtual TransportStatus Initialize() = 0;
-    [[nodiscard]] virtual TransportStatus Shutdown() = 0;
+    virtual TransportStatus Initialize() = 0;
+    virtual TransportStatus Shutdown() = 0;
 
-    [[nodiscard]] virtual TransportStatus OfferService(
-        std::uint16_t service_id,
-        std::uint16_t instance_id) = 0;
+    virtual TransportStatus SendRequest(
+        const TransportMessage& transport_message) = 0;
 
-    [[nodiscard]] virtual TransportStatus StopOfferService(
-        std::uint16_t service_id,
-        std::uint16_t instance_id) = 0;
+    virtual TransportStatus SendResponse(
+        const TransportMessage& transport_message) = 0;
 
-    [[nodiscard]] virtual TransportStatus SendRequest(
-        const TransportMessage& message) = 0;
-
-    [[nodiscard]] virtual TransportStatus SendResponse(
-        const TransportMessage& message) = 0;
-
-    [[nodiscard]] virtual TransportStatus PublishEvent(
-        const TransportMessage& message) = 0;
-
-    [[nodiscard]] virtual bool IsServiceAvailable(
-        std::uint16_t service_id,
-        std::uint16_t instance_id) const noexcept = 0;
+    virtual TransportStatus SendEvent(
+        const TransportMessage& transport_message) = 0;
 
     virtual void SetMessageHandler(
         TransportMessageHandlerInterface* message_handler) noexcept = 0;
 };
 
-}  // namespace body_control::lighting::transport
+}  // namespace transport
+}  // namespace lighting
+}  // namespace body_control
 
-#endif  // BODY_CONTROL_LIGHTING_TRANSPORT_TRANSPORT_ADAPTER_INTERFACE_HPP_
+#endif  // BODY_CONTROL_LIGHTING_TRANSPORT_TRANSPORT_ADAPTER_INTERFACE_HPP

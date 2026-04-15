@@ -1,35 +1,33 @@
-file(GLOB_RECURSE BCZL_CORE_SOURCES
-    CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+add_library(body_control_lighting_core
+    application/central_zone_controller.cpp
+    application/rear_lighting_function_manager.cpp
+    hmi/hmi_command_mapper.cpp
+    hmi/hmi_view_model.cpp
+    hmi/main_window.cpp
+    service/rear_lighting_service_consumer.cpp
+    service/rear_lighting_service_provider.cpp
+    transport/someip_message_builder.cpp
+    transport/someip_message_parser.cpp
+)
 
-list(FILTER BCZL_CORE_SOURCES EXCLUDE REGEX ".*/transport/ethernet/.*\\.cpp$")
-
-if (NOT BCZL_CORE_SOURCES)
-    message(FATAL_ERROR "No source files found under src/")
-endif()
-
-add_library(bczl_core STATIC
-    ${BCZL_CORE_SOURCES})
-
-add_library(bczl::core ALIAS bczl_core)
-
-target_include_directories(
-    bczl_core
+target_include_directories(body_control_lighting_core
     PUBLIC
-        "${PROJECT_SOURCE_DIR}/include")
+        ${PROJECT_SOURCE_DIR}/include
+)
 
-target_link_libraries(
-    bczl_core
+target_compile_features(body_control_lighting_core
     PUBLIC
-        bczl_project_options)
+        cxx_std_17
+)
 
-target_compile_definitions(
-    bczl_core
-    PUBLIC
-        BCZL_PROJECT_NAME="${PROJECT_NAME}"
-        BCZL_PROJECT_VERSION="${PROJECT_VERSION}")
+target_compile_options(body_control_lighting_core
+    PRIVATE
+        -Wall
+        -Wextra
+        -Wpedantic
+)
 
-set_target_properties(
-    bczl_core
+set_target_properties(body_control_lighting_core
     PROPERTIES
-        OUTPUT_NAME "bczl_core")
+        OUTPUT_NAME body_control_lighting_core
+)

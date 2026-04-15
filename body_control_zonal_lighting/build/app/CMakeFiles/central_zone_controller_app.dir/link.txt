@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/central_zone_controller_app.dir/central_zone_controller/main.cpp.o -o central_zone_controller_app  ../src/libbody_control_lighting_core.a 

@@ -1,110 +1,75 @@
 #include "body_control/lighting/hmi/hmi_view_model.hpp"
 
-namespace body_control::lighting::hmi
+namespace body_control
 {
-namespace
+namespace lighting
+{
+namespace hmi
 {
 
-[[nodiscard]] bool IsOutputStateActive(
-    const domain::LampOutputState output_state) noexcept
+HmiViewModel::HmiViewModel() noexcept
+    : lamp_statuses_ {}
+    , node_health_status_ {}
 {
-    return (output_state == domain::LampOutputState::kOn) ||
-           (output_state == domain::LampOutputState::kBlinking);
-}
+    lamp_statuses_[0U].function = domain::LampFunction::kLeftIndicator;
+    lamp_statuses_[0U].output_state = domain::LampOutputState::kOff;
 
-}  // namespace
+    lamp_statuses_[1U].function = domain::LampFunction::kRightIndicator;
+    lamp_statuses_[1U].output_state = domain::LampOutputState::kOff;
 
-void HmiViewModel::Reset() noexcept
-{
-    left_indicator_active_ = false;
-    right_indicator_active_ = false;
-    hazard_lamp_active_ = false;
-    park_lamp_active_ = false;
-    head_lamp_active_ = false;
-    node_health_status_ = {};
+    lamp_statuses_[2U].function = domain::LampFunction::kHazardLamp;
+    lamp_statuses_[2U].output_state = domain::LampOutputState::kOff;
+
+    lamp_statuses_[3U].function = domain::LampFunction::kParkLamp;
+    lamp_statuses_[3U].output_state = domain::LampOutputState::kOff;
+
+    lamp_statuses_[4U].function = domain::LampFunction::kHeadLamp;
+    lamp_statuses_[4U].output_state = domain::LampOutputState::kOff;
 }
 
 void HmiViewModel::UpdateLampStatus(
     const domain::LampStatus& lamp_status) noexcept
 {
-    if (!domain::IsValidLampStatus(lamp_status))
+    const std::size_t index = LampFunctionToIndex(lamp_status.function);
+
+    if (index < lamp_statuses_.size())
     {
-        return;
-    }
-
-    const bool is_active {IsOutputStateActive(lamp_status.output_state)};
-
-    switch (lamp_status.function)
-    {
-    case domain::LampFunction::kLeftIndicator:
-        left_indicator_active_ = is_active;
-        break;
-
-    case domain::LampFunction::kRightIndicator:
-        right_indicator_active_ = is_active;
-        break;
-
-    case domain::LampFunction::kHazardLamp:
-        hazard_lamp_active_ = is_active;
-        break;
-
-    case domain::LampFunction::kParkLamp:
-        park_lamp_active_ = is_active;
-        break;
-
-    case domain::LampFunction::kHeadLamp:
-        head_lamp_active_ = is_active;
-        break;
-
-    default:
-        break;
+        lamp_statuses_[index] = lamp_status;
     }
 }
 
 void HmiViewModel::UpdateNodeHealthStatus(
     const domain::NodeHealthStatus& node_health_status) noexcept
 {
-    if (!domain::IsValidNodeHealthStatus(node_health_status))
-    {
-        return;
-    }
-
     node_health_status_ = node_health_status;
 }
 
-bool HmiViewModel::IsLampFunctionActive(
-    const domain::LampFunction function) const noexcept
+bool HmiViewModel::GetLampStatus(
+    const domain::LampFunction lamp_function,
+    domain::LampStatus& lamp_status) const noexcept
 {
-    bool is_active {false};
+    const std::size_t index = LampFunctionToIndex(lamp_function);
 
-    switch (function)
+    if (index >= lamp_statuses_.size())
     {
-    case domain::LampFunction::kLeftIndicator:
-        is_active = left_indicator_active_;
-        break;
-
-    case domain::LampFunction::kRightIndicator:
-        is_active = right_indicator_active_;
-        break;
-
-    case domain::LampFunction::kHazardLamp:
-        is_active = hazard_lamp_active_;
-        break;
-
-    case domain::LampFunction::kParkLamp:
-        is_active = park_lamp_active_;
-        break;
-
-    case domain::LampFunction::kHeadLamp:
-        is_active = head_lamp_active_;
-        break;
-
-    default:
-        is_active = false;
-        break;
+        return false;
     }
 
-    return is_active;
+    lamp_status = lamp_statuses_[index];
+    return true;
+}
+
+bool HmiViewModel::IsLampFunctionActive(
+    const domain::LampFunction lamp_function) const noexcept
+{
+    const std::size_t index = LampFunctionToIndex(lamp_function);
+
+    if (index >= lamp_statuses_.size())
+    {
+        return false;
+    }
+
+    return (lamp_statuses_[index].output_state == domain::LampOutputState::kOn);
 }
 
 domain::NodeHealthStatus HmiViewModel::GetNodeHealthStatus() const noexcept
@@ -112,4 +77,41 @@ domain::NodeHealthStatus HmiViewModel::GetNodeHealthStatus() const noexcept
     return node_health_status_;
 }
 
-}  // namespace body_control::lighting::hmi
+std::size_t HmiViewModel::LampFunctionToIndex(
+    const domain::LampFunction lamp_function) noexcept
+{
+    std::size_t index {static_cast<std::size_t>(-1)};
+
+    switch (lamp_function)
+    {
+    case domain::LampFunction::kLeftIndicator:
+        index = 0U;
+        break;
+
+    case domain::LampFunction::kRightIndicator:
+        index = 1U;
+        break;
+
+    case domain::LampFunction::kHazardLamp:
+        index = 2U;
+        break;
+
+    case domain::LampFunction::kParkLamp:
+        index = 3U;
+        break;
+
+    case domain::LampFunction::kHeadLamp:
+        index = 4U;
+        break;
+
+    case domain::LampFunction::kUnknown:
+    default:
+        break;
+    }
+
+    return index;
+}
+
+}  // namespace hmi
+}  // namespace lighting
+}  // namespace body_control

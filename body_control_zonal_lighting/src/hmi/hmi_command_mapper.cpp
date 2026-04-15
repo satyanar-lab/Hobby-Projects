@@ -1,67 +1,51 @@
 #include "body_control/lighting/hmi/hmi_command_mapper.hpp"
 
-namespace body_control::lighting::hmi
+namespace body_control
+{
+namespace lighting
+{
+namespace hmi
 {
 
-bool HmiCommandMapper::MapActionToLampCommand(
-    const HmiAction action,
-    const bool current_active_state,
-    HmiLampCommandRequest& command_request) const noexcept
+HmiAction HmiCommandMapper::MapInputToAction(
+    const char input_key) noexcept
 {
-    bool is_supported_action {true};
+    HmiAction action {HmiAction::kUnknown};
 
-    command_request.function = domain::LampFunction::kUnknown;
-    command_request.action = domain::LampCommandAction::kUnknown;
-
-    switch (action)
+    switch (input_key)
     {
-    case HmiAction::kToggleLeftIndicator:
-        command_request.function = domain::LampFunction::kLeftIndicator;
+    case '1':
+        action = HmiAction::kToggleLeftIndicator;
         break;
 
-    case HmiAction::kToggleRightIndicator:
-        command_request.function = domain::LampFunction::kRightIndicator;
+    case '2':
+        action = HmiAction::kToggleRightIndicator;
         break;
 
-    case HmiAction::kToggleHazardLamp:
-        command_request.function = domain::LampFunction::kHazardLamp;
+    case '3':
+        action = HmiAction::kToggleHazardLamp;
         break;
 
-    case HmiAction::kToggleParkLamp:
-        command_request.function = domain::LampFunction::kParkLamp;
+    case '4':
+        action = HmiAction::kToggleParkLamp;
         break;
 
-    case HmiAction::kToggleHeadLamp:
-        command_request.function = domain::LampFunction::kHeadLamp;
+    case '5':
+        action = HmiAction::kToggleHeadLamp;
         break;
 
-    case HmiAction::kRequestNodeHealth:
-    case HmiAction::kUnknown:
+    case '6':
+        action = HmiAction::kRequestNodeHealth;
+        break;
+
     default:
-        is_supported_action = false;
+        action = HmiAction::kUnknown;
         break;
     }
 
-    if (!is_supported_action)
-    {
-        return false;
-    }
-
-    command_request.action =
-        current_active_state ? domain::LampCommandAction::kDeactivate
-                             : domain::LampCommandAction::kActivate;
-
-    return true;
+    return action;
 }
 
-bool HmiCommandMapper::IsLampControlAction(
-    const HmiAction action) const noexcept
-{
-    return (action == HmiAction::kToggleLeftIndicator) ||
-           (action == HmiAction::kToggleRightIndicator) ||
-           (action == HmiAction::kToggleHazardLamp) ||
-           (action == HmiAction::kToggleParkLamp) ||
-           (action == HmiAction::kToggleHeadLamp);
-}
-
-}  // namespace body_control::lighting::hmi
+}  // namespace hmi
+}  // namespace lighting
+}  // namespace body_control

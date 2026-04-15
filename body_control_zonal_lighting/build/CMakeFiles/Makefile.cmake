@@ -11,9 +11,8 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/app/CMakeLists.txt"
   "CMakeFiles/3.28.3/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.28.3/CMakeSystem.cmake"
-  "CMakeFiles/VerifyGlobs.cmake"
-  "CMakeFiles/cmake.verify_globs"
   "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/CMakeLists.txt"
+  "/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/test/CMakeLists.txt"
   "/usr/share/cmake-3.28/Modules/CMakeCXXInformation.cmake"
   "/usr/share/cmake-3.28/Modules/CMakeCommonLanguageInclude.cmake"
   "/usr/share/cmake-3.28/Modules/CMakeGenericSystem.cmake"
@@ -24,7 +23,6 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/share/cmake-3.28/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
   "/usr/share/cmake-3.28/Modules/Compiler/GNU-CXX.cmake"
   "/usr/share/cmake-3.28/Modules/Compiler/GNU.cmake"
-  "/usr/share/cmake-3.28/Modules/GNUInstallDirs.cmake"
   "/usr/share/cmake-3.28/Modules/Platform/Linux-GNU-CXX.cmake"
   "/usr/share/cmake-3.28/Modules/Platform/Linux-GNU.cmake"
   "/usr/share/cmake-3.28/Modules/Platform/Linux-Initialize.cmake"
@@ -43,13 +41,15 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   "src/CMakeFiles/CMakeDirectoryInformation.cmake"
   "app/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "test/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "src/CMakeFiles/bczl_core.dir/DependInfo.cmake"
-  "app/CMakeFiles/bczl_central_zone_controller.dir/DependInfo.cmake"
-  "app/CMakeFiles/bczl_diagnostic_console.dir/DependInfo.cmake"
-  "app/CMakeFiles/bczl_hmi_control_panel.dir/DependInfo.cmake"
-  "app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/DependInfo.cmake"
+  "src/CMakeFiles/body_control_lighting_core.dir/DependInfo.cmake"
+  "app/CMakeFiles/diagnostic_console.dir/DependInfo.cmake"
+  "app/CMakeFiles/hmi_control_panel.dir/DependInfo.cmake"
+  "app/CMakeFiles/central_zone_controller_app.dir/DependInfo.cmake"
+  "app/CMakeFiles/rear_lighting_node_simulator.dir/DependInfo.cmake"
+  "test/CMakeFiles/body_control_lighting_test_objects.dir/DependInfo.cmake"
   )

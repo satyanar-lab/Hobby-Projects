@@ -113,74 +113,86 @@ preinstall/fast:
 
 # clear depends
 depend:
-	$(CMAKE_COMMAND) -P /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles/VerifyGlobs.cmake
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named bczl_core
+# Target rules for targets named body_control_lighting_core
 
 # Build rule for target.
-bczl_core: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 bczl_core
-.PHONY : bczl_core
+body_control_lighting_core: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 body_control_lighting_core
+.PHONY : body_control_lighting_core
 
 # fast build rule for target.
-bczl_core/fast:
-	$(MAKE) $(MAKESILENT) -f src/CMakeFiles/bczl_core.dir/build.make src/CMakeFiles/bczl_core.dir/build
-.PHONY : bczl_core/fast
+body_control_lighting_core/fast:
+	$(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/build
+.PHONY : body_control_lighting_core/fast
 
 #=============================================================================
-# Target rules for targets named bczl_central_zone_controller
+# Target rules for targets named diagnostic_console
 
 # Build rule for target.
-bczl_central_zone_controller: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 bczl_central_zone_controller
-.PHONY : bczl_central_zone_controller
+diagnostic_console: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 diagnostic_console
+.PHONY : diagnostic_console
 
 # fast build rule for target.
-bczl_central_zone_controller/fast:
-	$(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_central_zone_controller.dir/build.make app/CMakeFiles/bczl_central_zone_controller.dir/build
-.PHONY : bczl_central_zone_controller/fast
+diagnostic_console/fast:
+	$(MAKE) $(MAKESILENT) -f app/CMakeFiles/diagnostic_console.dir/build.make app/CMakeFiles/diagnostic_console.dir/build
+.PHONY : diagnostic_console/fast
 
 #=============================================================================
-# Target rules for targets named bczl_diagnostic_console
+# Target rules for targets named hmi_control_panel
 
 # Build rule for target.
-bczl_diagnostic_console: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 bczl_diagnostic_console
-.PHONY : bczl_diagnostic_console
+hmi_control_panel: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 hmi_control_panel
+.PHONY : hmi_control_panel
 
 # fast build rule for target.
-bczl_diagnostic_console/fast:
-	$(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_diagnostic_console.dir/build.make app/CMakeFiles/bczl_diagnostic_console.dir/build
-.PHONY : bczl_diagnostic_console/fast
+hmi_control_panel/fast:
+	$(MAKE) $(MAKESILENT) -f app/CMakeFiles/hmi_control_panel.dir/build.make app/CMakeFiles/hmi_control_panel.dir/build
+.PHONY : hmi_control_panel/fast
 
 #=============================================================================
-# Target rules for targets named bczl_hmi_control_panel
+# Target rules for targets named central_zone_controller_app
 
 # Build rule for target.
-bczl_hmi_control_panel: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 bczl_hmi_control_panel
-.PHONY : bczl_hmi_control_panel
+central_zone_controller_app: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 central_zone_controller_app
+.PHONY : central_zone_controller_app
 
 # fast build rule for target.
-bczl_hmi_control_panel/fast:
-	$(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_hmi_control_panel.dir/build.make app/CMakeFiles/bczl_hmi_control_panel.dir/build
-.PHONY : bczl_hmi_control_panel/fast
+central_zone_controller_app/fast:
+	$(MAKE) $(MAKESILENT) -f app/CMakeFiles/central_zone_controller_app.dir/build.make app/CMakeFiles/central_zone_controller_app.dir/build
+.PHONY : central_zone_controller_app/fast
 
 #=============================================================================
-# Target rules for targets named bczl_rear_lighting_node_simulator
+# Target rules for targets named rear_lighting_node_simulator
 
 # Build rule for target.
-bczl_rear_lighting_node_simulator: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 bczl_rear_lighting_node_simulator
-.PHONY : bczl_rear_lighting_node_simulator
+rear_lighting_node_simulator: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 rear_lighting_node_simulator
+.PHONY : rear_lighting_node_simulator
 
 # fast build rule for target.
-bczl_rear_lighting_node_simulator/fast:
-	$(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/build.make app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/build
-.PHONY : bczl_rear_lighting_node_simulator/fast
+rear_lighting_node_simulator/fast:
+	$(MAKE) $(MAKESILENT) -f app/CMakeFiles/rear_lighting_node_simulator.dir/build.make app/CMakeFiles/rear_lighting_node_simulator.dir/build
+.PHONY : rear_lighting_node_simulator/fast
+
+#=============================================================================
+# Target rules for targets named body_control_lighting_test_objects
+
+# Build rule for target.
+body_control_lighting_test_objects: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 body_control_lighting_test_objects
+.PHONY : body_control_lighting_test_objects
+
+# fast build rule for target.
+body_control_lighting_test_objects/fast:
+	$(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/build
+.PHONY : body_control_lighting_test_objects/fast
 
 # Help Target
 help:
@@ -190,11 +202,12 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... bczl_central_zone_controller"
-	@echo "... bczl_core"
-	@echo "... bczl_diagnostic_console"
-	@echo "... bczl_hmi_control_panel"
-	@echo "... bczl_rear_lighting_node_simulator"
+	@echo "... body_control_lighting_core"
+	@echo "... body_control_lighting_test_objects"
+	@echo "... central_zone_controller_app"
+	@echo "... diagnostic_console"
+	@echo "... hmi_control_panel"
+	@echo "... rear_lighting_node_simulator"
 .PHONY : help
 
 
@@ -206,7 +219,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	$(CMAKE_COMMAND) -P /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles/VerifyGlobs.cmake
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

@@ -1,84 +1,101 @@
-#include <atomic>
-#include <chrono>
-#include <csignal>
-#include <thread>
+#include <iostream>
 
 #include "body_control/lighting/application/rear_lighting_function_manager.hpp"
-#include "body_control/lighting/domain/lighting_types.hpp"
-#include "body_control/lighting/platform/linux/linux_diagnostic_logger.hpp"
 #include "body_control/lighting/service/rear_lighting_service_provider.hpp"
-#include "body_control/lighting/transport/vsomeip/vsomeip_runtime_manager.hpp"
-#include "body_control/lighting/transport/vsomeip/vsomeip_server_adapter.hpp"
+#include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
+namespace body_control
+{
+namespace lighting
+{
 namespace
 {
 
-std::atomic<bool> g_keep_running {true};
-
-void HandleSignal(int signal_number)
+class NodeTransportStub final : public transport::TransportAdapterInterface
 {
-    static_cast<void>(signal_number);
-    g_keep_running.store(false);
-}
+public:
+    NodeTransportStub() noexcept
+        : message_handler_(nullptr)
+    {
+    }
+
+    transport::TransportStatus Initialize() override
+    {
+        if (message_handler_ != nullptr)
+        {
+            message_handler_->OnTransportAvailabilityChanged(true);
+        }
+
+        return transport::TransportStatus::kSuccess;
+    }
+
+    transport::TransportStatus Shutdown() override
+    {
+        if (message_handler_ != nullptr)
+        {
+            message_handler_->OnTransportAvailabilityChanged(false);
+        }
+
+        return transport::TransportStatus::kSuccess;
+    }
+
+    transport::TransportStatus SendRequest(
+        const transport::TransportMessage& transport_message) override
+    {
+        static_cast<void>(transport_message);
+        return transport::TransportStatus::kSuccess;
+    }
+
+    transport::TransportStatus SendResponse(
+        const transport::TransportMessage& transport_message) override
+    {
+        static_cast<void>(transport_message);
+        return transport::TransportStatus::kSuccess;
+    }
+
+    transport::TransportStatus SendEvent(
+        const transport::TransportMessage& transport_message) override
+    {
+        static_cast<void>(transport_message);
+        return transport::TransportStatus::kSuccess;
+    }
+
+    void SetMessageHandler(
+        transport::TransportMessageHandlerInterface* const message_handler) noexcept override
+    {
+        message_handler_ = message_handler;
+    }
+
+private:
+    transport::TransportMessageHandlerInterface* message_handler_;
+};
 
 }  // namespace
+}  // namespace lighting
+}  // namespace body_control
 
 int main()
 {
-    using namespace body_control::lighting;
+    body_control::lighting::application::RearLightingFunctionManager
+        rear_lighting_function_manager {};
+    body_control::lighting::NodeTransportStub transport_adapter {};
+    body_control::lighting::service::RearLightingServiceProvider
+        rear_lighting_service_provider {
+            rear_lighting_function_manager,
+            transport_adapter};
 
-    std::signal(SIGINT, HandleSignal);
-    std::signal(SIGTERM, HandleSignal);
+    const body_control::lighting::service::ServiceStatus init_status =
+        rear_lighting_service_provider.Initialize();
 
-    platform::linux::LinuxDiagnosticLogger diagnostic_logger {};
-    static_cast<void>(diagnostic_logger.Initialize());
-    diagnostic_logger.LogInfo("Rear lighting node simulator starting");
-
-    transport::vsomeip::VsomeipRuntimeManager runtime_manager {};
-    transport::vsomeip::VsomeipServerAdapter transport_adapter {runtime_manager};
-    application::RearLightingFunctionManager rear_lighting_function_manager {};
-    service::RearLightingServiceProvider rear_lighting_service_provider {
-        transport_adapter,
-        rear_lighting_function_manager};
-
-    if (rear_lighting_function_manager.Initialize() !=
-        application::FunctionManagerStatus::kSuccess)
+    if (init_status != body_control::lighting::service::ServiceStatus::kSuccess)
     {
-        diagnostic_logger.LogError("Failed to initialize rear lighting function manager");
+        std::cerr << "Failed to initialize rear lighting node simulator.\n";
         return 1;
     }
 
-    if (rear_lighting_service_provider.Initialize() !=
-        service::ServiceStatus::kSuccess)
-    {
-        diagnostic_logger.LogError("Failed to initialize rear lighting service provider");
-        return 1;
-    }
-
-    domain::NodeHealthStatus node_health_status {};
-    node_health_status.health_state = domain::NodeHealthState::kHealthy;
-    node_health_status.ethernet_link_available = true;
-    node_health_status.service_available = true;
-    node_health_status.lamp_driver_fault_present = false;
-    node_health_status.active_fault_count = 0U;
-
-    rear_lighting_service_provider.UpdateNodeHealthStatus(node_health_status);
-    static_cast<void>(
-        rear_lighting_service_provider.PublishNodeHealthStatus(node_health_status));
-
-    diagnostic_logger.LogInfo("Rear lighting node simulator running");
-
-    while (g_keep_running.load())
-    {
-        static_cast<void>(
-            rear_lighting_service_provider.PublishNodeHealthStatus(node_health_status));
-
-        std::this_thread::sleep_for(std::chrono::milliseconds {500});
-    }
-
-    diagnostic_logger.LogInfo("Rear lighting node simulator shutting down");
+    std::cout << "Rear lighting node simulator initialized.\n";
+    std::cout << "Provider is ready for command handling and status publication.\n";
 
     static_cast<void>(rear_lighting_service_provider.Shutdown());
-
     return 0;
 }

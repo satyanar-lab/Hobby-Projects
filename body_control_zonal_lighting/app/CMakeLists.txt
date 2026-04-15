@@ -1,35 +1,55 @@
-if (NOT BCZL_BUILD_APPS)
-    return()
-endif()
+add_executable(diagnostic_console
+    diagnostic_console/main.cpp
+)
 
-add_executable(bczl_central_zone_controller
-    central_zone_controller/main.cpp)
-
-target_link_libraries(
-    bczl_central_zone_controller
+target_link_libraries(diagnostic_console
     PRIVATE
-        bczl::core)
+        body_control_lighting_core
+)
 
-add_executable(bczl_diagnostic_console
-    diagnostic_console/main.cpp)
-
-target_link_libraries(
-    bczl_diagnostic_console
+target_include_directories(diagnostic_console
     PRIVATE
-        bczl::core)
+        ${PROJECT_SOURCE_DIR}/include
+)
 
-add_executable(bczl_hmi_control_panel
-    hmi_control_panel/main.cpp)
+add_executable(hmi_control_panel
+    hmi_control_panel/main.cpp
+)
 
-target_link_libraries(
-    bczl_hmi_control_panel
+target_link_libraries(hmi_control_panel
     PRIVATE
-        bczl::core)
+        body_control_lighting_core
+)
 
-add_executable(bczl_rear_lighting_node_simulator
-    rear_lighting_node_simulator/main.cpp)
-
-target_link_libraries(
-    bczl_rear_lighting_node_simulator
+target_include_directories(hmi_control_panel
     PRIVATE
-        bczl::core)
+        ${PROJECT_SOURCE_DIR}/include
+)
+
+add_executable(central_zone_controller_app
+    central_zone_controller/main.cpp
+)
+
+target_link_libraries(central_zone_controller_app
+    PRIVATE
+        body_control_lighting_core
+)
+
+target_include_directories(central_zone_controller_app
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+)
+
+add_executable(rear_lighting_node_simulator
+    rear_lighting_node_simulator/main.cpp
+)
+
+target_link_libraries(rear_lighting_node_simulator
+    PRIVATE
+        body_control_lighting_core
+)
+
+target_include_directories(rear_lighting_node_simulator
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+)

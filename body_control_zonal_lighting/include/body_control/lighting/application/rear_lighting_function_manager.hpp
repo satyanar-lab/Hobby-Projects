@@ -1,66 +1,40 @@
-#ifndef BODY_CONTROL_LIGHTING_APPLICATION_REAR_LIGHTING_FUNCTION_MANAGER_HPP_
-#define BODY_CONTROL_LIGHTING_APPLICATION_REAR_LIGHTING_FUNCTION_MANAGER_HPP_
+#ifndef BODY_CONTROL_LIGHTING_APPLICATION_REAR_LIGHTING_FUNCTION_MANAGER_HPP
+#define BODY_CONTROL_LIGHTING_APPLICATION_REAR_LIGHTING_FUNCTION_MANAGER_HPP
 
 #include <array>
-#include <chrono>
 #include <cstddef>
 
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
 
-namespace body_control::lighting::application
+namespace body_control
+{
+namespace lighting
+{
+namespace application
 {
 
-/**
- * @brief Node-side lighting behavior manager.
- *
- * This component applies logical lamp commands and produces runtime lamp
- * statuses. It is intended to be reusable across:
- * - Linux simulator node
- * - STM32 target node
- */
-class RearLightingFunctionManager
+class RearLightingFunctionManager final
 {
 public:
     RearLightingFunctionManager() noexcept;
-    ~RearLightingFunctionManager() = default;
 
-    RearLightingFunctionManager(const RearLightingFunctionManager&) = delete;
-    RearLightingFunctionManager& operator=(const RearLightingFunctionManager&) = delete;
-    RearLightingFunctionManager(RearLightingFunctionManager&&) = delete;
-    RearLightingFunctionManager& operator=(RearLightingFunctionManager&&) = delete;
+    bool ApplyCommand(
+        const domain::LampCommand& lamp_command) noexcept;
 
-    void Reset() noexcept;
-
-    [[nodiscard]] bool ApplyCommand(
-        const domain::LampCommand& command) noexcept;
-
-    void ProcessMainLoop(
-        std::chrono::milliseconds elapsed_time) noexcept;
-
-    [[nodiscard]] bool GetLampStatus(
-        domain::LampFunction function,
+    bool GetLampStatus(
+        domain::LampFunction lamp_function,
         domain::LampStatus& lamp_status) const noexcept;
 
 private:
-    static constexpr std::size_t kManagedLampCount {5U};
+    static std::size_t LampFunctionToIndex(
+        domain::LampFunction lamp_function) noexcept;
 
-    [[nodiscard]] static bool TryGetIndex(
-        domain::LampFunction function,
-        std::size_t& index) noexcept;
-
-    void UpdateBlinkingOutputs() noexcept;
-    void UpdateSteadyOutputs() noexcept;
-
-    [[nodiscard]] bool IsHazardActive() const noexcept;
-    [[nodiscard]] bool IsLeftIndicatorActive() const noexcept;
-    [[nodiscard]] bool IsRightIndicatorActive() const noexcept;
-
-    std::array<domain::LampStatus, kManagedLampCount> lamp_status_cache_ {};
-    bool blink_phase_on_ {true};
-    std::chrono::milliseconds blink_phase_elapsed_ {0};
+    std::array<domain::LampStatus, 5U> lamp_statuses_;
 };
 
-}  // namespace body_control::lighting::application
+}  // namespace application
+}  // namespace lighting
+}  // namespace body_control
 
-#endif  // BODY_CONTROL_LIGHTING_APPLICATION_REAR_LIGHTING_FUNCTION_MANAGER_HPP_
+#endif  // BODY_CONTROL_LIGHTING_APPLICATION_REAR_LIGHTING_FUNCTION_MANAGER_HPP

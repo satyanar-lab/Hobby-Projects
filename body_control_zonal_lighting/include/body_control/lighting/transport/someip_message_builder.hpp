@@ -1,54 +1,43 @@
-#ifndef BODY_CONTROL_LIGHTING_TRANSPORT_SOMEIP_MESSAGE_BUILDER_HPP_
-#define BODY_CONTROL_LIGHTING_TRANSPORT_SOMEIP_MESSAGE_BUILDER_HPP_
+#ifndef BODY_CONTROL_LIGHTING_TRANSPORT_SOMEIP_MESSAGE_BUILDER_HPP
+#define BODY_CONTROL_LIGHTING_TRANSPORT_SOMEIP_MESSAGE_BUILDER_HPP
 
-#include <cstddef>
-#include <cstdint>
-
-#include "body_control/lighting/domain/lighting_service_ids.hpp"
+#include "body_control/lighting/domain/lamp_command_types.hpp"
+#include "body_control/lighting/domain/lamp_status_types.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
-namespace body_control::lighting::transport
+namespace body_control
+{
+namespace lighting
+{
+namespace transport
 {
 
-/**
- * @brief Utility class for constructing transport messages using the project
- *        SOME/IP-style service identifiers.
- */
-class SomeIpMessageBuilder
+class SomeipMessageBuilder
 {
 public:
-    SomeIpMessageBuilder() = delete;
-    ~SomeIpMessageBuilder() = delete;
+    static TransportMessage BuildSetLampCommandRequest(
+        const domain::LampCommand& lamp_command,
+        std::uint16_t client_id,
+        std::uint16_t session_id);
 
-    [[nodiscard]] static TransportMessage BuildSetLampCommandRequest(
-        const std::uint8_t* payload_data,
-        std::size_t payload_length) noexcept;
+    static TransportMessage BuildGetLampStatusRequest(
+        domain::LampFunction lamp_function,
+        std::uint16_t client_id,
+        std::uint16_t session_id);
 
-    [[nodiscard]] static TransportMessage BuildGetLampStatusRequest(
-        const std::uint8_t* payload_data,
-        std::size_t payload_length) noexcept;
+    static TransportMessage BuildGetNodeHealthRequest(
+        std::uint16_t client_id,
+        std::uint16_t session_id);
 
-    [[nodiscard]] static TransportMessage BuildGetNodeHealthRequest(
-        const std::uint8_t* payload_data,
-        std::size_t payload_length) noexcept;
+    static TransportMessage BuildLampStatusEvent(
+        const domain::LampStatus& lamp_status);
 
-    [[nodiscard]] static TransportMessage BuildLampStatusResponse(
-        const std::uint8_t* payload_data,
-        std::size_t payload_length) noexcept;
-
-    [[nodiscard]] static TransportMessage BuildNodeHealthResponse(
-        const std::uint8_t* payload_data,
-        std::size_t payload_length) noexcept;
-
-    [[nodiscard]] static TransportMessage BuildLampStatusEvent(
-        const std::uint8_t* payload_data,
-        std::size_t payload_length) noexcept;
-
-    [[nodiscard]] static TransportMessage BuildNodeHealthEvent(
-        const std::uint8_t* payload_data,
-        std::size_t payload_length) noexcept;
+    static TransportMessage BuildNodeHealthEvent(
+        const domain::NodeHealthStatus& node_health_status);
 };
 
-}  // namespace body_control::lighting::transport
+}  // namespace transport
+}  // namespace lighting
+}  // namespace body_control
 
-#endif  // BODY_CONTROL_LIGHTING_TRANSPORT_SOMEIP_MESSAGE_BUILDER_HPP_
+#endif  // BODY_CONTROL_LIGHTING_TRANSPORT_SOMEIP_MESSAGE_BUILDER_HPP

@@ -113,72 +113,71 @@ preinstall/fast:
 
 # clear depends
 depend:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(CMAKE_COMMAND) -P /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles/VerifyGlobs.cmake
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
-app/CMakeFiles/bczl_central_zone_controller.dir/rule:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 app/CMakeFiles/bczl_central_zone_controller.dir/rule
-.PHONY : app/CMakeFiles/bczl_central_zone_controller.dir/rule
+app/CMakeFiles/diagnostic_console.dir/rule:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 app/CMakeFiles/diagnostic_console.dir/rule
+.PHONY : app/CMakeFiles/diagnostic_console.dir/rule
 
 # Convenience name for target.
-bczl_central_zone_controller: app/CMakeFiles/bczl_central_zone_controller.dir/rule
-.PHONY : bczl_central_zone_controller
+diagnostic_console: app/CMakeFiles/diagnostic_console.dir/rule
+.PHONY : diagnostic_console
 
 # fast build rule for target.
-bczl_central_zone_controller/fast:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_central_zone_controller.dir/build.make app/CMakeFiles/bczl_central_zone_controller.dir/build
-.PHONY : bczl_central_zone_controller/fast
+diagnostic_console/fast:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/diagnostic_console.dir/build.make app/CMakeFiles/diagnostic_console.dir/build
+.PHONY : diagnostic_console/fast
 
 # Convenience name for target.
-app/CMakeFiles/bczl_diagnostic_console.dir/rule:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 app/CMakeFiles/bczl_diagnostic_console.dir/rule
-.PHONY : app/CMakeFiles/bczl_diagnostic_console.dir/rule
+app/CMakeFiles/hmi_control_panel.dir/rule:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 app/CMakeFiles/hmi_control_panel.dir/rule
+.PHONY : app/CMakeFiles/hmi_control_panel.dir/rule
 
 # Convenience name for target.
-bczl_diagnostic_console: app/CMakeFiles/bczl_diagnostic_console.dir/rule
-.PHONY : bczl_diagnostic_console
+hmi_control_panel: app/CMakeFiles/hmi_control_panel.dir/rule
+.PHONY : hmi_control_panel
 
 # fast build rule for target.
-bczl_diagnostic_console/fast:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_diagnostic_console.dir/build.make app/CMakeFiles/bczl_diagnostic_console.dir/build
-.PHONY : bczl_diagnostic_console/fast
+hmi_control_panel/fast:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/hmi_control_panel.dir/build.make app/CMakeFiles/hmi_control_panel.dir/build
+.PHONY : hmi_control_panel/fast
 
 # Convenience name for target.
-app/CMakeFiles/bczl_hmi_control_panel.dir/rule:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 app/CMakeFiles/bczl_hmi_control_panel.dir/rule
-.PHONY : app/CMakeFiles/bczl_hmi_control_panel.dir/rule
+app/CMakeFiles/central_zone_controller_app.dir/rule:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 app/CMakeFiles/central_zone_controller_app.dir/rule
+.PHONY : app/CMakeFiles/central_zone_controller_app.dir/rule
 
 # Convenience name for target.
-bczl_hmi_control_panel: app/CMakeFiles/bczl_hmi_control_panel.dir/rule
-.PHONY : bczl_hmi_control_panel
+central_zone_controller_app: app/CMakeFiles/central_zone_controller_app.dir/rule
+.PHONY : central_zone_controller_app
 
 # fast build rule for target.
-bczl_hmi_control_panel/fast:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_hmi_control_panel.dir/build.make app/CMakeFiles/bczl_hmi_control_panel.dir/build
-.PHONY : bczl_hmi_control_panel/fast
+central_zone_controller_app/fast:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/central_zone_controller_app.dir/build.make app/CMakeFiles/central_zone_controller_app.dir/build
+.PHONY : central_zone_controller_app/fast
 
 # Convenience name for target.
-app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/rule:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/rule
-.PHONY : app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/rule
+app/CMakeFiles/rear_lighting_node_simulator.dir/rule:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 app/CMakeFiles/rear_lighting_node_simulator.dir/rule
+.PHONY : app/CMakeFiles/rear_lighting_node_simulator.dir/rule
 
 # Convenience name for target.
-bczl_rear_lighting_node_simulator: app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/rule
-.PHONY : bczl_rear_lighting_node_simulator
+rear_lighting_node_simulator: app/CMakeFiles/rear_lighting_node_simulator.dir/rule
+.PHONY : rear_lighting_node_simulator
 
 # fast build rule for target.
-bczl_rear_lighting_node_simulator/fast:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/build.make app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/build
-.PHONY : bczl_rear_lighting_node_simulator/fast
+rear_lighting_node_simulator/fast:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/rear_lighting_node_simulator.dir/build.make app/CMakeFiles/rear_lighting_node_simulator.dir/build
+.PHONY : rear_lighting_node_simulator/fast
 
 central_zone_controller/main.o: central_zone_controller/main.cpp.o
 .PHONY : central_zone_controller/main.o
 
 # target to build an object file
 central_zone_controller/main.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_central_zone_controller.dir/build.make app/CMakeFiles/bczl_central_zone_controller.dir/central_zone_controller/main.cpp.o
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/central_zone_controller_app.dir/build.make app/CMakeFiles/central_zone_controller_app.dir/central_zone_controller/main.cpp.o
 .PHONY : central_zone_controller/main.cpp.o
 
 central_zone_controller/main.i: central_zone_controller/main.cpp.i
@@ -186,7 +185,7 @@ central_zone_controller/main.i: central_zone_controller/main.cpp.i
 
 # target to preprocess a source file
 central_zone_controller/main.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_central_zone_controller.dir/build.make app/CMakeFiles/bczl_central_zone_controller.dir/central_zone_controller/main.cpp.i
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/central_zone_controller_app.dir/build.make app/CMakeFiles/central_zone_controller_app.dir/central_zone_controller/main.cpp.i
 .PHONY : central_zone_controller/main.cpp.i
 
 central_zone_controller/main.s: central_zone_controller/main.cpp.s
@@ -194,7 +193,7 @@ central_zone_controller/main.s: central_zone_controller/main.cpp.s
 
 # target to generate assembly for a file
 central_zone_controller/main.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_central_zone_controller.dir/build.make app/CMakeFiles/bczl_central_zone_controller.dir/central_zone_controller/main.cpp.s
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/central_zone_controller_app.dir/build.make app/CMakeFiles/central_zone_controller_app.dir/central_zone_controller/main.cpp.s
 .PHONY : central_zone_controller/main.cpp.s
 
 diagnostic_console/main.o: diagnostic_console/main.cpp.o
@@ -202,7 +201,7 @@ diagnostic_console/main.o: diagnostic_console/main.cpp.o
 
 # target to build an object file
 diagnostic_console/main.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_diagnostic_console.dir/build.make app/CMakeFiles/bczl_diagnostic_console.dir/diagnostic_console/main.cpp.o
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/diagnostic_console.dir/build.make app/CMakeFiles/diagnostic_console.dir/diagnostic_console/main.cpp.o
 .PHONY : diagnostic_console/main.cpp.o
 
 diagnostic_console/main.i: diagnostic_console/main.cpp.i
@@ -210,7 +209,7 @@ diagnostic_console/main.i: diagnostic_console/main.cpp.i
 
 # target to preprocess a source file
 diagnostic_console/main.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_diagnostic_console.dir/build.make app/CMakeFiles/bczl_diagnostic_console.dir/diagnostic_console/main.cpp.i
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/diagnostic_console.dir/build.make app/CMakeFiles/diagnostic_console.dir/diagnostic_console/main.cpp.i
 .PHONY : diagnostic_console/main.cpp.i
 
 diagnostic_console/main.s: diagnostic_console/main.cpp.s
@@ -218,7 +217,7 @@ diagnostic_console/main.s: diagnostic_console/main.cpp.s
 
 # target to generate assembly for a file
 diagnostic_console/main.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_diagnostic_console.dir/build.make app/CMakeFiles/bczl_diagnostic_console.dir/diagnostic_console/main.cpp.s
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/diagnostic_console.dir/build.make app/CMakeFiles/diagnostic_console.dir/diagnostic_console/main.cpp.s
 .PHONY : diagnostic_console/main.cpp.s
 
 hmi_control_panel/main.o: hmi_control_panel/main.cpp.o
@@ -226,7 +225,7 @@ hmi_control_panel/main.o: hmi_control_panel/main.cpp.o
 
 # target to build an object file
 hmi_control_panel/main.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_hmi_control_panel.dir/build.make app/CMakeFiles/bczl_hmi_control_panel.dir/hmi_control_panel/main.cpp.o
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/hmi_control_panel.dir/build.make app/CMakeFiles/hmi_control_panel.dir/hmi_control_panel/main.cpp.o
 .PHONY : hmi_control_panel/main.cpp.o
 
 hmi_control_panel/main.i: hmi_control_panel/main.cpp.i
@@ -234,7 +233,7 @@ hmi_control_panel/main.i: hmi_control_panel/main.cpp.i
 
 # target to preprocess a source file
 hmi_control_panel/main.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_hmi_control_panel.dir/build.make app/CMakeFiles/bczl_hmi_control_panel.dir/hmi_control_panel/main.cpp.i
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/hmi_control_panel.dir/build.make app/CMakeFiles/hmi_control_panel.dir/hmi_control_panel/main.cpp.i
 .PHONY : hmi_control_panel/main.cpp.i
 
 hmi_control_panel/main.s: hmi_control_panel/main.cpp.s
@@ -242,7 +241,7 @@ hmi_control_panel/main.s: hmi_control_panel/main.cpp.s
 
 # target to generate assembly for a file
 hmi_control_panel/main.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_hmi_control_panel.dir/build.make app/CMakeFiles/bczl_hmi_control_panel.dir/hmi_control_panel/main.cpp.s
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/hmi_control_panel.dir/build.make app/CMakeFiles/hmi_control_panel.dir/hmi_control_panel/main.cpp.s
 .PHONY : hmi_control_panel/main.cpp.s
 
 rear_lighting_node_simulator/main.o: rear_lighting_node_simulator/main.cpp.o
@@ -250,7 +249,7 @@ rear_lighting_node_simulator/main.o: rear_lighting_node_simulator/main.cpp.o
 
 # target to build an object file
 rear_lighting_node_simulator/main.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/build.make app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/rear_lighting_node_simulator/main.cpp.o
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/rear_lighting_node_simulator.dir/build.make app/CMakeFiles/rear_lighting_node_simulator.dir/rear_lighting_node_simulator/main.cpp.o
 .PHONY : rear_lighting_node_simulator/main.cpp.o
 
 rear_lighting_node_simulator/main.i: rear_lighting_node_simulator/main.cpp.i
@@ -258,7 +257,7 @@ rear_lighting_node_simulator/main.i: rear_lighting_node_simulator/main.cpp.i
 
 # target to preprocess a source file
 rear_lighting_node_simulator/main.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/build.make app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/rear_lighting_node_simulator/main.cpp.i
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/rear_lighting_node_simulator.dir/build.make app/CMakeFiles/rear_lighting_node_simulator.dir/rear_lighting_node_simulator/main.cpp.i
 .PHONY : rear_lighting_node_simulator/main.cpp.i
 
 rear_lighting_node_simulator/main.s: rear_lighting_node_simulator/main.cpp.s
@@ -266,7 +265,7 @@ rear_lighting_node_simulator/main.s: rear_lighting_node_simulator/main.cpp.s
 
 # target to generate assembly for a file
 rear_lighting_node_simulator/main.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/build.make app/CMakeFiles/bczl_rear_lighting_node_simulator.dir/rear_lighting_node_simulator/main.cpp.s
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/rear_lighting_node_simulator.dir/build.make app/CMakeFiles/rear_lighting_node_simulator.dir/rear_lighting_node_simulator/main.cpp.s
 .PHONY : rear_lighting_node_simulator/main.cpp.s
 
 # Help Target
@@ -277,10 +276,10 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... bczl_central_zone_controller"
-	@echo "... bczl_diagnostic_console"
-	@echo "... bczl_hmi_control_panel"
-	@echo "... bczl_rear_lighting_node_simulator"
+	@echo "... central_zone_controller_app"
+	@echo "... diagnostic_console"
+	@echo "... hmi_control_panel"
+	@echo "... rear_lighting_node_simulator"
 	@echo "... central_zone_controller/main.o"
 	@echo "... central_zone_controller/main.i"
 	@echo "... central_zone_controller/main.s"
@@ -304,7 +303,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(CMAKE_COMMAND) -P /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles/VerifyGlobs.cmake
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

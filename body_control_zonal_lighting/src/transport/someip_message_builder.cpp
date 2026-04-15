@@ -1,97 +1,170 @@
 #include "body_control/lighting/transport/someip_message_builder.hpp"
 
+#include <cstdint>
+
 #include "body_control/lighting/domain/lighting_service_ids.hpp"
 
-namespace body_control::lighting::transport
+namespace body_control
+{
+namespace lighting
+{
+namespace transport
 {
 namespace
 {
 
-[[nodiscard]] TransportMessage BuildMessage(
-    const std::uint16_t message_id,
-    const std::uint8_t* payload_data,
-    const std::size_t payload_length) noexcept
+void AppendUint8(
+    std::vector<std::uint8_t>& payload,
+    const std::uint8_t value)
 {
-    TransportMessage message {};
-    message.service_id = domain::service_ids::kRearLightingServiceId;
-    message.instance_id = domain::service_ids::kRearLightingServiceInstanceId;
-    message.message_id = message_id;
-    message.payload_data = payload_data;
-    message.payload_length = payload_length;
+    payload.push_back(value);
+}
 
-    return message;
+void AppendUint32(
+    std::vector<std::uint8_t>& payload,
+    const std::uint32_t value)
+{
+    payload.push_back(static_cast<std::uint8_t>((value >> 24U) & 0xFFU));
+    payload.push_back(static_cast<std::uint8_t>((value >> 16U) & 0xFFU));
+    payload.push_back(static_cast<std::uint8_t>((value >> 8U) & 0xFFU));
+    payload.push_back(static_cast<std::uint8_t>(value & 0xFFU));
+}
+
+TransportMessage BuildBaseMessage(
+    const std::uint16_t method_or_event_id,
+    const std::uint16_t client_id,
+    const std::uint16_t session_id,
+    const bool is_event)
+{
+    TransportMessage transport_message {};
+
+    transport_message.service_id =
+        domain::rear_lighting_service::kServiceId;
+    transport_message.instance_id =
+        domain::rear_lighting_service::kInstanceId;
+    transport_message.method_or_event_id = method_or_event_id;
+    transport_message.client_id = client_id;
+    transport_message.session_id = session_id;
+    transport_message.is_event = is_event;
+    transport_message.is_reliable = true;
+
+    return transport_message;
 }
 
 }  // namespace
 
-TransportMessage SomeIpMessageBuilder::BuildSetLampCommandRequest(
-    const std::uint8_t* payload_data,
-    const std::size_t payload_length) noexcept
+TransportMessage SomeipMessageBuilder::BuildSetLampCommandRequest(
+    const domain::LampCommand& lamp_command,
+    const std::uint16_t client_id,
+    const std::uint16_t session_id)
 {
-    return BuildMessage(
-        domain::service_ids::kSetLampCommandMethodId,
-        payload_data,
-        payload_length);
+    TransportMessage transport_message {
+        BuildBaseMessage(
+            domain::rear_lighting_service::kSetLampCommandMethodId,
+            client_id,
+            session_id,
+            false)};
+
+    AppendUint8(
+        transport_message.payload,
+        static_cast<std::uint8_t>(lamp_command.function));
+    AppendUint8(
+        transport_message.payload,
+        static_cast<std::uint8_t>(lamp_command.action));
+    AppendUint8(
+        transport_message.payload,
+        static_cast<std::uint8_t>(lamp_command.source));
+    AppendUint32(
+        transport_message.payload,
+        lamp_command.sequence_counter);
+
+    return transport_message;
 }
 
-TransportMessage SomeIpMessageBuilder::BuildGetLampStatusRequest(
-    const std::uint8_t* payload_data,
-    const std::size_t payload_length) noexcept
+TransportMessage SomeipMessageBuilder::BuildGetLampStatusRequest(
+    const domain::LampFunction lamp_function,
+    const std::uint16_t client_id,
+    const std::uint16_t session_id)
 {
-    return BuildMessage(
-        domain::service_ids::kGetLampStatusMethodId,
-        payload_data,
-        payload_length);
+    TransportMessage transport_message {
+        BuildBaseMessage(
+            domain::rear_lighting_service::kGetLampStatusMethodId,
+            client_id,
+            session_id,
+            false)};
+
+    AppendUint8(
+        transport_message.payload,
+        static_cast<std::uint8_t>(lamp_function));
+
+    return transport_message;
 }
 
-TransportMessage SomeIpMessageBuilder::BuildGetNodeHealthRequest(
-    const std::uint8_t* payload_data,
-    const std::size_t payload_length) noexcept
+TransportMessage SomeipMessageBuilder::BuildGetNodeHealthRequest(
+    const std::uint16_t client_id,
+    const std::uint16_t session_id)
 {
-    return BuildMessage(
-        domain::service_ids::kGetNodeHealthMethodId,
-        payload_data,
-        payload_length);
+    return BuildBaseMessage(
+        domain::rear_lighting_service::kGetNodeHealthMethodId,
+        client_id,
+        session_id,
+        false);
 }
 
-TransportMessage SomeIpMessageBuilder::BuildLampStatusResponse(
-    const std::uint8_t* payload_data,
-    const std::size_t payload_length) noexcept
+TransportMessage SomeipMessageBuilder::BuildLampStatusEvent(
+    const domain::LampStatus& lamp_status)
 {
-    return BuildMessage(
-        domain::service_ids::kGetLampStatusMethodId,
-        payload_data,
-        payload_length);
+    TransportMessage transport_message {
+        BuildBaseMessage(
+            domain::rear_lighting_service::kLampStatusEventId,
+            0U,
+            0U,
+            true)};
+
+    AppendUint8(
+        transport_message.payload,
+        static_cast<std::uint8_t>(lamp_status.function));
+    AppendUint8(
+        transport_message.payload,
+        static_cast<std::uint8_t>(lamp_status.output_state));
+    AppendUint8(
+        transport_message.payload,
+        static_cast<std::uint8_t>(lamp_status.command_applied ? 1U : 0U));
+    AppendUint32(
+        transport_message.payload,
+        lamp_status.last_sequence_counter);
+
+    return transport_message;
 }
 
-TransportMessage SomeIpMessageBuilder::BuildNodeHealthResponse(
-    const std::uint8_t* payload_data,
-    const std::size_t payload_length) noexcept
+TransportMessage SomeipMessageBuilder::BuildNodeHealthEvent(
+    const domain::NodeHealthStatus& node_health_status)
 {
-    return BuildMessage(
-        domain::service_ids::kGetNodeHealthMethodId,
-        payload_data,
-        payload_length);
+    TransportMessage transport_message {
+        BuildBaseMessage(
+            domain::rear_lighting_service::kNodeHealthEventId,
+            0U,
+            0U,
+            true)};
+
+    AppendUint8(
+        transport_message.payload,
+        static_cast<std::uint8_t>(node_health_status.node_state));
+    AppendUint8(
+        transport_message.payload,
+        static_cast<std::uint8_t>(
+            node_health_status.ethernet_link_up ? 1U : 0U));
+    AppendUint8(
+        transport_message.payload,
+        static_cast<std::uint8_t>(
+            node_health_status.service_available ? 1U : 0U));
+    AppendUint32(
+        transport_message.payload,
+        node_health_status.last_sequence_counter);
+
+    return transport_message;
 }
 
-TransportMessage SomeIpMessageBuilder::BuildLampStatusEvent(
-    const std::uint8_t* payload_data,
-    const std::size_t payload_length) noexcept
-{
-    return BuildMessage(
-        domain::service_ids::kLampStatusEventId,
-        payload_data,
-        payload_length);
-}
-
-TransportMessage SomeIpMessageBuilder::BuildNodeHealthEvent(
-    const std::uint8_t* payload_data,
-    const std::size_t payload_length) noexcept
-{
-    return BuildMessage(
-        domain::service_ids::kNodeHealthEventId,
-        payload_data,
-        payload_length);
-}
-
-}  // namespace body_control::lighting::transport
+}  // namespace transport
+}  // namespace lighting
+}  // namespace body_control

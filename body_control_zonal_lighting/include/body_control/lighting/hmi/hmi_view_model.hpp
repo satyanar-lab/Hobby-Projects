@@ -1,31 +1,22 @@
-#ifndef BODY_CONTROL_LIGHTING_HMI_HMI_VIEW_MODEL_HPP_
-#define BODY_CONTROL_LIGHTING_HMI_HMI_VIEW_MODEL_HPP_
+#ifndef BODY_CONTROL_LIGHTING_HMI_HMI_VIEW_MODEL_HPP
+#define BODY_CONTROL_LIGHTING_HMI_HMI_VIEW_MODEL_HPP
 
-#include <cstdint>
+#include <array>
+#include <cstddef>
 
 #include "body_control/lighting/domain/lamp_status_types.hpp"
 
-namespace body_control::lighting::hmi
+namespace body_control
+{
+namespace lighting
+{
+namespace hmi
 {
 
-/**
- * @brief UI-facing state container for the control panel.
- *
- * This class intentionally stays framework-neutral so it can later be used by
- * different GUI technologies.
- */
-class HmiViewModel
+class HmiViewModel final
 {
 public:
-    HmiViewModel() noexcept = default;
-    ~HmiViewModel() = default;
-
-    HmiViewModel(const HmiViewModel&) = default;
-    HmiViewModel& operator=(const HmiViewModel&) = default;
-    HmiViewModel(HmiViewModel&&) = default;
-    HmiViewModel& operator=(HmiViewModel&&) = default;
-
-    void Reset() noexcept;
+    HmiViewModel() noexcept;
 
     void UpdateLampStatus(
         const domain::LampStatus& lamp_status) noexcept;
@@ -33,21 +24,25 @@ public:
     void UpdateNodeHealthStatus(
         const domain::NodeHealthStatus& node_health_status) noexcept;
 
-    [[nodiscard]] bool IsLampFunctionActive(
-        domain::LampFunction function) const noexcept;
+    bool GetLampStatus(
+        domain::LampFunction lamp_function,
+        domain::LampStatus& lamp_status) const noexcept;
 
-    [[nodiscard]] domain::NodeHealthStatus GetNodeHealthStatus() const noexcept;
+    bool IsLampFunctionActive(
+        domain::LampFunction lamp_function) const noexcept;
+
+    domain::NodeHealthStatus GetNodeHealthStatus() const noexcept;
 
 private:
-    bool left_indicator_active_ {false};
-    bool right_indicator_active_ {false};
-    bool hazard_lamp_active_ {false};
-    bool park_lamp_active_ {false};
-    bool head_lamp_active_ {false};
+    static std::size_t LampFunctionToIndex(
+        domain::LampFunction lamp_function) noexcept;
 
-    domain::NodeHealthStatus node_health_status_ {};
+    std::array<domain::LampStatus, 5U> lamp_statuses_;
+    domain::NodeHealthStatus node_health_status_;
 };
 
-}  // namespace body_control::lighting::hmi
+}  // namespace hmi
+}  // namespace lighting
+}  // namespace body_control
 
-#endif  // BODY_CONTROL_LIGHTING_HMI_HMI_VIEW_MODEL_HPP_
+#endif  // BODY_CONTROL_LIGHTING_HMI_HMI_VIEW_MODEL_HPP

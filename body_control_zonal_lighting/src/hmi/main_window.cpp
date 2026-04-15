@@ -1,105 +1,99 @@
 #include "body_control/lighting/hmi/main_window.hpp"
 
-#include "body_control/lighting/application/central_zone_controller.hpp"
-
-namespace body_control::lighting::hmi
+namespace body_control
+{
+namespace lighting
+{
+namespace hmi
 {
 
 MainWindow::MainWindow(
     application::CentralZoneController& central_zone_controller) noexcept
     : central_zone_controller_(central_zone_controller)
+    , hmi_view_model_ {}
 {
 }
 
-MainWindowStatus MainWindow::ProcessAction(const HmiAction action)
+MainWindowStatus MainWindow::ProcessAction(
+    const HmiAction action)
 {
-    MainWindowStatus window_status {MainWindowStatus::kInvalidAction};
-
-    auto convert_controller_status =
-        [](const application::ControllerStatus controller_status) noexcept
-        -> MainWindowStatus
-    {
-        if (controller_status == application::ControllerStatus::kSuccess)
-        {
-            return MainWindowStatus::kSuccess;
-        }
-
-        return MainWindowStatus::kInvalidAction;
-    };
+    application::ControllerStatus controller_status {
+        application::ControllerStatus::kInvalidArgument};
 
     switch (action)
     {
     case HmiAction::kToggleLeftIndicator:
+    {
+        controller_status = central_zone_controller_.SendLampCommand(
+            domain::LampFunction::kLeftIndicator,
+            hmi_view_model_.IsLampFunctionActive(
+                domain::LampFunction::kLeftIndicator)
+                ? domain::LampCommandAction::kDeactivate
+                : domain::LampCommandAction::kActivate,
+            domain::CommandSource::kHmiControlPanel);
+        break;
+    }
+
     case HmiAction::kToggleRightIndicator:
+    {
+        controller_status = central_zone_controller_.SendLampCommand(
+            domain::LampFunction::kRightIndicator,
+            hmi_view_model_.IsLampFunctionActive(
+                domain::LampFunction::kRightIndicator)
+                ? domain::LampCommandAction::kDeactivate
+                : domain::LampCommandAction::kActivate,
+            domain::CommandSource::kHmiControlPanel);
+        break;
+    }
+
     case HmiAction::kToggleHazardLamp:
+    {
+        controller_status = central_zone_controller_.SendLampCommand(
+            domain::LampFunction::kHazardLamp,
+            hmi_view_model_.IsLampFunctionActive(
+                domain::LampFunction::kHazardLamp)
+                ? domain::LampCommandAction::kDeactivate
+                : domain::LampCommandAction::kActivate,
+            domain::CommandSource::kHmiControlPanel);
+        break;
+    }
+
     case HmiAction::kToggleParkLamp:
+    {
+        controller_status = central_zone_controller_.SendLampCommand(
+            domain::LampFunction::kParkLamp,
+            hmi_view_model_.IsLampFunctionActive(
+                domain::LampFunction::kParkLamp)
+                ? domain::LampCommandAction::kDeactivate
+                : domain::LampCommandAction::kActivate,
+            domain::CommandSource::kHmiControlPanel);
+        break;
+    }
+
     case HmiAction::kToggleHeadLamp:
     {
-        domain::LampFunction lamp_function {domain::LampFunction::kUnknown};
-
-        switch (action)
-        {
-        case HmiAction::kToggleLeftIndicator:
-            lamp_function = domain::LampFunction::kLeftIndicator;
-            break;
-
-        case HmiAction::kToggleRightIndicator:
-            lamp_function = domain::LampFunction::kRightIndicator;
-            break;
-
-        case HmiAction::kToggleHazardLamp:
-            lamp_function = domain::LampFunction::kHazardLamp;
-            break;
-
-        case HmiAction::kToggleParkLamp:
-            lamp_function = domain::LampFunction::kParkLamp;
-            break;
-
-        case HmiAction::kToggleHeadLamp:
-            lamp_function = domain::LampFunction::kHeadLamp;
-            break;
-
-        case HmiAction::kRequestNodeHealth:
-        case HmiAction::kUnknown:
-        default:
-            lamp_function = domain::LampFunction::kUnknown;
-            break;
-        }
-
-        const bool is_currently_active =
-            hmi_view_model_.IsLampFunctionActive(lamp_function);
-
-        const domain::LampCommandAction command_action =
-            is_currently_active
+        controller_status = central_zone_controller_.SendLampCommand(
+            domain::LampFunction::kHeadLamp,
+            hmi_view_model_.IsLampFunctionActive(
+                domain::LampFunction::kHeadLamp)
                 ? domain::LampCommandAction::kDeactivate
-                : domain::LampCommandAction::kActivate;
-
-        const application::ControllerStatus controller_status =
-            central_zone_controller_.SendLampCommand(
-                lamp_function,
-                command_action,
-                static_cast<domain::CommandSource>(0U));
-
-        window_status = convert_controller_status(controller_status);
+                : domain::LampCommandAction::kActivate,
+            domain::CommandSource::kHmiControlPanel);
         break;
     }
 
     case HmiAction::kRequestNodeHealth:
     {
-        const application::ControllerStatus controller_status =
-            central_zone_controller_.RequestNodeHealth();
-
-        window_status = convert_controller_status(controller_status);
+        controller_status = central_zone_controller_.RequestNodeHealth();
         break;
     }
 
     case HmiAction::kUnknown:
     default:
-        window_status = MainWindowStatus::kInvalidAction;
-        break;
+        return MainWindowStatus::kInvalidAction;
     }
 
-    return window_status;
+    return ConvertControllerStatus(controller_status);
 }
 
 void MainWindow::UpdateLampStatus(
@@ -119,4 +113,32 @@ const HmiViewModel& MainWindow::GetViewModel() const noexcept
     return hmi_view_model_;
 }
 
-}  // namespace body_control::lighting::hmi
+MainWindowStatus MainWindow::ConvertControllerStatus(
+    const application::ControllerStatus controller_status) noexcept
+{
+    MainWindowStatus main_window_status {MainWindowStatus::kControllerError};
+
+    switch (controller_status)
+    {
+    case application::ControllerStatus::kSuccess:
+        main_window_status = MainWindowStatus::kSuccess;
+        break;
+
+    case application::ControllerStatus::kInvalidArgument:
+        main_window_status = MainWindowStatus::kInvalidAction;
+        break;
+
+    case application::ControllerStatus::kNotInitialized:
+    case application::ControllerStatus::kNotAvailable:
+    case application::ControllerStatus::kServiceError:
+    default:
+        main_window_status = MainWindowStatus::kControllerError;
+        break;
+    }
+
+    return main_window_status;
+}
+
+}  // namespace hmi
+}  // namespace lighting
+}  // namespace body_control
