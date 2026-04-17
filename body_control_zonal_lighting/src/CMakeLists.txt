@@ -18,6 +18,7 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_COMMON
     domain/lighting_payload_codec.cpp
 
     hmi/hmi_command_mapper.cpp
+    hmi/hmi_display_strings.cpp
     hmi/hmi_view_model.cpp
     hmi/main_window.cpp
 

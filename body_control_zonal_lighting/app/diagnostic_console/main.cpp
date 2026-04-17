@@ -4,6 +4,7 @@
 #include "body_control/lighting/application/central_zone_controller.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
+#include "body_control/lighting/hmi/hmi_display_strings.hpp"
 #include "body_control/lighting/service/rear_lighting_service_consumer.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
@@ -49,17 +50,19 @@ void PrintLampStatus(
     body_control::lighting::application::CentralZoneController& central_zone_controller,
     const body_control::lighting::domain::LampFunction lamp_function)
 {
+    using body_control::lighting::hmi::LampFunctionToString;
+    using body_control::lighting::hmi::LampOutputStateToString;
+
     body_control::lighting::domain::LampStatus lamp_status {};
 
     if (central_zone_controller.GetCachedLampStatus(lamp_function, lamp_status))
     {
-        std::cout << "Lamp function "
-                  << static_cast<int>(lamp_status.function)
-                  << " -> output_state="
-                  << static_cast<int>(lamp_status.output_state)
+        std::cout << LampFunctionToString(lamp_status.function)
+                  << " -> "
+                  << LampOutputStateToString(lamp_status.output_state)
                   << ", applied="
                   << (lamp_status.command_applied ? "true" : "false")
-                  << ", sequence_counter="
+                  << ", seq="
                   << lamp_status.last_sequence_counter
                   << '\n';
     }
@@ -215,15 +218,16 @@ int main()
                 node_health_status =
                     central_zone_controller.GetCachedNodeHealthStatus();
 
-            std::cout << "Node health: health_state="
-                      << static_cast<int>(node_health_status.health_state)
-                      << ", ethernet_link_available="
-                      << (node_health_status.ethernet_link_available ? "true" : "false")
-                      << ", service_available="
-                      << (node_health_status.service_available ? "true" : "false")
-                      << ", lamp_driver_fault_present="
-                      << (node_health_status.lamp_driver_fault_present ? "true" : "false")
-                      << ", active_fault_count="
+            using body_control::lighting::hmi::NodeHealthStateToString;
+            std::cout << "Node health: "
+                      << NodeHealthStateToString(node_health_status.health_state)
+                      << ", eth="
+                      << (node_health_status.ethernet_link_available ? "up" : "down")
+                      << ", svc="
+                      << (node_health_status.service_available ? "up" : "down")
+                      << ", fault="
+                      << (node_health_status.lamp_driver_fault_present ? "yes" : "no")
+                      << ", fault_count="
                       << node_health_status.active_fault_count
                       << '\n';
             break;

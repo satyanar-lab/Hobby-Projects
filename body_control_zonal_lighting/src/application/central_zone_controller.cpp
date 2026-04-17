@@ -1,5 +1,7 @@
 #include "body_control/lighting/application/central_zone_controller.hpp"
 
+#include "body_control/lighting/domain/lighting_constants.hpp"
+
 namespace body_control
 {
 namespace lighting
@@ -13,8 +15,13 @@ CentralZoneController::CentralZoneController(
     , is_initialized_(false)
     , is_rear_node_available_(false)
     , next_sequence_counter_(1U)
+    , cache_mutex_ {}
     , cached_lamp_statuses_ {}
     , cached_node_health_status_ {}
+    , health_poll_active_(false)
+    , health_poll_mutex_ {}
+    , health_poll_cv_ {}
+    , health_poll_thread_ {}
 {
     cached_lamp_statuses_[0U].function = domain::LampFunction::kLeftIndicator;
     cached_lamp_statuses_[1U].function = domain::LampFunction::kRightIndicator;
@@ -34,11 +41,25 @@ ControllerStatus CentralZoneController::Initialize()
     is_rear_node_available_ =
         rear_lighting_service_consumer_.IsServiceAvailable();
 
+    if (is_initialized_)
+    {
+        health_poll_active_ = true;
+        health_poll_thread_ =
+            std::thread(&CentralZoneController::RunHealthPollLoop, this);
+    }
+
     return ConvertServiceStatus(service_status);
 }
 
 ControllerStatus CentralZoneController::Shutdown()
 {
+    health_poll_active_ = false;
+    health_poll_cv_.notify_all();
+    if (health_poll_thread_.joinable())
+    {
+        health_poll_thread_.join();
+    }
+
     rear_lighting_service_consumer_.SetEventListener(nullptr);
 
     const service::ServiceStatus service_status =
@@ -125,17 +146,20 @@ bool CentralZoneController::GetCachedLampStatus(
         return false;
     }
 
+    const std::lock_guard<std::mutex> lock(cache_mutex_);
     lamp_status = cached_lamp_statuses_[index];
     return true;
 }
 
 domain::NodeHealthStatus CentralZoneController::GetCachedNodeHealthStatus() const noexcept
 {
+    const std::lock_guard<std::mutex> lock(cache_mutex_);
     return cached_node_health_status_;
 }
 
 bool CentralZoneController::IsRearNodeAvailable() const noexcept
 {
+    const std::lock_guard<std::mutex> lock(cache_mutex_);
     return is_rear_node_available_;
 }
 
@@ -146,6 +170,7 @@ void CentralZoneController::OnLampStatusReceived(
 
     if (index < cached_lamp_statuses_.size())
     {
+        const std::lock_guard<std::mutex> lock(cache_mutex_);
         cached_lamp_statuses_[index] = lamp_status;
     }
 }
@@ -153,14 +178,37 @@ void CentralZoneController::OnLampStatusReceived(
 void CentralZoneController::OnNodeHealthStatusReceived(
     const domain::NodeHealthStatus& node_health_status)
 {
+    const std::lock_guard<std::mutex> lock(cache_mutex_);
     cached_node_health_status_ = node_health_status;
 }
 
 void CentralZoneController::OnServiceAvailabilityChanged(
     const bool is_service_available)
 {
+    const std::lock_guard<std::mutex> lock(cache_mutex_);
     is_rear_node_available_ = is_service_available;
     cached_node_health_status_.service_available = is_service_available;
+}
+
+void CentralZoneController::RunHealthPollLoop()
+{
+    while (health_poll_active_)
+    {
+        {
+            std::unique_lock<std::mutex> lock(health_poll_mutex_);
+            health_poll_cv_.wait_for(
+                lock,
+                domain::timing::kNodeHealthPublishPeriod,
+                [this] { return !health_poll_active_.load(); });
+        }
+
+        if (!health_poll_active_)
+        {
+            break;
+        }
+
+        static_cast<void>(RequestNodeHealth());
+    }
 }
 
 ControllerStatus CentralZoneController::ConvertServiceStatus(

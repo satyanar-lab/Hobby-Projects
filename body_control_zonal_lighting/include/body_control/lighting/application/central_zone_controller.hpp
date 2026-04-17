@@ -2,7 +2,11 @@
 #define BODY_CONTROL_LIGHTING_APPLICATION_CENTRAL_ZONE_CONTROLLER_HPP
 
 #include <array>
+#include <atomic>
+#include <condition_variable>
 #include <cstddef>
+#include <mutex>
+#include <thread>
 
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
@@ -68,12 +72,21 @@ private:
     static std::size_t LampFunctionToIndex(
         domain::LampFunction lamp_function) noexcept;
 
+    void RunHealthPollLoop();
+
     service::RearLightingServiceConsumerInterface& rear_lighting_service_consumer_;
     bool is_initialized_;
     bool is_rear_node_available_;
     std::uint16_t next_sequence_counter_;
+
+    mutable std::mutex cache_mutex_;
     std::array<domain::LampStatus, 5U> cached_lamp_statuses_;
     domain::NodeHealthStatus cached_node_health_status_;
+
+    std::atomic<bool> health_poll_active_;
+    std::mutex health_poll_mutex_;
+    std::condition_variable health_poll_cv_;
+    std::thread health_poll_thread_;
 };
 
 }  // namespace application

@@ -1,0 +1,22 @@
+
+# CMake build output (generated — never tracked)
+build/
+build-*/
+cmake-build-*/
+
+# Editor
+.vscode/settings.json
+.vscode/launch.json
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Compiled objects just in case any escape build/
+*.o
+*.obj
+*.a
+*.so
+*.dylib
