@@ -1,5 +1,8 @@
 #include "body_control/lighting/service/rear_lighting_service_provider.hpp"
 
+#include <array>
+
+#include "body_control/lighting/domain/lighting_constants.hpp"
 #include "body_control/lighting/transport/someip_message_builder.hpp"
 #include "body_control/lighting/transport/someip_message_parser.hpp"
 
@@ -58,6 +61,31 @@ ServiceStatus RearLightingServiceProvider::Shutdown()
     is_transport_available_ = false;
 
     return ConvertTransportStatus(transport_status);
+}
+
+void RearLightingServiceProvider::BroadcastAllLampStatuses()
+{
+    constexpr std::array<domain::LampFunction,
+                         domain::system_limits::kMaximumLampFunctionCount>
+        kAllFunctions {domain::LampFunction::kLeftIndicator,
+                       domain::LampFunction::kRightIndicator,
+                       domain::LampFunction::kHazardLamp,
+                       domain::LampFunction::kParkLamp,
+                       domain::LampFunction::kHeadLamp};
+
+    for (const domain::LampFunction func : kAllFunctions)
+    {
+        domain::LampStatus lamp_status {};
+        if (rear_lighting_function_manager_.GetLampStatus(func, lamp_status))
+        {
+            PublishLampStatusEvent(lamp_status);
+        }
+    }
+}
+
+void RearLightingServiceProvider::BroadcastNodeHealth()
+{
+    PublishNodeHealthEvent(BuildCurrentNodeHealthStatus());
 }
 
 void RearLightingServiceProvider::OnTransportMessageReceived(

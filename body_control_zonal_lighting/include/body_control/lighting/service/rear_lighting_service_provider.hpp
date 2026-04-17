@@ -45,6 +45,12 @@ public:
     ServiceStatus Initialize();
     ServiceStatus Shutdown();
 
+    /** Publish the current status of every lamp function to the transport. */
+    void BroadcastAllLampStatuses();
+
+    /** Publish the current node health snapshot to the transport. */
+    void BroadcastNodeHealth();
+
     void OnTransportMessageReceived(
         const transport::TransportMessage& transport_message) override;
 
