@@ -22,3 +22,11 @@ Do not push to git without explicit confirmation in each session.
 Prefer Claude Opus 4.7 for this project when available. Sonnet is
 acceptable for small mechanical edits but architectural work, cross-cutting
 refactors, and code reviews should use Opus.
+
+## Session restart instructions
+
+When starting a new session, always:
+1. Run git status and git log --oneline -5 first
+2. Read CHANGES_PHASE2.md and any doc/ files modified recently
+3. Report current state before making any changes
+4. Never assume the previous session's context — reconstruct from files
