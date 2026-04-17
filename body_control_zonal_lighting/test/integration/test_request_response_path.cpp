@@ -8,10 +8,10 @@
  * consumer reaches the provider, updates the node's LampStatus, and its
  * published event is delivered back to the consumer's listener.
  *
- * Today the assertion is deliberately minimal: the test proves the
- * transport + service wiring is in place. Richer behavioral assertions
- * (timeouts, repeated commands, reject paths) will be added as the
- * in-memory transport matures.
+ * The LoopbackTransportAdapter is deliberately synchronous: every
+ * Send* call delivers the message to the peer's handler on the same call
+ * stack before returning.  This makes event assertions reliable without
+ * sleeps or polling.
  */
 
 #include <memory>
@@ -21,6 +21,7 @@
 
 #include "body_control/lighting/application/rear_lighting_function_manager.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
+#include "body_control/lighting/domain/lamp_status_types.hpp"
 #include "body_control/lighting/service/rear_lighting_service_consumer.hpp"
 #include "body_control/lighting/service/rear_lighting_service_interface.hpp"
 #include "body_control/lighting/service/rear_lighting_service_provider.hpp"
@@ -35,6 +36,7 @@ using body_control::lighting::domain::CommandSource;
 using body_control::lighting::domain::LampCommand;
 using body_control::lighting::domain::LampCommandAction;
 using body_control::lighting::domain::LampFunction;
+using body_control::lighting::domain::LampOutputState;
 using body_control::lighting::domain::LampStatus;
 using body_control::lighting::domain::NodeHealthStatus;
 using body_control::lighting::service::RearLightingServiceConsumer;
@@ -47,11 +49,13 @@ using body_control::lighting::transport::TransportMessageHandlerInterface;
 using body_control::lighting::transport::TransportStatus;
 
 /**
- * @brief Minimal in-process transport adapter that forwards messages to a peer.
+ * @brief Synchronous in-process transport adapter that forwards messages to a peer.
  *
- * The pair is wired with SetPeer() after both instances are constructed so
- * that SendRequest / SendResponse / SendEvent on one side end up being
- * delivered as OnTransportMessageReceived on the other side's handler.
+ * The pair is wired with SetPeer() after both instances are constructed.
+ * Every Send* call delivers the message to the peer handler inline on the
+ * same call stack — no threads, no queuing.  The availability notification
+ * is replayed inline from SetMessageHandler if the adapter is already
+ * initialised, ensuring the registration order does not affect correctness.
  */
 class LoopbackTransportAdapter final : public TransportAdapterInterface
 {
@@ -88,11 +92,21 @@ public:
         TransportMessageHandlerInterface* handler) noexcept override
     {
         handler_ = handler;
+        // Replay the availability notification inline so callers that register
+        // their handler after Initialize() still receive it on the same thread.
+        if ((handler_ != nullptr) && is_initialized_)
+        {
+            handler_->OnTransportAvailabilityChanged(true);
+        }
     }
 
 private:
     TransportStatus Forward(const TransportMessage& transport_message)
     {
+        if (!is_initialized_)
+        {
+            return TransportStatus::kNotInitialized;
+        }
         if ((peer_ == nullptr) || (peer_->handler_ == nullptr))
         {
             return TransportStatus::kServiceUnavailable;
@@ -169,6 +183,14 @@ TEST(ServicePathIntegration, ConsumerProviderWireUpSucceeds)
     command.sequence_counter = 1U;
 
     EXPECT_EQ(consumer.SendLampCommand(command), ServiceStatus::kSuccess);
+
+    // Because the loopback is synchronous, the round-trip has completed
+    // inline by the time SendLampCommand returns.
+    EXPECT_EQ(listener.lamp_status_events_received_, 1U);
+    EXPECT_EQ(listener.last_lamp_status_.function, LampFunction::kParkLamp);
+    EXPECT_EQ(listener.last_lamp_status_.output_state, LampOutputState::kOn);
+    EXPECT_EQ(listener.last_lamp_status_.last_sequence_counter,
+              command.sequence_counter);
 
     // Tear down cleanly.
     EXPECT_EQ(consumer.Shutdown(), ServiceStatus::kSuccess);
