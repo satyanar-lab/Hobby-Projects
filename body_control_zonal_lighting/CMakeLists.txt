@@ -26,7 +26,7 @@ option(BODY_CONTROL_LIGHTING_BUILD_APPS
     "Build body control lighting executables (controller, HMI, node, diag)" ON)
 
 option(BODY_CONTROL_LIGHTING_WARNINGS_AS_ERRORS
-    "Promote all compiler warnings to errors" OFF)
+    "Promote all compiler warnings to errors" ON)
 
 # ----------------------------------------------------------------------------
 # Target platform detection
