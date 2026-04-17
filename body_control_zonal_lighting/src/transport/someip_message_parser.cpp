@@ -153,4 +153,72 @@ domain::NodeHealthStatus SomeipMessageParser::ParseNodeHealthStatus(
     return node_health_status;
 }
 
+namespace
+{
+
+[[nodiscard]] bool IsOperatorServiceMessage(
+    const TransportMessage& transport_message) noexcept
+{
+    return (transport_message.service_id ==
+            domain::operator_service::kServiceId) &&
+           (transport_message.instance_id ==
+            domain::operator_service::kInstanceId);
+}
+
+}  // namespace
+
+bool SomeipMessageParser::IsOperatorLampToggleRequest(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsOperatorServiceMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::operator_service::kRequestLampToggleMethodId);
+}
+
+bool SomeipMessageParser::IsOperatorLampActivateRequest(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsOperatorServiceMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::operator_service::kRequestLampActivateMethodId);
+}
+
+bool SomeipMessageParser::IsOperatorLampDeactivateRequest(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsOperatorServiceMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::operator_service::kRequestLampDeactivateMethodId);
+}
+
+bool SomeipMessageParser::IsOperatorNodeHealthRequest(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsOperatorServiceMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::operator_service::kRequestNodeHealthMethodId);
+}
+
+bool SomeipMessageParser::IsOperatorLampStatusEvent(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsOperatorServiceMessage(transport_message) &&
+           transport_message.is_event &&
+           (transport_message.method_or_event_id ==
+            domain::operator_service::kLampStatusEventId);
+}
+
+bool SomeipMessageParser::IsOperatorNodeHealthEvent(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsOperatorServiceMessage(transport_message) &&
+           transport_message.is_event &&
+           (transport_message.method_or_event_id ==
+            domain::operator_service::kNodeHealthEventId);
+}
+
 }  // namespace body_control::lighting::transport

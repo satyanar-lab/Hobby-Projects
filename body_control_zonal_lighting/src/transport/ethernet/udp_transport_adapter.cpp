@@ -44,6 +44,8 @@ constexpr std::uint16_t kEventMessageKind {3U};
 
 constexpr std::uint16_t kCentralZoneControllerPort {41000U};
 constexpr std::uint16_t kRearLightingNodePort {41001U};
+constexpr std::uint16_t kControllerOperatorPort {41002U};
+constexpr std::uint16_t kOperatorClientPort {41003U};
 
 struct UdpEndpointConfig
 {
@@ -288,6 +290,26 @@ CreateRearLightingNodeUdpTransportAdapter()
     const UdpEndpointConfig endpoint_config {
         kRearLightingNodePort,
         kCentralZoneControllerPort};
+
+    return std::make_unique<UdpTransportAdapter>(endpoint_config);
+}
+
+std::unique_ptr<TransportAdapterInterface>
+CreateControllerOperatorUdpTransportAdapter()
+{
+    const UdpEndpointConfig endpoint_config {
+        kControllerOperatorPort,
+        kOperatorClientPort};
+
+    return std::make_unique<UdpTransportAdapter>(endpoint_config);
+}
+
+std::unique_ptr<TransportAdapterInterface>
+CreateOperatorClientUdpTransportAdapter()
+{
+    const UdpEndpointConfig endpoint_config {
+        kOperatorClientPort,
+        kControllerOperatorPort};
 
     return std::make_unique<UdpTransportAdapter>(endpoint_config);
 }

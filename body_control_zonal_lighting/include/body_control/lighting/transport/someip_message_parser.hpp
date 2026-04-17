@@ -41,6 +41,28 @@ public:
 
     static domain::NodeHealthStatus ParseNodeHealthStatus(
         const TransportMessage& transport_message);
+
+    // Operator service predicates.
+    [[nodiscard]] static bool IsOperatorLampToggleRequest(
+        const TransportMessage& transport_message) noexcept;
+
+    [[nodiscard]] static bool IsOperatorLampActivateRequest(
+        const TransportMessage& transport_message) noexcept;
+
+    [[nodiscard]] static bool IsOperatorLampDeactivateRequest(
+        const TransportMessage& transport_message) noexcept;
+
+    [[nodiscard]] static bool IsOperatorNodeHealthRequest(
+        const TransportMessage& transport_message) noexcept;
+
+    [[nodiscard]] static bool IsOperatorLampStatusEvent(
+        const TransportMessage& transport_message) noexcept;
+
+    [[nodiscard]] static bool IsOperatorNodeHealthEvent(
+        const TransportMessage& transport_message) noexcept;
+
+    // Operator service parsers (reuse ParseLampFunction / ParseLampStatus /
+    // ParseNodeHealthStatus — payload layout is identical).
 };
 
 }  // namespace transport

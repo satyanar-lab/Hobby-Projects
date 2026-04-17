@@ -34,6 +34,33 @@ public:
 
     static TransportMessage BuildNodeHealthEvent(
         const domain::NodeHealthStatus& node_health_status);
+
+    // Operator service — requests sent by HMI / diagnostic console.
+    static TransportMessage BuildOperatorLampToggleRequest(
+        domain::LampFunction lamp_function,
+        std::uint16_t client_id,
+        std::uint16_t session_id);
+
+    static TransportMessage BuildOperatorLampActivateRequest(
+        domain::LampFunction lamp_function,
+        std::uint16_t client_id,
+        std::uint16_t session_id);
+
+    static TransportMessage BuildOperatorLampDeactivateRequest(
+        domain::LampFunction lamp_function,
+        std::uint16_t client_id,
+        std::uint16_t session_id);
+
+    static TransportMessage BuildOperatorNodeHealthRequest(
+        std::uint16_t client_id,
+        std::uint16_t session_id);
+
+    // Operator service — events sent by the controller to operator clients.
+    static TransportMessage BuildOperatorLampStatusEvent(
+        const domain::LampStatus& lamp_status);
+
+    static TransportMessage BuildOperatorNodeHealthEvent(
+        const domain::NodeHealthStatus& node_health_status);
 };
 
 }  // namespace transport

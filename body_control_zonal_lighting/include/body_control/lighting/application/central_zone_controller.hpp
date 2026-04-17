@@ -8,6 +8,8 @@
 #include <mutex>
 #include <thread>
 
+#include "body_control/lighting/application/command_arbitrator.hpp"
+#include "body_control/lighting/application/lamp_state_manager.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
 #include "body_control/lighting/service/rear_lighting_service_interface.hpp"
@@ -25,7 +27,8 @@ enum class ControllerStatus : std::uint8_t
     kNotInitialized = 1U,
     kNotAvailable = 2U,
     kInvalidArgument = 3U,
-    kServiceError = 4U
+    kRejected = 4U,
+    kServiceError = 5U
 };
 
 class CentralZoneController final
@@ -56,6 +59,16 @@ public:
 
     bool IsRearNodeAvailable() const noexcept;
 
+    /**
+     * @brief Register an observer that is notified after every cache update.
+     *
+     * Intended for OperatorServiceProvider so it can relay events to
+     * connected operator clients without polling.  Pass nullptr to
+     * deregister.  Only one observer is supported.
+     */
+    void SetStatusObserver(
+        service::RearLightingServiceEventListenerInterface* observer) noexcept;
+
     void OnLampStatusReceived(
         const domain::LampStatus& lamp_status) override;
 
@@ -79,9 +92,14 @@ private:
     bool is_rear_node_available_;
     std::uint16_t next_sequence_counter_;
 
+    CommandArbitrator arbitrator_;
+    LampStateManager lamp_state_manager_;
+
     mutable std::mutex cache_mutex_;
     std::array<domain::LampStatus, 5U> cached_lamp_statuses_;
     domain::NodeHealthStatus cached_node_health_status_;
+
+    service::RearLightingServiceEventListenerInterface* status_observer_;
 
     std::atomic<bool> health_poll_active_;
     std::mutex health_poll_mutex_;

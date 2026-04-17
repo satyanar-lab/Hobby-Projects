@@ -15,9 +15,12 @@ CentralZoneController::CentralZoneController(
     , is_initialized_(false)
     , is_rear_node_available_(false)
     , next_sequence_counter_(1U)
+    , arbitrator_ {}
+    , lamp_state_manager_ {}
     , cache_mutex_ {}
     , cached_lamp_statuses_ {}
     , cached_node_health_status_ {}
+    , status_observer_(nullptr)
     , health_poll_active_(false)
     , health_poll_mutex_ {}
     , health_poll_cv_ {}
@@ -97,8 +100,16 @@ ControllerStatus CentralZoneController::SendLampCommand(
     lamp_command.source = command_source;
     lamp_command.sequence_counter = next_sequence_counter_++;
 
+    const ArbitrationContext context = lamp_state_manager_.GetArbitrationContext();
+    const ArbitrationDecision decision = arbitrator_.Arbitrate(lamp_command, context);
+
+    if (decision.result == ArbitrationResult::kRejected)
+    {
+        return ControllerStatus::kRejected;
+    }
+
     const service::ServiceStatus service_status =
-        rear_lighting_service_consumer_.SendLampCommand(lamp_command);
+        rear_lighting_service_consumer_.SendLampCommand(decision.command);
 
     return ConvertServiceStatus(service_status);
 }
@@ -163,6 +174,12 @@ bool CentralZoneController::IsRearNodeAvailable() const noexcept
     return is_rear_node_available_;
 }
 
+void CentralZoneController::SetStatusObserver(
+    service::RearLightingServiceEventListenerInterface* const observer) noexcept
+{
+    status_observer_ = observer;
+}
+
 void CentralZoneController::OnLampStatusReceived(
     const domain::LampStatus& lamp_status)
 {
@@ -173,21 +190,42 @@ void CentralZoneController::OnLampStatusReceived(
         const std::lock_guard<std::mutex> lock(cache_mutex_);
         cached_lamp_statuses_[index] = lamp_status;
     }
+
+    static_cast<void>(lamp_state_manager_.UpdateLampStatus(lamp_status));
+
+    if (status_observer_ != nullptr)
+    {
+        status_observer_->OnLampStatusReceived(lamp_status);
+    }
 }
 
 void CentralZoneController::OnNodeHealthStatusReceived(
     const domain::NodeHealthStatus& node_health_status)
 {
-    const std::lock_guard<std::mutex> lock(cache_mutex_);
-    cached_node_health_status_ = node_health_status;
+    {
+        const std::lock_guard<std::mutex> lock(cache_mutex_);
+        cached_node_health_status_ = node_health_status;
+    }
+
+    if (status_observer_ != nullptr)
+    {
+        status_observer_->OnNodeHealthStatusReceived(node_health_status);
+    }
 }
 
 void CentralZoneController::OnServiceAvailabilityChanged(
     const bool is_service_available)
 {
-    const std::lock_guard<std::mutex> lock(cache_mutex_);
-    is_rear_node_available_ = is_service_available;
-    cached_node_health_status_.service_available = is_service_available;
+    {
+        const std::lock_guard<std::mutex> lock(cache_mutex_);
+        is_rear_node_available_ = is_service_available;
+        cached_node_health_status_.service_available = is_service_available;
+    }
+
+    if (status_observer_ != nullptr)
+    {
+        status_observer_->OnServiceAvailabilityChanged(is_service_available);
+    }
 }
 
 void CentralZoneController::RunHealthPollLoop()
