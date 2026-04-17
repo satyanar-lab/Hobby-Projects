@@ -17,6 +17,12 @@ CreateCentralZoneControllerUdpTransportAdapter();
 std::unique_ptr<TransportAdapterInterface>
 CreateRearLightingNodeUdpTransportAdapter();
 
+std::unique_ptr<TransportAdapterInterface>
+CreateControllerOperatorUdpTransportAdapter();
+
+std::unique_ptr<TransportAdapterInterface>
+CreateOperatorClientUdpTransportAdapter();
+
 }  // namespace ethernet
 
 namespace vsomeip
@@ -32,6 +38,18 @@ std::unique_ptr<TransportAdapterInterface>
 CreateRearLightingNodeRuntimeAdapter()
 {
     return ethernet::CreateRearLightingNodeUdpTransportAdapter();
+}
+
+std::unique_ptr<TransportAdapterInterface>
+CreateControllerOperatorRuntimeAdapter()
+{
+    return ethernet::CreateControllerOperatorUdpTransportAdapter();
+}
+
+std::unique_ptr<TransportAdapterInterface>
+CreateOperatorClientRuntimeAdapter()
+{
+    return ethernet::CreateOperatorClientUdpTransportAdapter();
 }
 
 }  // namespace vsomeip

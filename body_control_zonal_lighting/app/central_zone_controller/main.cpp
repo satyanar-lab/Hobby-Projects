@@ -1,7 +1,11 @@
+#include <chrono>
 #include <iostream>
 #include <memory>
+#include <thread>
 
 #include "body_control/lighting/application/central_zone_controller.hpp"
+#include "body_control/lighting/platform/linux/process_signal_handler.hpp"
+#include "body_control/lighting/service/operator_service_provider.hpp"
 #include "body_control/lighting/service/rear_lighting_service_consumer.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
@@ -17,6 +21,9 @@ namespace vsomeip
 std::unique_ptr<TransportAdapterInterface>
 CreateCentralZoneControllerVsomeipClientAdapter();
 
+std::unique_ptr<TransportAdapterInterface>
+CreateControllerOperatorVsomeipServerAdapter();
+
 }  // namespace vsomeip
 }  // namespace transport
 }  // namespace lighting
@@ -26,24 +33,49 @@ int main()
 {
     using body_control::lighting::application::CentralZoneController;
     using body_control::lighting::application::ControllerStatus;
+    using body_control::lighting::platform::linux::ProcessSignalHandler;
+    using body_control::lighting::platform::linux::SignalHandlerStatus;
+    using body_control::lighting::service::OperatorServiceProvider;
+    using body_control::lighting::service::OperatorServiceStatus;
     using body_control::lighting::service::RearLightingServiceConsumer;
     using body_control::lighting::transport::TransportAdapterInterface;
 
-    std::unique_ptr<TransportAdapterInterface> transport_adapter =
+    ProcessSignalHandler signal_handler {};
+    if (signal_handler.Install() != SignalHandlerStatus::kSuccess)
+    {
+        std::cerr << "Failed to install signal handler.\n";
+        return 1;
+    }
+
+    std::unique_ptr<TransportAdapterInterface> rear_transport =
         body_control::lighting::transport::vsomeip::
             CreateCentralZoneControllerVsomeipClientAdapter();
 
-    if (transport_adapter == nullptr)
+    if (rear_transport == nullptr)
     {
-        std::cerr << "Failed to create central zone controller transport adapter.\n";
+        std::cerr << "Failed to create rear lighting transport adapter.\n";
+        return 1;
+    }
+
+    std::unique_ptr<TransportAdapterInterface> operator_transport =
+        body_control::lighting::transport::vsomeip::
+            CreateControllerOperatorVsomeipServerAdapter();
+
+    if (operator_transport == nullptr)
+    {
+        std::cerr << "Failed to create operator transport adapter.\n";
         return 1;
     }
 
     RearLightingServiceConsumer rear_lighting_service_consumer {
-        *transport_adapter};
+        *rear_transport};
 
     CentralZoneController central_zone_controller {
         rear_lighting_service_consumer};
+
+    OperatorServiceProvider operator_service_provider {
+        central_zone_controller,
+        *operator_transport};
 
     const ControllerStatus init_status =
         central_zone_controller.Initialize();
@@ -54,21 +86,31 @@ int main()
         return 1;
     }
 
+    const OperatorServiceStatus operator_init_status =
+        operator_service_provider.Initialize();
+
+    if (operator_init_status != OperatorServiceStatus::kSuccess)
+    {
+        std::cerr << "Failed to initialize operator service provider.\n";
+        static_cast<void>(central_zone_controller.Shutdown());
+        return 1;
+    }
+
     static_cast<void>(central_zone_controller.RequestNodeHealth());
 
     std::cout << "Central zone controller is running.\n";
-    std::cout << "Press ENTER to shut down.\n";
+    std::cout << "Press Ctrl+C to shut down.\n";
 
-    std::cin.get();
-
-    const ControllerStatus shutdown_status =
-        central_zone_controller.Shutdown();
-
-    if (shutdown_status != ControllerStatus::kSuccess)
+    while (!ProcessSignalHandler::IsShutdownRequested())
     {
-        std::cerr << "Central zone controller shutdown completed with errors.\n";
-        return 1;
+        // Idle — events are driven by the UDP receiver thread.
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
+
+    static_cast<void>(operator_service_provider.Shutdown());
+    static_cast<void>(central_zone_controller.Shutdown());
+
+    std::cout << "Central zone controller stopped.\n";
 
     return 0;
 }

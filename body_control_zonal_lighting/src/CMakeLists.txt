@@ -22,6 +22,7 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_COMMON
     hmi/hmi_view_model.cpp
     hmi/main_window.cpp
 
+    service/operator_service_provider.cpp
     service/rear_lighting_service_consumer.cpp
     service/rear_lighting_service_provider.cpp
 
@@ -52,6 +53,8 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_LINUX
     transport/ethernet/udp_transport_adapter.cpp
 
     transport/vsomeip/vsomeip_client_adapter.cpp
+    transport/vsomeip/vsomeip_operator_client_adapter.cpp
+    transport/vsomeip/vsomeip_operator_server_adapter.cpp
     transport/vsomeip/vsomeip_runtime_manager.cpp
     transport/vsomeip/vsomeip_server_adapter.cpp
 )
