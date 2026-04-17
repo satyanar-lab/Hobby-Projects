@@ -35,6 +35,7 @@ ServiceStatus RearLightingServiceConsumer::Initialize()
     transport_adapter_.SetMessageHandler(this);
 
     is_initialized_ = true;
+    SetServiceAvailability(true);
     return ServiceStatus::kSuccess;
 }
 

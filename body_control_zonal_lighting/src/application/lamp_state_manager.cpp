@@ -114,7 +114,7 @@ bool LampStateManager::TryGetIndex(
 bool LampStateManager::IsOutputStateActive(
     const domain::LampOutputState output_state) noexcept
 {
-    return output_state != domain::LampOutputState::kOff;
+    return output_state == domain::LampOutputState::kOn;
 }
 
 }  // namespace application
