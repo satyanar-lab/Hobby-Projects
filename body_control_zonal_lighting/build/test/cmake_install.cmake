@@ -42,3 +42,18 @@ if(NOT DEFINED CMAKE_OBJDUMP)
   set(CMAKE_OBJDUMP "/usr/bin/objdump")
 endif()
 
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/_deps/googletest-build/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/test/unit/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/test/integration/cmake_install.cmake")
+endif()
+

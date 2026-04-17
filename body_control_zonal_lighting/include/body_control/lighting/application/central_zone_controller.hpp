@@ -71,7 +71,7 @@ private:
     service::RearLightingServiceConsumerInterface& rear_lighting_service_consumer_;
     bool is_initialized_;
     bool is_rear_node_available_;
-    std::uint32_t next_sequence_counter_;
+    std::uint16_t next_sequence_counter_;
     std::array<domain::LampStatus, 5U> cached_lamp_statuses_;
     domain::NodeHealthStatus cached_node_health_status_;
 };

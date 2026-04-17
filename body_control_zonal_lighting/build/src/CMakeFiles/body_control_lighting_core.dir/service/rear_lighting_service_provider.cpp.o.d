@@ -2,9 +2,9 @@ src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_prov
  /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/service/rear_lighting_service_provider.cpp \
  /usr/include/stdc-predef.h \
  /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include/body_control/lighting/service/rear_lighting_service_provider.hpp \
- /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include/body_control/lighting/application/rear_lighting_function_manager.hpp \
- /usr/include/c++/13/array /usr/include/c++/13/compare \
- /usr/include/c++/13/initializer_list \
+ /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include/body_control/lighting/application/node_health_source_interface.hpp \
+ /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include/body_control/lighting/domain/lamp_status_types.hpp \
+ /usr/include/c++/13/cstdint \
  /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -15,7 +15,20 @@ src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_prov
  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
- /usr/include/c++/13/pstl/pstl_config.h /usr/include/c++/13/type_traits \
+ /usr/include/c++/13/pstl/pstl_config.h \
+ /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h /usr/include/stdint.h \
+ /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
+ /usr/include/x86_64-linux-gnu/bits/types.h \
+ /usr/include/x86_64-linux-gnu/bits/typesizes.h \
+ /usr/include/x86_64-linux-gnu/bits/time64.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
+ /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include/body_control/lighting/domain/lamp_command_types.hpp \
+ /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include/body_control/lighting/application/rear_lighting_function_manager.hpp \
+ /usr/include/c++/13/array /usr/include/c++/13/compare \
+ /usr/include/c++/13/initializer_list /usr/include/c++/13/type_traits \
  /usr/include/c++/13/bits/functexcept.h \
  /usr/include/c++/13/bits/exception_defines.h \
  /usr/include/c++/13/bits/stl_algobase.h \
@@ -33,18 +46,6 @@ src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_prov
  /usr/include/c++/13/bits/predefined_ops.h /usr/include/c++/13/bit \
  /usr/include/c++/13/bits/range_access.h /usr/include/c++/13/cstddef \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h \
- /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include/body_control/lighting/domain/lamp_command_types.hpp \
- /usr/include/c++/13/cstdint \
- /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h /usr/include/stdint.h \
- /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
- /usr/include/x86_64-linux-gnu/bits/types.h \
- /usr/include/x86_64-linux-gnu/bits/typesizes.h \
- /usr/include/x86_64-linux-gnu/bits/time64.h \
- /usr/include/x86_64-linux-gnu/bits/wchar.h \
- /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
- /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
- /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
- /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include/body_control/lighting/domain/lamp_status_types.hpp \
  /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include/body_control/lighting/service/rear_lighting_service_interface.hpp \
  /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include/body_control/lighting/transport/transport_adapter_interface.hpp \
  /usr/include/c++/13/vector /usr/include/c++/13/bits/requires_hosted.h \

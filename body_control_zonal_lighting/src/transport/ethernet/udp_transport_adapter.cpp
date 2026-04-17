@@ -166,7 +166,7 @@ public:
     }
 
     void SetMessageHandler(
-        TransportMessageHandlerInterface* message_handler) override
+        TransportMessageHandlerInterface* message_handler) noexcept override
     {
         message_handler_ = message_handler;
     }

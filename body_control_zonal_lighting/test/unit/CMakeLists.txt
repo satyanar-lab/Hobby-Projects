@@ -1,16 +1,4 @@
-set(BCZL_UNIT_TEST_SOURCES
-)
-
-if (BCZL_UNIT_TEST_SOURCES)
-    add_executable(bczl_unit_tests
-        ${BCZL_UNIT_TEST_SOURCES})
-
-    target_link_libraries(
-        bczl_unit_tests
-        PRIVATE
-            bczl::core)
-
-    add_test(
-        NAME bczl_unit_tests
-        COMMAND bczl_unit_tests)
-endif()
+body_control_lighting_add_test(test_command_arbitrator.cpp)
+body_control_lighting_add_test(test_lamp_state_manager.cpp)
+body_control_lighting_add_test(test_lighting_payload_codec.cpp)
+body_control_lighting_add_test(test_rear_lighting_function_manager.cpp)

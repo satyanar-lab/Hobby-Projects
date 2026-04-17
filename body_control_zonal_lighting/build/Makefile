@@ -65,6 +65,16 @@ CMAKE_BINARY_DIR = /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_
 #=============================================================================
 # Targets provided globally by CMake.
 
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running tests..."
+	/usr/bin/ctest --force-new-ctest-process $(ARGS)
+.PHONY : test
+
+# Special rule for the target test
+test/fast: test
+.PHONY : test/fast
+
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "No interactive CMake dialog available..."
@@ -84,6 +94,51 @@ rebuild_cache:
 # Special rule for the target rebuild_cache
 rebuild_cache/fast: rebuild_cache
 .PHONY : rebuild_cache/fast
+
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Available install components are: \"gmock\" \"gtest\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+.PHONY : list_install_components/fast
+
+# Special rule for the target install
+install: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install
+
+# Special rule for the target install
+install/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install/fast
+
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local/fast
+
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -130,17 +185,17 @@ body_control_lighting_core/fast:
 .PHONY : body_control_lighting_core/fast
 
 #=============================================================================
-# Target rules for targets named diagnostic_console
+# Target rules for targets named central_zone_controller_app
 
 # Build rule for target.
-diagnostic_console: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 diagnostic_console
-.PHONY : diagnostic_console
+central_zone_controller_app: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 central_zone_controller_app
+.PHONY : central_zone_controller_app
 
 # fast build rule for target.
-diagnostic_console/fast:
-	$(MAKE) $(MAKESILENT) -f app/CMakeFiles/diagnostic_console.dir/build.make app/CMakeFiles/diagnostic_console.dir/build
-.PHONY : diagnostic_console/fast
+central_zone_controller_app/fast:
+	$(MAKE) $(MAKESILENT) -f app/CMakeFiles/central_zone_controller_app.dir/build.make app/CMakeFiles/central_zone_controller_app.dir/build
+.PHONY : central_zone_controller_app/fast
 
 #=============================================================================
 # Target rules for targets named hmi_control_panel
@@ -156,17 +211,17 @@ hmi_control_panel/fast:
 .PHONY : hmi_control_panel/fast
 
 #=============================================================================
-# Target rules for targets named central_zone_controller_app
+# Target rules for targets named diagnostic_console
 
 # Build rule for target.
-central_zone_controller_app: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 central_zone_controller_app
-.PHONY : central_zone_controller_app
+diagnostic_console: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 diagnostic_console
+.PHONY : diagnostic_console
 
 # fast build rule for target.
-central_zone_controller_app/fast:
-	$(MAKE) $(MAKESILENT) -f app/CMakeFiles/central_zone_controller_app.dir/build.make app/CMakeFiles/central_zone_controller_app.dir/build
-.PHONY : central_zone_controller_app/fast
+diagnostic_console/fast:
+	$(MAKE) $(MAKESILENT) -f app/CMakeFiles/diagnostic_console.dir/build.make app/CMakeFiles/diagnostic_console.dir/build
+.PHONY : diagnostic_console/fast
 
 #=============================================================================
 # Target rules for targets named rear_lighting_node_simulator
@@ -182,17 +237,147 @@ rear_lighting_node_simulator/fast:
 .PHONY : rear_lighting_node_simulator/fast
 
 #=============================================================================
-# Target rules for targets named body_control_lighting_test_objects
+# Target rules for targets named gmock
 
 # Build rule for target.
-body_control_lighting_test_objects: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 body_control_lighting_test_objects
-.PHONY : body_control_lighting_test_objects
+gmock: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 gmock
+.PHONY : gmock
 
 # fast build rule for target.
-body_control_lighting_test_objects/fast:
-	$(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/build
-.PHONY : body_control_lighting_test_objects/fast
+gmock/fast:
+	$(MAKE) $(MAKESILENT) -f _deps/googletest-build/googlemock/CMakeFiles/gmock.dir/build.make _deps/googletest-build/googlemock/CMakeFiles/gmock.dir/build
+.PHONY : gmock/fast
+
+#=============================================================================
+# Target rules for targets named gmock_main
+
+# Build rule for target.
+gmock_main: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 gmock_main
+.PHONY : gmock_main
+
+# fast build rule for target.
+gmock_main/fast:
+	$(MAKE) $(MAKESILENT) -f _deps/googletest-build/googlemock/CMakeFiles/gmock_main.dir/build.make _deps/googletest-build/googlemock/CMakeFiles/gmock_main.dir/build
+.PHONY : gmock_main/fast
+
+#=============================================================================
+# Target rules for targets named gtest
+
+# Build rule for target.
+gtest: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 gtest
+.PHONY : gtest
+
+# fast build rule for target.
+gtest/fast:
+	$(MAKE) $(MAKESILENT) -f _deps/googletest-build/googletest/CMakeFiles/gtest.dir/build.make _deps/googletest-build/googletest/CMakeFiles/gtest.dir/build
+.PHONY : gtest/fast
+
+#=============================================================================
+# Target rules for targets named gtest_main
+
+# Build rule for target.
+gtest_main: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 gtest_main
+.PHONY : gtest_main
+
+# fast build rule for target.
+gtest_main/fast:
+	$(MAKE) $(MAKESILENT) -f _deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/build.make _deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/build
+.PHONY : gtest_main/fast
+
+#=============================================================================
+# Target rules for targets named test_command_arbitrator
+
+# Build rule for target.
+test_command_arbitrator: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_command_arbitrator
+.PHONY : test_command_arbitrator
+
+# fast build rule for target.
+test_command_arbitrator/fast:
+	$(MAKE) $(MAKESILENT) -f test/unit/CMakeFiles/test_command_arbitrator.dir/build.make test/unit/CMakeFiles/test_command_arbitrator.dir/build
+.PHONY : test_command_arbitrator/fast
+
+#=============================================================================
+# Target rules for targets named test_lamp_state_manager
+
+# Build rule for target.
+test_lamp_state_manager: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_lamp_state_manager
+.PHONY : test_lamp_state_manager
+
+# fast build rule for target.
+test_lamp_state_manager/fast:
+	$(MAKE) $(MAKESILENT) -f test/unit/CMakeFiles/test_lamp_state_manager.dir/build.make test/unit/CMakeFiles/test_lamp_state_manager.dir/build
+.PHONY : test_lamp_state_manager/fast
+
+#=============================================================================
+# Target rules for targets named test_lighting_payload_codec
+
+# Build rule for target.
+test_lighting_payload_codec: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_lighting_payload_codec
+.PHONY : test_lighting_payload_codec
+
+# fast build rule for target.
+test_lighting_payload_codec/fast:
+	$(MAKE) $(MAKESILENT) -f test/unit/CMakeFiles/test_lighting_payload_codec.dir/build.make test/unit/CMakeFiles/test_lighting_payload_codec.dir/build
+.PHONY : test_lighting_payload_codec/fast
+
+#=============================================================================
+# Target rules for targets named test_rear_lighting_function_manager
+
+# Build rule for target.
+test_rear_lighting_function_manager: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_rear_lighting_function_manager
+.PHONY : test_rear_lighting_function_manager
+
+# fast build rule for target.
+test_rear_lighting_function_manager/fast:
+	$(MAKE) $(MAKESILENT) -f test/unit/CMakeFiles/test_rear_lighting_function_manager.dir/build.make test/unit/CMakeFiles/test_rear_lighting_function_manager.dir/build
+.PHONY : test_rear_lighting_function_manager/fast
+
+#=============================================================================
+# Target rules for targets named test_request_response_path
+
+# Build rule for target.
+test_request_response_path: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_request_response_path
+.PHONY : test_request_response_path
+
+# fast build rule for target.
+test_request_response_path/fast:
+	$(MAKE) $(MAKESILENT) -f test/integration/CMakeFiles/test_request_response_path.dir/build.make test/integration/CMakeFiles/test_request_response_path.dir/build
+.PHONY : test_request_response_path/fast
+
+#=============================================================================
+# Target rules for targets named test_hazard_priority_behavior
+
+# Build rule for target.
+test_hazard_priority_behavior: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_hazard_priority_behavior
+.PHONY : test_hazard_priority_behavior
+
+# fast build rule for target.
+test_hazard_priority_behavior/fast:
+	$(MAKE) $(MAKESILENT) -f test/integration/CMakeFiles/test_hazard_priority_behavior.dir/build.make test/integration/CMakeFiles/test_hazard_priority_behavior.dir/build
+.PHONY : test_hazard_priority_behavior/fast
+
+#=============================================================================
+# Target rules for targets named test_node_timeout_behavior
+
+# Build rule for target.
+test_node_timeout_behavior: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_node_timeout_behavior
+.PHONY : test_node_timeout_behavior
+
+# fast build rule for target.
+test_node_timeout_behavior/fast:
+	$(MAKE) $(MAKESILENT) -f test/integration/CMakeFiles/test_node_timeout_behavior.dir/build.make test/integration/CMakeFiles/test_node_timeout_behavior.dir/build
+.PHONY : test_node_timeout_behavior/fast
 
 # Help Target
 help:
@@ -201,13 +386,28 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
+	@echo "... install"
+	@echo "... install/local"
+	@echo "... install/strip"
+	@echo "... list_install_components"
 	@echo "... rebuild_cache"
+	@echo "... test"
 	@echo "... body_control_lighting_core"
-	@echo "... body_control_lighting_test_objects"
 	@echo "... central_zone_controller_app"
 	@echo "... diagnostic_console"
+	@echo "... gmock"
+	@echo "... gmock_main"
+	@echo "... gtest"
+	@echo "... gtest_main"
 	@echo "... hmi_control_panel"
 	@echo "... rear_lighting_node_simulator"
+	@echo "... test_command_arbitrator"
+	@echo "... test_hazard_priority_behavior"
+	@echo "... test_lamp_state_manager"
+	@echo "... test_lighting_payload_codec"
+	@echo "... test_node_timeout_behavior"
+	@echo "... test_rear_lighting_function_manager"
+	@echo "... test_request_response_path"
 .PHONY : help
 
 

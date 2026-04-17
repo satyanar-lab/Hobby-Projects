@@ -1,1 +1,1 @@
-/usr/bin/c++ CMakeFiles/hmi_control_panel.dir/hmi_control_panel/main.cpp.o -o hmi_control_panel  ../src/libbody_control_lighting_core.a -lbody_control_lighting_project_options 
+/usr/bin/c++ CMakeFiles/hmi_control_panel.dir/hmi_control_panel/main.cpp.o -o hmi_control_panel  ../src/libbody_control_lighting_core.a 

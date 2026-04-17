@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/test_command_arbitrator.dir/test_command_arbitrator.cpp.o -o test_command_arbitrator  ../../src/libbody_control_lighting_core.a ../../lib/libgtest.a ../../lib/libgtest_main.a ../../lib/libgtest.a 

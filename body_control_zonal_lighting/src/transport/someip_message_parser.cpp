@@ -5,18 +5,14 @@
 
 #include "body_control/lighting/domain/lighting_service_ids.hpp"
 
-namespace body_control
-{
-namespace lighting
-{
-namespace transport
+namespace body_control::lighting::transport
 {
 namespace
 {
 
-std::uint8_t ReadUint8(
+[[nodiscard]] std::uint8_t ReadUint8(
     const std::vector<std::uint8_t>& payload,
-    const std::size_t index)
+    const std::size_t index) noexcept
 {
     if (index >= payload.size())
     {
@@ -26,22 +22,21 @@ std::uint8_t ReadUint8(
     return payload[index];
 }
 
-std::uint32_t ReadUint32(
+[[nodiscard]] std::uint16_t ReadUint16(
     const std::vector<std::uint8_t>& payload,
-    const std::size_t index)
+    const std::size_t index) noexcept
 {
-    if ((index + 3U) >= payload.size())
+    if ((index + 1U) >= payload.size())
     {
         return 0U;
     }
 
-    return (static_cast<std::uint32_t>(payload[index]) << 24U) |
-           (static_cast<std::uint32_t>(payload[index + 1U]) << 16U) |
-           (static_cast<std::uint32_t>(payload[index + 2U]) << 8U) |
-           static_cast<std::uint32_t>(payload[index + 3U]);
+    return static_cast<std::uint16_t>(
+        (static_cast<std::uint16_t>(payload[index]) << 8U) |
+        static_cast<std::uint16_t>(payload[index + 1U]));
 }
 
-bool IsRearLightingMessage(
+[[nodiscard]] bool IsRearLightingMessage(
     const TransportMessage& transport_message) noexcept
 {
     return (transport_message.service_id ==
@@ -109,7 +104,7 @@ domain::LampCommand SomeipMessageParser::ParseLampCommand(
     lamp_command.source = static_cast<domain::CommandSource>(
         ReadUint8(transport_message.payload, 2U));
     lamp_command.sequence_counter =
-        ReadUint32(transport_message.payload, 3U);
+        ReadUint16(transport_message.payload, 3U);
 
     return lamp_command;
 }
@@ -133,7 +128,7 @@ domain::LampStatus SomeipMessageParser::ParseLampStatus(
     lamp_status.command_applied =
         (ReadUint8(transport_message.payload, 2U) != 0U);
     lamp_status.last_sequence_counter =
-        ReadUint32(transport_message.payload, 3U);
+        ReadUint16(transport_message.payload, 3U);
 
     return lamp_status;
 }
@@ -143,18 +138,19 @@ domain::NodeHealthStatus SomeipMessageParser::ParseNodeHealthStatus(
 {
     domain::NodeHealthStatus node_health_status {};
 
-    node_health_status.node_state = static_cast<domain::NodeHealthState>(
-        ReadUint8(transport_message.payload, 0U));
-    node_health_status.ethernet_link_up =
+    node_health_status.health_state =
+        static_cast<domain::NodeHealthState>(
+            ReadUint8(transport_message.payload, 0U));
+    node_health_status.ethernet_link_available =
         (ReadUint8(transport_message.payload, 1U) != 0U);
     node_health_status.service_available =
         (ReadUint8(transport_message.payload, 2U) != 0U);
-    node_health_status.last_sequence_counter =
-        ReadUint32(transport_message.payload, 3U);
+    node_health_status.lamp_driver_fault_present =
+        (ReadUint8(transport_message.payload, 3U) != 0U);
+    node_health_status.active_fault_count =
+        ReadUint16(transport_message.payload, 4U);
 
     return node_health_status;
 }
 
-}  // namespace transport
-}  // namespace lighting
-}  // namespace body_control
+}  // namespace body_control::lighting::transport

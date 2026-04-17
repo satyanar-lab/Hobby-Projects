@@ -1,16 +1,3 @@
-set(BCZL_INTEGRATION_TEST_SOURCES
-)
-
-if (BCZL_INTEGRATION_TEST_SOURCES)
-    add_executable(bczl_integration_tests
-        ${BCZL_INTEGRATION_TEST_SOURCES})
-
-    target_link_libraries(
-        bczl_integration_tests
-        PRIVATE
-            bczl::core)
-
-    add_test(
-        NAME bczl_integration_tests
-        COMMAND bczl_integration_tests)
-endif()
+body_control_lighting_add_test(test_request_response_path.cpp)
+body_control_lighting_add_test(test_hazard_priority_behavior.cpp)
+body_control_lighting_add_test(test_node_timeout_behavior.cpp)

@@ -4,11 +4,7 @@
 
 #include "body_control/lighting/domain/lighting_service_ids.hpp"
 
-namespace body_control
-{
-namespace lighting
-{
-namespace transport
+namespace body_control::lighting::transport
 {
 namespace
 {
@@ -20,14 +16,14 @@ void AppendUint8(
     payload.push_back(value);
 }
 
-void AppendUint32(
+void AppendUint16(
     std::vector<std::uint8_t>& payload,
-    const std::uint32_t value)
+    const std::uint16_t value)
 {
-    payload.push_back(static_cast<std::uint8_t>((value >> 24U) & 0xFFU));
-    payload.push_back(static_cast<std::uint8_t>((value >> 16U) & 0xFFU));
-    payload.push_back(static_cast<std::uint8_t>((value >> 8U) & 0xFFU));
-    payload.push_back(static_cast<std::uint8_t>(value & 0xFFU));
+    payload.push_back(
+        static_cast<std::uint8_t>((value >> 8U) & 0xFFU));
+    payload.push_back(
+        static_cast<std::uint8_t>(value & 0xFFU));
 }
 
 TransportMessage BuildBaseMessage(
@@ -74,7 +70,7 @@ TransportMessage SomeipMessageBuilder::BuildSetLampCommandRequest(
     AppendUint8(
         transport_message.payload,
         static_cast<std::uint8_t>(lamp_command.source));
-    AppendUint32(
+    AppendUint16(
         transport_message.payload,
         lamp_command.sequence_counter);
 
@@ -130,7 +126,7 @@ TransportMessage SomeipMessageBuilder::BuildLampStatusEvent(
     AppendUint8(
         transport_message.payload,
         static_cast<std::uint8_t>(lamp_status.command_applied ? 1U : 0U));
-    AppendUint32(
+    AppendUint16(
         transport_message.payload,
         lamp_status.last_sequence_counter);
 
@@ -149,22 +145,24 @@ TransportMessage SomeipMessageBuilder::BuildNodeHealthEvent(
 
     AppendUint8(
         transport_message.payload,
-        static_cast<std::uint8_t>(node_health_status.node_state));
+        static_cast<std::uint8_t>(node_health_status.health_state));
     AppendUint8(
         transport_message.payload,
         static_cast<std::uint8_t>(
-            node_health_status.ethernet_link_up ? 1U : 0U));
+            node_health_status.ethernet_link_available ? 1U : 0U));
     AppendUint8(
         transport_message.payload,
         static_cast<std::uint8_t>(
             node_health_status.service_available ? 1U : 0U));
-    AppendUint32(
+    AppendUint8(
         transport_message.payload,
-        node_health_status.last_sequence_counter);
+        static_cast<std::uint8_t>(
+            node_health_status.lamp_driver_fault_present ? 1U : 0U));
+    AppendUint16(
+        transport_message.payload,
+        node_health_status.active_fault_count);
 
     return transport_message;
 }
 
-}  // namespace transport
-}  // namespace lighting
-}  // namespace body_control
+}  // namespace body_control::lighting::transport

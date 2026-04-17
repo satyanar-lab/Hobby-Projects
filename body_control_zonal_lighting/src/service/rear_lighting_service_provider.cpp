@@ -3,11 +3,7 @@
 #include "body_control/lighting/transport/someip_message_builder.hpp"
 #include "body_control/lighting/transport/someip_message_parser.hpp"
 
-namespace body_control
-{
-namespace lighting
-{
-namespace service
+namespace body_control::lighting::service
 {
 
 RearLightingServiceProvider::RearLightingServiceProvider(
@@ -15,6 +11,19 @@ RearLightingServiceProvider::RearLightingServiceProvider(
     transport::TransportAdapterInterface& transport_adapter) noexcept
     : rear_lighting_function_manager_(rear_lighting_function_manager)
     , transport_adapter_(transport_adapter)
+    , node_health_source_(nullptr)
+    , is_initialized_(false)
+    , is_transport_available_(false)
+{
+}
+
+RearLightingServiceProvider::RearLightingServiceProvider(
+    application::RearLightingFunctionManager& rear_lighting_function_manager,
+    transport::TransportAdapterInterface& transport_adapter,
+    application::NodeHealthSourceInterface& node_health_source) noexcept
+    : rear_lighting_function_manager_(rear_lighting_function_manager)
+    , transport_adapter_(transport_adapter)
+    , node_health_source_(&node_health_source)
     , is_initialized_(false)
     , is_transport_available_(false)
 {
@@ -137,13 +146,7 @@ void RearLightingServiceProvider::HandleGetNodeHealth(
 {
     static_cast<void>(transport_message);
 
-    domain::NodeHealthStatus node_health_status {};
-    node_health_status.node_state = domain::NodeHealthState::kOperational;
-    node_health_status.ethernet_link_up = is_transport_available_;
-    node_health_status.service_available = is_initialized_;
-    node_health_status.last_sequence_counter = 0U;
-
-    PublishNodeHealthEvent(node_health_status);
+    PublishNodeHealthEvent(BuildCurrentNodeHealthStatus());
 }
 
 void RearLightingServiceProvider::PublishLampStatusEvent(
@@ -163,6 +166,31 @@ void RearLightingServiceProvider::PublishNodeHealthEvent(
             node_health_status);
 
     static_cast<void>(transport_adapter_.SendEvent(transport_message));
+}
+
+domain::NodeHealthStatus
+RearLightingServiceProvider::BuildCurrentNodeHealthStatus() const noexcept
+{
+    // Authoritative source: the injected NodeHealthSource if any.
+    if (node_health_source_ != nullptr)
+    {
+        return node_health_source_->GetNodeHealthSnapshot();
+    }
+
+    // Fallback synthesised snapshot: honest about what this provider can
+    // observe on its own (transport reachability + init state). Fault
+    // fields stay clear because the provider has no direct visibility
+    // into the lamp driver hardware without a dedicated source.
+    domain::NodeHealthStatus synthesised {};
+    synthesised.health_state =
+        is_initialized_ && is_transport_available_
+            ? domain::NodeHealthState::kOperational
+            : domain::NodeHealthState::kDegraded;
+    synthesised.ethernet_link_available = is_transport_available_;
+    synthesised.service_available = is_initialized_;
+    synthesised.lamp_driver_fault_present = false;
+    synthesised.active_fault_count = 0U;
+    return synthesised;
 }
 
 ServiceStatus RearLightingServiceProvider::ConvertTransportStatus(
@@ -198,6 +226,4 @@ ServiceStatus RearLightingServiceProvider::ConvertTransportStatus(
     return service_status;
 }
 
-}  // namespace service
-}  // namespace lighting
-}  // namespace body_control
+}  // namespace body_control::lighting::service

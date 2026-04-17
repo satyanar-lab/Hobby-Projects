@@ -1,32 +1,47 @@
-file(GLOB_RECURSE BODY_CONTROL_LIGHTING_TEST_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/unit/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/integration/*.cpp
+# ============================================================================
+# Test build.
+#
+# Tests are built against body_control_lighting::core using GoogleTest, which
+# is acquired via FetchContent so the project does not require a system
+# install. Each test source file becomes its own executable so CTest can
+# identify failing cases granularly.
+# ============================================================================
+
+include(FetchContent)
+
+# Pin a specific GoogleTest release for reproducible builds.
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        v1.14.0
 )
 
-if(BODY_CONTROL_LIGHTING_TEST_SOURCES)
-    add_library(body_control_lighting_test_objects OBJECT
-        ${BODY_CONTROL_LIGHTING_TEST_SOURCES}
+# Force GoogleTest's own runtime library selection to match ours on Windows.
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(googletest)
+
+# ----------------------------------------------------------------------------
+# Helper: register one test source file as its own executable + CTest entry.
+# ----------------------------------------------------------------------------
+function(body_control_lighting_add_test test_source_file)
+    get_filename_component(test_target_name "${test_source_file}" NAME_WE)
+
+    add_executable(${test_target_name} "${test_source_file}")
+
+    target_link_libraries(${test_target_name}
+        PRIVATE
+            body_control_lighting::core
+            body_control_lighting::project_options
+            GTest::gtest
+            GTest::gtest_main
     )
 
-    target_link_libraries(body_control_lighting_test_objects
-        PRIVATE
-            body_control_lighting_core
+    add_test(
+        NAME ${test_target_name}
+        COMMAND ${test_target_name}
     )
+endfunction()
 
-    target_include_directories(body_control_lighting_test_objects
-        PRIVATE
-            ${PROJECT_SOURCE_DIR}/include
-    )
-
-    target_compile_features(body_control_lighting_test_objects
-        PRIVATE
-            cxx_std_17
-    )
-
-    target_compile_options(body_control_lighting_test_objects
-        PRIVATE
-            -Wall
-            -Wextra
-            -Wpedantic
-    )
-endif()
+add_subdirectory(unit)
+add_subdirectory(integration)

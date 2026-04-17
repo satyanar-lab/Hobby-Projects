@@ -6,5 +6,5 @@ CXX_DEFINES = -DBODY_CONTROL_LIGHTING_PROJECT_NAME=\"body_control_zonal_lighting
 
 CXX_INCLUDES = -I/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/include
 
-CXX_FLAGS = -std=c++17
+CXX_FLAGS = -std=c++17 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wold-style-cast -Wnon-virtual-dtor
 

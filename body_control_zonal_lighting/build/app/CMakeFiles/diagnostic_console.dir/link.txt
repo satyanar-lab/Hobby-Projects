@@ -1,1 +1,1 @@
-/usr/bin/c++ CMakeFiles/diagnostic_console.dir/diagnostic_console/main.cpp.o -o diagnostic_console  ../src/libbody_control_lighting_core.a -lbody_control_lighting_project_options 
+/usr/bin/c++ CMakeFiles/diagnostic_console.dir/diagnostic_console/main.cpp.o -o diagnostic_console  ../src/libbody_control_lighting_core.a 

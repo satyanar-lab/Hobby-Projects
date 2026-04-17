@@ -65,6 +65,16 @@ CMAKE_BINARY_DIR = /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_
 #=============================================================================
 # Targets provided globally by CMake.
 
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running tests..."
+	/usr/bin/ctest --force-new-ctest-process $(ARGS)
+.PHONY : test
+
+# Special rule for the target test
+test/fast: test
+.PHONY : test/fast
+
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "No interactive CMake dialog available..."
@@ -84,6 +94,51 @@ rebuild_cache:
 # Special rule for the target rebuild_cache
 rebuild_cache/fast: rebuild_cache
 .PHONY : rebuild_cache/fast
+
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Available install components are: \"gmock\" \"gtest\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+.PHONY : list_install_components/fast
+
+# Special rule for the target install
+install: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install
+
+# Special rule for the target install
+install/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install/fast
+
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local/fast
+
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -117,18 +172,18 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
-app/CMakeFiles/diagnostic_console.dir/rule:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 app/CMakeFiles/diagnostic_console.dir/rule
-.PHONY : app/CMakeFiles/diagnostic_console.dir/rule
+app/CMakeFiles/central_zone_controller_app.dir/rule:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 app/CMakeFiles/central_zone_controller_app.dir/rule
+.PHONY : app/CMakeFiles/central_zone_controller_app.dir/rule
 
 # Convenience name for target.
-diagnostic_console: app/CMakeFiles/diagnostic_console.dir/rule
-.PHONY : diagnostic_console
+central_zone_controller_app: app/CMakeFiles/central_zone_controller_app.dir/rule
+.PHONY : central_zone_controller_app
 
 # fast build rule for target.
-diagnostic_console/fast:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/diagnostic_console.dir/build.make app/CMakeFiles/diagnostic_console.dir/build
-.PHONY : diagnostic_console/fast
+central_zone_controller_app/fast:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/central_zone_controller_app.dir/build.make app/CMakeFiles/central_zone_controller_app.dir/build
+.PHONY : central_zone_controller_app/fast
 
 # Convenience name for target.
 app/CMakeFiles/hmi_control_panel.dir/rule:
@@ -145,18 +200,18 @@ hmi_control_panel/fast:
 .PHONY : hmi_control_panel/fast
 
 # Convenience name for target.
-app/CMakeFiles/central_zone_controller_app.dir/rule:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 app/CMakeFiles/central_zone_controller_app.dir/rule
-.PHONY : app/CMakeFiles/central_zone_controller_app.dir/rule
+app/CMakeFiles/diagnostic_console.dir/rule:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 app/CMakeFiles/diagnostic_console.dir/rule
+.PHONY : app/CMakeFiles/diagnostic_console.dir/rule
 
 # Convenience name for target.
-central_zone_controller_app: app/CMakeFiles/central_zone_controller_app.dir/rule
-.PHONY : central_zone_controller_app
+diagnostic_console: app/CMakeFiles/diagnostic_console.dir/rule
+.PHONY : diagnostic_console
 
 # fast build rule for target.
-central_zone_controller_app/fast:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/central_zone_controller_app.dir/build.make app/CMakeFiles/central_zone_controller_app.dir/build
-.PHONY : central_zone_controller_app/fast
+diagnostic_console/fast:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f app/CMakeFiles/diagnostic_console.dir/build.make app/CMakeFiles/diagnostic_console.dir/build
+.PHONY : diagnostic_console/fast
 
 # Convenience name for target.
 app/CMakeFiles/rear_lighting_node_simulator.dir/rule:
@@ -275,7 +330,12 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
+	@echo "... install"
+	@echo "... install/local"
+	@echo "... install/strip"
+	@echo "... list_install_components"
 	@echo "... rebuild_cache"
+	@echo "... test"
 	@echo "... central_zone_controller_app"
 	@echo "... diagnostic_console"
 	@echo "... hmi_control_panel"

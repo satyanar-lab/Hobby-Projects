@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/test_lamp_state_manager.dir/test_lamp_state_manager.cpp.o -o test_lamp_state_manager  ../../src/libbody_control_lighting_core.a ../../lib/libgtest.a ../../lib/libgtest_main.a ../../lib/libgtest.a 

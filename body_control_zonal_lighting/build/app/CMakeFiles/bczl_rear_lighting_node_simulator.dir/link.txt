@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/bczl_rear_lighting_node_simulator.dir/rear_lighting_node_simulator/main.cpp.o -o bczl_rear_lighting_node_simulator  ../src/libbczl_core.a 

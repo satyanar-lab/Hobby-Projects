@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/test_lighting_payload_codec.dir/test_lighting_payload_codec.cpp.o -o test_lighting_payload_codec  ../../src/libbody_control_lighting_core.a ../../lib/libgtest.a ../../lib/libgtest_main.a ../../lib/libgtest.a 

@@ -65,6 +65,16 @@ CMAKE_BINARY_DIR = /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_
 #=============================================================================
 # Targets provided globally by CMake.
 
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running tests..."
+	/usr/bin/ctest --force-new-ctest-process $(ARGS)
+.PHONY : test
+
+# Special rule for the target test
+test/fast: test
+.PHONY : test/fast
+
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "No interactive CMake dialog available..."
@@ -84,6 +94,51 @@ rebuild_cache:
 # Special rule for the target rebuild_cache
 rebuild_cache/fast: rebuild_cache
 .PHONY : rebuild_cache/fast
+
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Available install components are: \"gmock\" \"gtest\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+.PHONY : list_install_components/fast
+
+# Special rule for the target install
+install: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install
+
+# Special rule for the target install
+install/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install/fast
+
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local/fast
+
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -116,188 +171,6 @@ depend:
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-# Convenience name for target.
-test/CMakeFiles/body_control_lighting_test_objects.dir/rule:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test/CMakeFiles/body_control_lighting_test_objects.dir/rule
-.PHONY : test/CMakeFiles/body_control_lighting_test_objects.dir/rule
-
-# Convenience name for target.
-body_control_lighting_test_objects: test/CMakeFiles/body_control_lighting_test_objects.dir/rule
-.PHONY : body_control_lighting_test_objects
-
-# fast build rule for target.
-body_control_lighting_test_objects/fast:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/build
-.PHONY : body_control_lighting_test_objects/fast
-
-integration/test_hazard_priority_behavior.o: integration/test_hazard_priority_behavior.cpp.o
-.PHONY : integration/test_hazard_priority_behavior.o
-
-# target to build an object file
-integration/test_hazard_priority_behavior.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/integration/test_hazard_priority_behavior.cpp.o
-.PHONY : integration/test_hazard_priority_behavior.cpp.o
-
-integration/test_hazard_priority_behavior.i: integration/test_hazard_priority_behavior.cpp.i
-.PHONY : integration/test_hazard_priority_behavior.i
-
-# target to preprocess a source file
-integration/test_hazard_priority_behavior.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/integration/test_hazard_priority_behavior.cpp.i
-.PHONY : integration/test_hazard_priority_behavior.cpp.i
-
-integration/test_hazard_priority_behavior.s: integration/test_hazard_priority_behavior.cpp.s
-.PHONY : integration/test_hazard_priority_behavior.s
-
-# target to generate assembly for a file
-integration/test_hazard_priority_behavior.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/integration/test_hazard_priority_behavior.cpp.s
-.PHONY : integration/test_hazard_priority_behavior.cpp.s
-
-integration/test_node_timeout_behavior.o: integration/test_node_timeout_behavior.cpp.o
-.PHONY : integration/test_node_timeout_behavior.o
-
-# target to build an object file
-integration/test_node_timeout_behavior.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/integration/test_node_timeout_behavior.cpp.o
-.PHONY : integration/test_node_timeout_behavior.cpp.o
-
-integration/test_node_timeout_behavior.i: integration/test_node_timeout_behavior.cpp.i
-.PHONY : integration/test_node_timeout_behavior.i
-
-# target to preprocess a source file
-integration/test_node_timeout_behavior.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/integration/test_node_timeout_behavior.cpp.i
-.PHONY : integration/test_node_timeout_behavior.cpp.i
-
-integration/test_node_timeout_behavior.s: integration/test_node_timeout_behavior.cpp.s
-.PHONY : integration/test_node_timeout_behavior.s
-
-# target to generate assembly for a file
-integration/test_node_timeout_behavior.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/integration/test_node_timeout_behavior.cpp.s
-.PHONY : integration/test_node_timeout_behavior.cpp.s
-
-integration/test_request_response_path.o: integration/test_request_response_path.cpp.o
-.PHONY : integration/test_request_response_path.o
-
-# target to build an object file
-integration/test_request_response_path.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/integration/test_request_response_path.cpp.o
-.PHONY : integration/test_request_response_path.cpp.o
-
-integration/test_request_response_path.i: integration/test_request_response_path.cpp.i
-.PHONY : integration/test_request_response_path.i
-
-# target to preprocess a source file
-integration/test_request_response_path.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/integration/test_request_response_path.cpp.i
-.PHONY : integration/test_request_response_path.cpp.i
-
-integration/test_request_response_path.s: integration/test_request_response_path.cpp.s
-.PHONY : integration/test_request_response_path.s
-
-# target to generate assembly for a file
-integration/test_request_response_path.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/integration/test_request_response_path.cpp.s
-.PHONY : integration/test_request_response_path.cpp.s
-
-unit/test_command_arbitrator.o: unit/test_command_arbitrator.cpp.o
-.PHONY : unit/test_command_arbitrator.o
-
-# target to build an object file
-unit/test_command_arbitrator.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/unit/test_command_arbitrator.cpp.o
-.PHONY : unit/test_command_arbitrator.cpp.o
-
-unit/test_command_arbitrator.i: unit/test_command_arbitrator.cpp.i
-.PHONY : unit/test_command_arbitrator.i
-
-# target to preprocess a source file
-unit/test_command_arbitrator.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/unit/test_command_arbitrator.cpp.i
-.PHONY : unit/test_command_arbitrator.cpp.i
-
-unit/test_command_arbitrator.s: unit/test_command_arbitrator.cpp.s
-.PHONY : unit/test_command_arbitrator.s
-
-# target to generate assembly for a file
-unit/test_command_arbitrator.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/unit/test_command_arbitrator.cpp.s
-.PHONY : unit/test_command_arbitrator.cpp.s
-
-unit/test_lamp_state_manager.o: unit/test_lamp_state_manager.cpp.o
-.PHONY : unit/test_lamp_state_manager.o
-
-# target to build an object file
-unit/test_lamp_state_manager.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/unit/test_lamp_state_manager.cpp.o
-.PHONY : unit/test_lamp_state_manager.cpp.o
-
-unit/test_lamp_state_manager.i: unit/test_lamp_state_manager.cpp.i
-.PHONY : unit/test_lamp_state_manager.i
-
-# target to preprocess a source file
-unit/test_lamp_state_manager.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/unit/test_lamp_state_manager.cpp.i
-.PHONY : unit/test_lamp_state_manager.cpp.i
-
-unit/test_lamp_state_manager.s: unit/test_lamp_state_manager.cpp.s
-.PHONY : unit/test_lamp_state_manager.s
-
-# target to generate assembly for a file
-unit/test_lamp_state_manager.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/unit/test_lamp_state_manager.cpp.s
-.PHONY : unit/test_lamp_state_manager.cpp.s
-
-unit/test_lighting_payload_codec.o: unit/test_lighting_payload_codec.cpp.o
-.PHONY : unit/test_lighting_payload_codec.o
-
-# target to build an object file
-unit/test_lighting_payload_codec.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/unit/test_lighting_payload_codec.cpp.o
-.PHONY : unit/test_lighting_payload_codec.cpp.o
-
-unit/test_lighting_payload_codec.i: unit/test_lighting_payload_codec.cpp.i
-.PHONY : unit/test_lighting_payload_codec.i
-
-# target to preprocess a source file
-unit/test_lighting_payload_codec.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/unit/test_lighting_payload_codec.cpp.i
-.PHONY : unit/test_lighting_payload_codec.cpp.i
-
-unit/test_lighting_payload_codec.s: unit/test_lighting_payload_codec.cpp.s
-.PHONY : unit/test_lighting_payload_codec.s
-
-# target to generate assembly for a file
-unit/test_lighting_payload_codec.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/unit/test_lighting_payload_codec.cpp.s
-.PHONY : unit/test_lighting_payload_codec.cpp.s
-
-unit/test_rear_lighting_function_manager.o: unit/test_rear_lighting_function_manager.cpp.o
-.PHONY : unit/test_rear_lighting_function_manager.o
-
-# target to build an object file
-unit/test_rear_lighting_function_manager.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/unit/test_rear_lighting_function_manager.cpp.o
-.PHONY : unit/test_rear_lighting_function_manager.cpp.o
-
-unit/test_rear_lighting_function_manager.i: unit/test_rear_lighting_function_manager.cpp.i
-.PHONY : unit/test_rear_lighting_function_manager.i
-
-# target to preprocess a source file
-unit/test_rear_lighting_function_manager.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/unit/test_rear_lighting_function_manager.cpp.i
-.PHONY : unit/test_rear_lighting_function_manager.cpp.i
-
-unit/test_rear_lighting_function_manager.s: unit/test_rear_lighting_function_manager.cpp.s
-.PHONY : unit/test_rear_lighting_function_manager.s
-
-# target to generate assembly for a file
-unit/test_rear_lighting_function_manager.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f test/CMakeFiles/body_control_lighting_test_objects.dir/build.make test/CMakeFiles/body_control_lighting_test_objects.dir/unit/test_rear_lighting_function_manager.cpp.s
-.PHONY : unit/test_rear_lighting_function_manager.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -305,29 +178,12 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
+	@echo "... install"
+	@echo "... install/local"
+	@echo "... install/strip"
+	@echo "... list_install_components"
 	@echo "... rebuild_cache"
-	@echo "... body_control_lighting_test_objects"
-	@echo "... integration/test_hazard_priority_behavior.o"
-	@echo "... integration/test_hazard_priority_behavior.i"
-	@echo "... integration/test_hazard_priority_behavior.s"
-	@echo "... integration/test_node_timeout_behavior.o"
-	@echo "... integration/test_node_timeout_behavior.i"
-	@echo "... integration/test_node_timeout_behavior.s"
-	@echo "... integration/test_request_response_path.o"
-	@echo "... integration/test_request_response_path.i"
-	@echo "... integration/test_request_response_path.s"
-	@echo "... unit/test_command_arbitrator.o"
-	@echo "... unit/test_command_arbitrator.i"
-	@echo "... unit/test_command_arbitrator.s"
-	@echo "... unit/test_lamp_state_manager.o"
-	@echo "... unit/test_lamp_state_manager.i"
-	@echo "... unit/test_lamp_state_manager.s"
-	@echo "... unit/test_lighting_payload_codec.o"
-	@echo "... unit/test_lighting_payload_codec.i"
-	@echo "... unit/test_lighting_payload_codec.s"
-	@echo "... unit/test_rear_lighting_function_manager.o"
-	@echo "... unit/test_rear_lighting_function_manager.i"
-	@echo "... unit/test_rear_lighting_function_manager.s"
+	@echo "... test"
 .PHONY : help
 
 

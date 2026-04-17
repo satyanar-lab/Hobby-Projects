@@ -104,14 +104,16 @@ void PrintViewModel(
         view_model.GetNodeHealthStatus();
 
     std::cout << "--- Node Health ---\n";
-    std::cout << "node_state="
-              << static_cast<int>(node_health_status.node_state)
-              << ", ethernet_link_up="
-              << (node_health_status.ethernet_link_up ? "true" : "false")
+    std::cout << "health_state="
+              << static_cast<int>(node_health_status.health_state)
+              << ", ethernet_link_available="
+              << (node_health_status.ethernet_link_available ? "true" : "false")
               << ", service_available="
               << (node_health_status.service_available ? "true" : "false")
-              << ", sequence_counter="
-              << node_health_status.last_sequence_counter
+              << ", lamp_driver_fault_present="
+              << (node_health_status.lamp_driver_fault_present ? "true" : "false")
+              << ", active_fault_count="
+              << node_health_status.active_fault_count
               << '\n';
 }
 

@@ -1,71 +1,48 @@
 #include "body_control/lighting/application/command_arbitrator.hpp"
 
-namespace body_control
-{
-namespace lighting
-{
-namespace application
+namespace body_control::lighting::application
 {
 
 namespace
 {
 
-bool IsKnownLampFunction(
-    const domain::LampFunction lamp_function) noexcept
-{
-    switch (lamp_function)
-    {
-    case domain::LampFunction::kLeftIndicator:
-    case domain::LampFunction::kRightIndicator:
-    case domain::LampFunction::kHazardLamp:
-    case domain::LampFunction::kParkLamp:
-    case domain::LampFunction::kHeadLamp:
-        return true;
-
-    case domain::LampFunction::kUnknown:
-    default:
-        return false;
-    }
-}
-
-bool IsKnownLampCommandAction(
+[[nodiscard]] bool IsActionKnownAndActive(
     const domain::LampCommandAction action) noexcept
 {
     switch (action)
     {
     case domain::LampCommandAction::kActivate:
-    case domain::LampCommandAction::kDeactivate:
     case domain::LampCommandAction::kToggle:
         return true;
 
+    case domain::LampCommandAction::kDeactivate:
     case domain::LampCommandAction::kNoAction:
     default:
         return false;
     }
 }
 
-bool IsKnownCommandSource(
-    const domain::CommandSource source) noexcept
-{
-    switch (source)
-    {
-    case domain::CommandSource::kHmiControlPanel:
-    case domain::CommandSource::kDiagnosticConsole:
-    case domain::CommandSource::kCentralZoneController:
-        return true;
-
-    case domain::CommandSource::kUnknown:
-    default:
-        return false;
-    }
-}
-
-bool IsValidLampCommand(
+[[nodiscard]] bool IsCommandStructurallyAccepted(
     const domain::LampCommand& command) noexcept
 {
-    return IsKnownLampFunction(command.function) &&
-           IsKnownLampCommandAction(command.action) &&
-           IsKnownCommandSource(command.source);
+    // A structurally valid command still has to name a real function
+    // and carry a non-kNoAction action to be arbitrated.
+    if (!domain::IsValidLampCommand(command))
+    {
+        return false;
+    }
+
+    if (command.function == domain::LampFunction::kUnknown)
+    {
+        return false;
+    }
+
+    if (command.action == domain::LampCommandAction::kNoAction)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 }  // namespace
@@ -78,7 +55,7 @@ ArbitrationDecision CommandArbitrator::Arbitrate(
     decision.result = ArbitrationResult::kRejected;
     decision.command = requested_command;
 
-    if (!IsValidLampCommand(requested_command))
+    if (!IsCommandStructurallyAccepted(requested_command))
     {
         return decision;
     }
@@ -104,8 +81,7 @@ bool CommandArbitrator::IsHazardActivationCommand(
     const domain::LampCommand& command) const noexcept
 {
     return (command.function == domain::LampFunction::kHazardLamp) &&
-           ((command.action == domain::LampCommandAction::kActivate) ||
-            (command.action == domain::LampCommandAction::kToggle));
+           IsActionKnownAndActive(command.action);
 }
 
 bool CommandArbitrator::IsIndicatorActivationCommand(
@@ -115,13 +91,7 @@ bool CommandArbitrator::IsIndicatorActivationCommand(
         (command.function == domain::LampFunction::kLeftIndicator) ||
         (command.function == domain::LampFunction::kRightIndicator);
 
-    const bool is_activation_request =
-        (command.action == domain::LampCommandAction::kActivate) ||
-        (command.action == domain::LampCommandAction::kToggle);
-
-    return is_indicator_function && is_activation_request;
+    return is_indicator_function && IsActionKnownAndActive(command.action);
 }
 
-}  // namespace application
-}  // namespace lighting
-}  // namespace body_control
+}  // namespace body_control::lighting::application

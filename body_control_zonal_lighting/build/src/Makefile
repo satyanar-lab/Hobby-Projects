@@ -65,6 +65,16 @@ CMAKE_BINARY_DIR = /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_
 #=============================================================================
 # Targets provided globally by CMake.
 
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running tests..."
+	/usr/bin/ctest --force-new-ctest-process $(ARGS)
+.PHONY : test
+
+# Special rule for the target test
+test/fast: test
+.PHONY : test/fast
+
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "No interactive CMake dialog available..."
@@ -84,6 +94,51 @@ rebuild_cache:
 # Special rule for the target rebuild_cache
 rebuild_cache/fast: rebuild_cache
 .PHONY : rebuild_cache/fast
+
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Available install components are: \"gmock\" \"gtest\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+.PHONY : list_install_components/fast
+
+# Special rule for the target install
+install: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install
+
+# Special rule for the target install
+install/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install/fast
+
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local/fast
+
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -249,6 +304,30 @@ application/rear_lighting_function_manager.s: application/rear_lighting_function
 application/rear_lighting_function_manager.cpp.s:
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/application/rear_lighting_function_manager.cpp.s
 .PHONY : application/rear_lighting_function_manager.cpp.s
+
+domain/domain_type_validators.o: domain/domain_type_validators.cpp.o
+.PHONY : domain/domain_type_validators.o
+
+# target to build an object file
+domain/domain_type_validators.cpp.o:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.o
+.PHONY : domain/domain_type_validators.cpp.o
+
+domain/domain_type_validators.i: domain/domain_type_validators.cpp.i
+.PHONY : domain/domain_type_validators.i
+
+# target to preprocess a source file
+domain/domain_type_validators.cpp.i:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.i
+.PHONY : domain/domain_type_validators.cpp.i
+
+domain/domain_type_validators.s: domain/domain_type_validators.cpp.s
+.PHONY : domain/domain_type_validators.s
+
+# target to generate assembly for a file
+domain/domain_type_validators.cpp.s:
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.s
+.PHONY : domain/domain_type_validators.cpp.s
 
 domain/lighting_payload_codec.o: domain/lighting_payload_codec.cpp.o
 .PHONY : domain/lighting_payload_codec.o
@@ -417,78 +496,6 @@ platform/linux/process_signal_handler.s: platform/linux/process_signal_handler.c
 platform/linux/process_signal_handler.cpp.s:
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.s
 .PHONY : platform/linux/process_signal_handler.cpp.s
-
-platform/stm32/ethernet_link_supervisor.o: platform/stm32/ethernet_link_supervisor.cpp.o
-.PHONY : platform/stm32/ethernet_link_supervisor.o
-
-# target to build an object file
-platform/stm32/ethernet_link_supervisor.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.o
-.PHONY : platform/stm32/ethernet_link_supervisor.cpp.o
-
-platform/stm32/ethernet_link_supervisor.i: platform/stm32/ethernet_link_supervisor.cpp.i
-.PHONY : platform/stm32/ethernet_link_supervisor.i
-
-# target to preprocess a source file
-platform/stm32/ethernet_link_supervisor.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.i
-.PHONY : platform/stm32/ethernet_link_supervisor.cpp.i
-
-platform/stm32/ethernet_link_supervisor.s: platform/stm32/ethernet_link_supervisor.cpp.s
-.PHONY : platform/stm32/ethernet_link_supervisor.s
-
-# target to generate assembly for a file
-platform/stm32/ethernet_link_supervisor.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.s
-.PHONY : platform/stm32/ethernet_link_supervisor.cpp.s
-
-platform/stm32/gpio_output_driver.o: platform/stm32/gpio_output_driver.cpp.o
-.PHONY : platform/stm32/gpio_output_driver.o
-
-# target to build an object file
-platform/stm32/gpio_output_driver.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.o
-.PHONY : platform/stm32/gpio_output_driver.cpp.o
-
-platform/stm32/gpio_output_driver.i: platform/stm32/gpio_output_driver.cpp.i
-.PHONY : platform/stm32/gpio_output_driver.i
-
-# target to preprocess a source file
-platform/stm32/gpio_output_driver.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.i
-.PHONY : platform/stm32/gpio_output_driver.cpp.i
-
-platform/stm32/gpio_output_driver.s: platform/stm32/gpio_output_driver.cpp.s
-.PHONY : platform/stm32/gpio_output_driver.s
-
-# target to generate assembly for a file
-platform/stm32/gpio_output_driver.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.s
-.PHONY : platform/stm32/gpio_output_driver.cpp.s
-
-platform/stm32/stm32_diagnostic_logger.o: platform/stm32/stm32_diagnostic_logger.cpp.o
-.PHONY : platform/stm32/stm32_diagnostic_logger.o
-
-# target to build an object file
-platform/stm32/stm32_diagnostic_logger.cpp.o:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.o
-.PHONY : platform/stm32/stm32_diagnostic_logger.cpp.o
-
-platform/stm32/stm32_diagnostic_logger.i: platform/stm32/stm32_diagnostic_logger.cpp.i
-.PHONY : platform/stm32/stm32_diagnostic_logger.i
-
-# target to preprocess a source file
-platform/stm32/stm32_diagnostic_logger.cpp.i:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.i
-.PHONY : platform/stm32/stm32_diagnostic_logger.cpp.i
-
-platform/stm32/stm32_diagnostic_logger.s: platform/stm32/stm32_diagnostic_logger.cpp.s
-.PHONY : platform/stm32/stm32_diagnostic_logger.s
-
-# target to generate assembly for a file
-platform/stm32/stm32_diagnostic_logger.cpp.s:
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/body_control_lighting_core.dir/build.make src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.s
-.PHONY : platform/stm32/stm32_diagnostic_logger.cpp.s
 
 service/rear_lighting_service_consumer.o: service/rear_lighting_service_consumer.cpp.o
 .PHONY : service/rear_lighting_service_consumer.o
@@ -713,7 +720,12 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
+	@echo "... install"
+	@echo "... install/local"
+	@echo "... install/strip"
+	@echo "... list_install_components"
 	@echo "... rebuild_cache"
+	@echo "... test"
 	@echo "... body_control_lighting_core"
 	@echo "... application/central_zone_controller.o"
 	@echo "... application/central_zone_controller.i"
@@ -730,6 +742,9 @@ help:
 	@echo "... application/rear_lighting_function_manager.o"
 	@echo "... application/rear_lighting_function_manager.i"
 	@echo "... application/rear_lighting_function_manager.s"
+	@echo "... domain/domain_type_validators.o"
+	@echo "... domain/domain_type_validators.i"
+	@echo "... domain/domain_type_validators.s"
 	@echo "... domain/lighting_payload_codec.o"
 	@echo "... domain/lighting_payload_codec.i"
 	@echo "... domain/lighting_payload_codec.s"
@@ -751,15 +766,6 @@ help:
 	@echo "... platform/linux/process_signal_handler.o"
 	@echo "... platform/linux/process_signal_handler.i"
 	@echo "... platform/linux/process_signal_handler.s"
-	@echo "... platform/stm32/ethernet_link_supervisor.o"
-	@echo "... platform/stm32/ethernet_link_supervisor.i"
-	@echo "... platform/stm32/ethernet_link_supervisor.s"
-	@echo "... platform/stm32/gpio_output_driver.o"
-	@echo "... platform/stm32/gpio_output_driver.i"
-	@echo "... platform/stm32/gpio_output_driver.s"
-	@echo "... platform/stm32/stm32_diagnostic_logger.o"
-	@echo "... platform/stm32/stm32_diagnostic_logger.i"
-	@echo "... platform/stm32/stm32_diagnostic_logger.s"
 	@echo "... service/rear_lighting_service_consumer.o"
 	@echo "... service/rear_lighting_service_consumer.i"
 	@echo "... service/rear_lighting_service_consumer.s"

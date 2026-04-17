@@ -139,10 +139,24 @@ src/CMakeFiles/body_control_lighting_core.dir/application/rear_lighting_function
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/application/rear_lighting_function_manager.cpp.s"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/application/rear_lighting_function_manager.cpp -o CMakeFiles/body_control_lighting_core.dir/application/rear_lighting_function_manager.cpp.s
 
+src/CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
+src/CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/domain/domain_type_validators.cpp
+src/CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.o"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/domain/domain_type_validators.cpp
+
+src/CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.i"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/domain/domain_type_validators.cpp > CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.i
+
+src/CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.s"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/domain/domain_type_validators.cpp -o CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.s
+
 src/CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
 src/CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/domain/lighting_payload_codec.cpp
 src/CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.o"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/domain/lighting_payload_codec.cpp
 
 src/CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.i: cmake_force
@@ -156,7 +170,7 @@ src/CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.
 src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_command_mapper.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
 src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_command_mapper.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/hmi/hmi_command_mapper.cpp
 src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_command_mapper.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_command_mapper.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_command_mapper.cpp.o"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_command_mapper.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/hmi/hmi_command_mapper.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/hmi/hmi_command_mapper.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/hmi/hmi_command_mapper.cpp
 
 src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_command_mapper.cpp.i: cmake_force
@@ -170,7 +184,7 @@ src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_command_mapper.cpp.s: cmak
 src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_view_model.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
 src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_view_model.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/hmi/hmi_view_model.cpp
 src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_view_model.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_view_model.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_view_model.cpp.o"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_view_model.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/hmi/hmi_view_model.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/hmi/hmi_view_model.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/hmi/hmi_view_model.cpp
 
 src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_view_model.cpp.i: cmake_force
@@ -184,7 +198,7 @@ src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_view_model.cpp.s: cmake_fo
 src/CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
 src/CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/hmi/main_window.cpp
 src/CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.o"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/hmi/main_window.cpp
 
 src/CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.i: cmake_force
@@ -195,94 +209,10 @@ src/CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.s"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/hmi/main_window.cpp -o CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.s
 
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_clock.cpp
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_clock.cpp
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.i"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_clock.cpp > CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.i
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.s"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_clock.cpp -o CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.s
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_logger.cpp
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_logger.cpp
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.i"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_logger.cpp > CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.i
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.s"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_logger.cpp -o CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.s
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/process_signal_handler.cpp
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/process_signal_handler.cpp
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.i"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/process_signal_handler.cpp > CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.i
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.s"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/process_signal_handler.cpp -o CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.s
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/ethernet_link_supervisor.cpp
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.o"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/ethernet_link_supervisor.cpp
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.i"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/ethernet_link_supervisor.cpp > CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.i
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.s"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/ethernet_link_supervisor.cpp -o CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.s
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/gpio_output_driver.cpp
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.o"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/gpio_output_driver.cpp
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.i"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/gpio_output_driver.cpp > CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.i
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.s"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/gpio_output_driver.cpp -o CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.s
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/stm32_diagnostic_logger.cpp
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.o"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/stm32_diagnostic_logger.cpp
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.i"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/stm32_diagnostic_logger.cpp > CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.i
-
-src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.s"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/stm32/stm32_diagnostic_logger.cpp -o CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.s
-
 src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_consumer.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
 src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_consumer.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/service/rear_lighting_service_consumer.cpp
 src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_consumer.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_consumer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_consumer.cpp.o"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_consumer.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_consumer.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_consumer.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/service/rear_lighting_service_consumer.cpp
 
 src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_consumer.cpp.i: cmake_force
@@ -296,7 +226,7 @@ src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_cons
 src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
 src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/service/rear_lighting_service_provider.cpp
 src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.o"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/service/rear_lighting_service_provider.cpp
 
 src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.i: cmake_force
@@ -306,6 +236,76 @@ src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_prov
 src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.s"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/service/rear_lighting_service_provider.cpp -o CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.s
+
+src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
+src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_builder.cpp
+src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_builder.cpp
+
+src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.i"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_builder.cpp > CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.i
+
+src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.s"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_builder.cpp -o CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.s
+
+src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
+src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_parser.cpp
+src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_parser.cpp
+
+src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.i"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_parser.cpp > CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.i
+
+src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.s"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_parser.cpp -o CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.s
+
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_clock.cpp
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_clock.cpp
+
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.i"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_clock.cpp > CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.i
+
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.s"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_clock.cpp -o CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.s
+
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_logger.cpp
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_logger.cpp
+
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.i"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_logger.cpp > CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.i
+
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.s"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/linux_logger.cpp -o CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.s
+
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/process_signal_handler.cpp
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/process_signal_handler.cpp
+
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.i"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/process_signal_handler.cpp > CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.i
+
+src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.s"
+	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/platform/linux/process_signal_handler.cpp -o CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.s
 
 src/CMakeFiles/body_control_lighting_core.dir/transport/ethernet/ethernet_frame_adapter.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
 src/CMakeFiles/body_control_lighting_core.dir/transport/ethernet/ethernet_frame_adapter.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/ethernet/ethernet_frame_adapter.cpp
@@ -335,38 +335,10 @@ src/CMakeFiles/body_control_lighting_core.dir/transport/ethernet/udp_transport_a
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/transport/ethernet/udp_transport_adapter.cpp.s"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/ethernet/udp_transport_adapter.cpp -o CMakeFiles/body_control_lighting_core.dir/transport/ethernet/udp_transport_adapter.cpp.s
 
-src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
-src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_builder.cpp
-src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_builder.cpp
-
-src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.i"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_builder.cpp > CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.i
-
-src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.s"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_builder.cpp -o CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.s
-
-src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
-src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_parser.cpp
-src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_parser.cpp
-
-src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.i"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_parser.cpp > CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.i
-
-src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.s"
-	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/someip_message_parser.cpp -o CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.s
-
 src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
 src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/vsomeip/vsomeip_client_adapter.cpp
 src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.o"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/vsomeip/vsomeip_client_adapter.cpp
 
 src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.i: cmake_force
@@ -380,7 +352,7 @@ src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_a
 src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
 src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/vsomeip/vsomeip_runtime_manager.cpp
 src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.o"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/vsomeip/vsomeip_runtime_manager.cpp
 
 src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.i: cmake_force
@@ -394,7 +366,7 @@ src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_
 src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/flags.make
 src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.o: /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/vsomeip/vsomeip_server_adapter.cpp
 src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.o: src/CMakeFiles/body_control_lighting_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.o"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.o -MF CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.o.d -o CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.o -c /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/src/transport/vsomeip/vsomeip_server_adapter.cpp
 
 src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.i: cmake_force
@@ -412,22 +384,20 @@ body_control_lighting_core_OBJECTS = \
 "CMakeFiles/body_control_lighting_core.dir/application/node_health_monitor.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/application/central_zone_controller.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/application/rear_lighting_function_manager.cpp.o" \
+"CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/hmi/hmi_command_mapper.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/hmi/hmi_view_model.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.o" \
+"CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_consumer.cpp.o" \
+"CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.o" \
+"CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o" \
+"CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o" \
-"CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.o" \
-"CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.o" \
-"CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.o" \
-"CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_consumer.cpp.o" \
-"CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/transport/ethernet/ethernet_frame_adapter.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/transport/ethernet/udp_transport_adapter.cpp.o" \
-"CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o" \
-"CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.o" \
 "CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.o"
@@ -440,28 +410,26 @@ src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.d
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/application/node_health_monitor.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/application/central_zone_controller.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/application/rear_lighting_function_manager.cpp.o
+src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/domain/domain_type_validators.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/domain/lighting_payload_codec.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_command_mapper.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/hmi/hmi_view_model.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/hmi/main_window.cpp.o
+src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_consumer.cpp.o
+src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.o
+src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o
+src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_clock.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/platform/linux/linux_logger.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/platform/linux/process_signal_handler.cpp.o
-src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/ethernet_link_supervisor.cpp.o
-src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/gpio_output_driver.cpp.o
-src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/platform/stm32/stm32_diagnostic_logger.cpp.o
-src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_consumer.cpp.o
-src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/service/rear_lighting_service_provider.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/transport/ethernet/ethernet_frame_adapter.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/transport/ethernet/udp_transport_adapter.cpp.o
-src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_builder.cpp.o
-src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/transport/someip_message_parser.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_client_adapter.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_runtime_manager.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/transport/vsomeip/vsomeip_server_adapter.cpp.o
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/build.make
 src/libbody_control_lighting_core.a: src/CMakeFiles/body_control_lighting_core.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Linking CXX static library libbody_control_lighting_core.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Linking CXX static library libbody_control_lighting_core.a"
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && $(CMAKE_COMMAND) -P CMakeFiles/body_control_lighting_core.dir/cmake_clean_target.cmake
 	cd /home/pavankumar/workspace/Hobby-Projects/body_control_zonal_lighting/build/src && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/body_control_lighting_core.dir/link.txt --verbose=$(VERBOSE)
 
