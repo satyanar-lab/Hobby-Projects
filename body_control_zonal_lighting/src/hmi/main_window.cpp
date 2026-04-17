@@ -8,8 +8,8 @@ namespace hmi
 {
 
 MainWindow::MainWindow(
-    application::CentralZoneController& central_zone_controller) noexcept
-    : central_zone_controller_(central_zone_controller)
+    service::OperatorServiceProviderInterface& operator_service) noexcept
+    : operator_service_(operator_service)
     , hmi_view_model_ {}
 {
 }
@@ -17,112 +17,65 @@ MainWindow::MainWindow(
 MainWindowStatus MainWindow::ProcessAction(
     const HmiAction action)
 {
-    application::ControllerStatus controller_status {
-        application::ControllerStatus::kInvalidArgument};
-    domain::LampFunction toggled_function {domain::LampFunction::kUnknown};
+    service::OperatorServiceStatus operator_status {
+        service::OperatorServiceStatus::kInvalidArgument};
 
     switch (action)
     {
     case HmiAction::kToggleLeftIndicator:
-    {
-        toggled_function = domain::LampFunction::kLeftIndicator;
-        controller_status = central_zone_controller_.SendLampCommand(
-            toggled_function,
-            hmi_view_model_.IsLampFunctionActive(toggled_function)
-                ? domain::LampCommandAction::kDeactivate
-                : domain::LampCommandAction::kActivate,
-            domain::CommandSource::kHmiControlPanel);
+        operator_status = operator_service_.RequestLampToggle(
+            domain::LampFunction::kLeftIndicator);
         break;
-    }
 
     case HmiAction::kToggleRightIndicator:
-    {
-        toggled_function = domain::LampFunction::kRightIndicator;
-        controller_status = central_zone_controller_.SendLampCommand(
-            toggled_function,
-            hmi_view_model_.IsLampFunctionActive(toggled_function)
-                ? domain::LampCommandAction::kDeactivate
-                : domain::LampCommandAction::kActivate,
-            domain::CommandSource::kHmiControlPanel);
+        operator_status = operator_service_.RequestLampToggle(
+            domain::LampFunction::kRightIndicator);
         break;
-    }
 
     case HmiAction::kToggleHazardLamp:
-    {
-        toggled_function = domain::LampFunction::kHazardLamp;
-        controller_status = central_zone_controller_.SendLampCommand(
-            toggled_function,
-            hmi_view_model_.IsLampFunctionActive(toggled_function)
-                ? domain::LampCommandAction::kDeactivate
-                : domain::LampCommandAction::kActivate,
-            domain::CommandSource::kHmiControlPanel);
+        operator_status = operator_service_.RequestLampToggle(
+            domain::LampFunction::kHazardLamp);
         break;
-    }
 
     case HmiAction::kToggleParkLamp:
-    {
-        toggled_function = domain::LampFunction::kParkLamp;
-        controller_status = central_zone_controller_.SendLampCommand(
-            toggled_function,
-            hmi_view_model_.IsLampFunctionActive(toggled_function)
-                ? domain::LampCommandAction::kDeactivate
-                : domain::LampCommandAction::kActivate,
-            domain::CommandSource::kHmiControlPanel);
+        operator_status = operator_service_.RequestLampToggle(
+            domain::LampFunction::kParkLamp);
         break;
-    }
 
     case HmiAction::kToggleHeadLamp:
-    {
-        toggled_function = domain::LampFunction::kHeadLamp;
-        controller_status = central_zone_controller_.SendLampCommand(
-            toggled_function,
-            hmi_view_model_.IsLampFunctionActive(toggled_function)
-                ? domain::LampCommandAction::kDeactivate
-                : domain::LampCommandAction::kActivate,
-            domain::CommandSource::kHmiControlPanel);
+        operator_status = operator_service_.RequestLampToggle(
+            domain::LampFunction::kHeadLamp);
         break;
-    }
 
     case HmiAction::kRequestNodeHealth:
-    {
-        controller_status = central_zone_controller_.RequestNodeHealth();
+        operator_status = operator_service_.RequestNodeHealth();
         break;
-    }
 
     case HmiAction::kUnknown:
     default:
         return MainWindowStatus::kInvalidAction;
     }
 
-    // For lamp toggles: pull confirmed state from the node so the view
-    // model is up-to-date before the caller redraws.  The status request
-    // is best-effort; the view model is refreshed regardless.
-    if (toggled_function != domain::LampFunction::kUnknown)
-    {
-        static_cast<void>(
-            central_zone_controller_.RequestLampStatus(toggled_function));
-
-        domain::LampStatus refreshed_status {};
-        if (central_zone_controller_.GetCachedLampStatus(
-                toggled_function, refreshed_status))
-        {
-            hmi_view_model_.UpdateLampStatus(refreshed_status);
-        }
-    }
-
-    return ConvertControllerStatus(controller_status);
+    return ConvertOperatorStatus(operator_status);
 }
 
-void MainWindow::UpdateLampStatus(
-    const domain::LampStatus& lamp_status) noexcept
+void MainWindow::OnLampStatusUpdated(
+    const domain::LampStatus& lamp_status)
 {
     hmi_view_model_.UpdateLampStatus(lamp_status);
 }
 
-void MainWindow::UpdateNodeHealthStatus(
-    const domain::NodeHealthStatus& node_health_status) noexcept
+void MainWindow::OnNodeHealthUpdated(
+    const domain::NodeHealthStatus& node_health_status)
 {
     hmi_view_model_.UpdateNodeHealthStatus(node_health_status);
+}
+
+void MainWindow::OnControllerAvailabilityChanged(
+    const bool /*is_available*/)
+{
+    // Availability is surfaced via node health events; no separate
+    // view model state defined for this phase.
 }
 
 const HmiViewModel& MainWindow::GetViewModel() const noexcept
@@ -130,24 +83,25 @@ const HmiViewModel& MainWindow::GetViewModel() const noexcept
     return hmi_view_model_;
 }
 
-MainWindowStatus MainWindow::ConvertControllerStatus(
-    const application::ControllerStatus controller_status) noexcept
+MainWindowStatus MainWindow::ConvertOperatorStatus(
+    const service::OperatorServiceStatus operator_status) noexcept
 {
     MainWindowStatus main_window_status {MainWindowStatus::kControllerError};
 
-    switch (controller_status)
+    switch (operator_status)
     {
-    case application::ControllerStatus::kSuccess:
+    case service::OperatorServiceStatus::kSuccess:
         main_window_status = MainWindowStatus::kSuccess;
         break;
 
-    case application::ControllerStatus::kInvalidArgument:
+    case service::OperatorServiceStatus::kInvalidArgument:
         main_window_status = MainWindowStatus::kInvalidAction;
         break;
 
-    case application::ControllerStatus::kNotInitialized:
-    case application::ControllerStatus::kNotAvailable:
-    case application::ControllerStatus::kServiceError:
+    case service::OperatorServiceStatus::kNotInitialized:
+    case service::OperatorServiceStatus::kNotAvailable:
+    case service::OperatorServiceStatus::kRejected:
+    case service::OperatorServiceStatus::kTransportError:
     default:
         main_window_status = MainWindowStatus::kControllerError;
         break;

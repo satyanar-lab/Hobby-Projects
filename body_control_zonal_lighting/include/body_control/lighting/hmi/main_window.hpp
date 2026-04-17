@@ -1,10 +1,9 @@
 #ifndef BODY_CONTROL_LIGHTING_HMI_MAIN_WINDOW_HPP
 #define BODY_CONTROL_LIGHTING_HMI_MAIN_WINDOW_HPP
 
-#include "body_control/lighting/application/central_zone_controller.hpp"
-#include "body_control/lighting/domain/lamp_status_types.hpp"
 #include "body_control/lighting/hmi/hmi_command_mapper.hpp"
 #include "body_control/lighting/hmi/hmi_view_model.hpp"
+#include "body_control/lighting/service/operator_service_interface.hpp"
 
 namespace body_control
 {
@@ -21,27 +20,33 @@ enum class MainWindowStatus : std::uint8_t
 };
 
 class MainWindow final
+    : public service::OperatorServiceEventListenerInterface
 {
 public:
     explicit MainWindow(
-        application::CentralZoneController& central_zone_controller) noexcept;
+        service::OperatorServiceProviderInterface& operator_service) noexcept;
 
     MainWindowStatus ProcessAction(
         HmiAction action);
 
-    void UpdateLampStatus(
-        const domain::LampStatus& lamp_status) noexcept;
+    // OperatorServiceEventListenerInterface — called by the consumer on
+    // event arrival; keeps the view model up-to-date without polling.
+    void OnLampStatusUpdated(
+        const domain::LampStatus& lamp_status) override;
 
-    void UpdateNodeHealthStatus(
-        const domain::NodeHealthStatus& node_health_status) noexcept;
+    void OnNodeHealthUpdated(
+        const domain::NodeHealthStatus& node_health_status) override;
+
+    void OnControllerAvailabilityChanged(
+        bool is_available) override;
 
     const HmiViewModel& GetViewModel() const noexcept;
 
 private:
-    static MainWindowStatus ConvertControllerStatus(
-        application::ControllerStatus controller_status) noexcept;
+    static MainWindowStatus ConvertOperatorStatus(
+        service::OperatorServiceStatus operator_status) noexcept;
 
-    application::CentralZoneController& central_zone_controller_;
+    service::OperatorServiceProviderInterface& operator_service_;
     HmiViewModel hmi_view_model_;
 };
 

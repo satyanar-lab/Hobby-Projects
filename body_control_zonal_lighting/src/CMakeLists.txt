@@ -22,6 +22,7 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_COMMON
     hmi/hmi_view_model.cpp
     hmi/main_window.cpp
 
+    service/operator_service_consumer.cpp
     service/operator_service_provider.cpp
     service/rear_lighting_service_consumer.cpp
     service/rear_lighting_service_provider.cpp

@@ -1,11 +1,12 @@
 #include <iostream>
 #include <memory>
 
-#include "body_control/lighting/application/central_zone_controller.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
+#include "body_control/lighting/domain/lighting_service_ids.hpp"
 #include "body_control/lighting/hmi/hmi_display_strings.hpp"
-#include "body_control/lighting/service/rear_lighting_service_consumer.hpp"
+#include "body_control/lighting/service/operator_service_consumer.hpp"
+#include "body_control/lighting/service/operator_service_interface.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
 namespace body_control
@@ -18,7 +19,7 @@ namespace vsomeip
 {
 
 std::unique_ptr<TransportAdapterInterface>
-CreateCentralZoneControllerVsomeipClientAdapter();
+CreateOperatorClientVsomeipClientAdapter();
 
 }  // namespace vsomeip
 }  // namespace transport
@@ -46,8 +47,8 @@ void PrintMenu()
     std::cout << "Selection: ";
 }
 
-void PrintLampStatus(
-    body_control::lighting::application::CentralZoneController& central_zone_controller,
+void PrintCachedLampStatus(
+    const body_control::lighting::service::OperatorServiceConsumer& consumer,
     const body_control::lighting::domain::LampFunction lamp_function)
 {
     using body_control::lighting::hmi::LampFunctionToString;
@@ -55,7 +56,7 @@ void PrintLampStatus(
 
     body_control::lighting::domain::LampStatus lamp_status {};
 
-    if (central_zone_controller.GetCachedLampStatus(lamp_function, lamp_status))
+    if (consumer.GetLampStatus(lamp_function, lamp_status))
     {
         std::cout << LampFunctionToString(lamp_status.function)
                   << " -> "
@@ -68,21 +69,56 @@ void PrintLampStatus(
     }
 }
 
+class DiagnosticEventListener final
+    : public body_control::lighting::service::OperatorServiceEventListenerInterface
+{
+public:
+    void OnLampStatusUpdated(
+        const body_control::lighting::domain::LampStatus& lamp_status) override
+    {
+        using body_control::lighting::hmi::LampFunctionToString;
+        using body_control::lighting::hmi::LampOutputStateToString;
+        std::cout << "[event] "
+                  << LampFunctionToString(lamp_status.function)
+                  << " -> "
+                  << LampOutputStateToString(lamp_status.output_state)
+                  << '\n';
+    }
+
+    void OnNodeHealthUpdated(
+        const body_control::lighting::domain::NodeHealthStatus&
+            node_health_status) override
+    {
+        using body_control::lighting::hmi::NodeHealthStateToString;
+        std::cout << "[event] node health: "
+                  << NodeHealthStateToString(node_health_status.health_state)
+                  << ", svc="
+                  << (node_health_status.service_available ? "up" : "down")
+                  << '\n';
+    }
+
+    void OnControllerAvailabilityChanged(const bool is_available) override
+    {
+        std::cout << "[event] controller "
+                  << (is_available ? "available" : "unavailable")
+                  << '\n';
+    }
+};
+
 }  // namespace
 
 int main()
 {
-    using body_control::lighting::application::CentralZoneController;
-    using body_control::lighting::application::ControllerStatus;
-    using body_control::lighting::domain::CommandSource;
-    using body_control::lighting::domain::LampCommandAction;
     using body_control::lighting::domain::LampFunction;
-    using body_control::lighting::service::RearLightingServiceConsumer;
+    using body_control::lighting::domain::operator_service::
+        kDiagnosticConsoleApplicationId;
+    using body_control::lighting::service::OperatorServiceConsumer;
+    using body_control::lighting::service::OperatorServiceStatus;
     using body_control::lighting::transport::TransportAdapterInterface;
 
     std::unique_ptr<TransportAdapterInterface> transport_adapter =
         body_control::lighting::transport::vsomeip::
-            CreateCentralZoneControllerVsomeipClientAdapter();
+            CreateOperatorClientVsomeipClientAdapter();
 
     if (transport_adapter == nullptr)
     {
@@ -90,16 +126,17 @@ int main()
         return 1;
     }
 
-    RearLightingServiceConsumer rear_lighting_service_consumer {
-        *transport_adapter};
+    OperatorServiceConsumer operator_service {
+        *transport_adapter,
+        kDiagnosticConsoleApplicationId};
 
-    CentralZoneController central_zone_controller {
-        rear_lighting_service_consumer};
+    DiagnosticEventListener event_listener {};
+    operator_service.SetEventListener(&event_listener);
 
-    const ControllerStatus init_status =
-        central_zone_controller.Initialize();
+    const OperatorServiceStatus init_status =
+        operator_service.Initialize();
 
-    if (init_status != ControllerStatus::kSuccess)
+    if (init_status != OperatorServiceStatus::kSuccess)
     {
         std::cerr << "Failed to initialize diagnostic console.\n";
         return 1;
@@ -114,109 +151,88 @@ int main()
         int selection {0};
         std::cin >> selection;
 
-        ControllerStatus controller_status {ControllerStatus::kSuccess};
+        OperatorServiceStatus operator_status {OperatorServiceStatus::kSuccess};
         LampFunction status_function_to_print {LampFunction::kUnknown};
         bool should_print_lamp_status {false};
 
         switch (selection)
         {
         case 1:
-            controller_status = central_zone_controller.SendLampCommand(
-                LampFunction::kLeftIndicator,
-                LampCommandAction::kActivate,
-                CommandSource::kDiagnosticConsole);
+            operator_status = operator_service.RequestLampActivate(
+                LampFunction::kLeftIndicator);
             status_function_to_print = LampFunction::kLeftIndicator;
             should_print_lamp_status = true;
             break;
 
         case 2:
-            controller_status = central_zone_controller.SendLampCommand(
-                LampFunction::kLeftIndicator,
-                LampCommandAction::kDeactivate,
-                CommandSource::kDiagnosticConsole);
+            operator_status = operator_service.RequestLampDeactivate(
+                LampFunction::kLeftIndicator);
             status_function_to_print = LampFunction::kLeftIndicator;
             should_print_lamp_status = true;
             break;
 
         case 3:
-            controller_status = central_zone_controller.SendLampCommand(
-                LampFunction::kRightIndicator,
-                LampCommandAction::kActivate,
-                CommandSource::kDiagnosticConsole);
+            operator_status = operator_service.RequestLampActivate(
+                LampFunction::kRightIndicator);
             status_function_to_print = LampFunction::kRightIndicator;
             should_print_lamp_status = true;
             break;
 
         case 4:
-            controller_status = central_zone_controller.SendLampCommand(
-                LampFunction::kRightIndicator,
-                LampCommandAction::kDeactivate,
-                CommandSource::kDiagnosticConsole);
+            operator_status = operator_service.RequestLampDeactivate(
+                LampFunction::kRightIndicator);
             status_function_to_print = LampFunction::kRightIndicator;
             should_print_lamp_status = true;
             break;
 
         case 5:
-            controller_status = central_zone_controller.SendLampCommand(
-                LampFunction::kHazardLamp,
-                LampCommandAction::kActivate,
-                CommandSource::kDiagnosticConsole);
+            operator_status = operator_service.RequestLampActivate(
+                LampFunction::kHazardLamp);
             status_function_to_print = LampFunction::kHazardLamp;
             should_print_lamp_status = true;
             break;
 
         case 6:
-            controller_status = central_zone_controller.SendLampCommand(
-                LampFunction::kHazardLamp,
-                LampCommandAction::kDeactivate,
-                CommandSource::kDiagnosticConsole);
+            operator_status = operator_service.RequestLampDeactivate(
+                LampFunction::kHazardLamp);
             status_function_to_print = LampFunction::kHazardLamp;
             should_print_lamp_status = true;
             break;
 
         case 7:
-            controller_status = central_zone_controller.SendLampCommand(
-                LampFunction::kParkLamp,
-                LampCommandAction::kActivate,
-                CommandSource::kDiagnosticConsole);
+            operator_status = operator_service.RequestLampActivate(
+                LampFunction::kParkLamp);
             status_function_to_print = LampFunction::kParkLamp;
             should_print_lamp_status = true;
             break;
 
         case 8:
-            controller_status = central_zone_controller.SendLampCommand(
-                LampFunction::kParkLamp,
-                LampCommandAction::kDeactivate,
-                CommandSource::kDiagnosticConsole);
+            operator_status = operator_service.RequestLampDeactivate(
+                LampFunction::kParkLamp);
             status_function_to_print = LampFunction::kParkLamp;
             should_print_lamp_status = true;
             break;
 
         case 9:
-            controller_status = central_zone_controller.SendLampCommand(
-                LampFunction::kHeadLamp,
-                LampCommandAction::kActivate,
-                CommandSource::kDiagnosticConsole);
+            operator_status = operator_service.RequestLampActivate(
+                LampFunction::kHeadLamp);
             status_function_to_print = LampFunction::kHeadLamp;
             should_print_lamp_status = true;
             break;
 
         case 10:
-            controller_status = central_zone_controller.SendLampCommand(
-                LampFunction::kHeadLamp,
-                LampCommandAction::kDeactivate,
-                CommandSource::kDiagnosticConsole);
+            operator_status = operator_service.RequestLampDeactivate(
+                LampFunction::kHeadLamp);
             status_function_to_print = LampFunction::kHeadLamp;
             should_print_lamp_status = true;
             break;
 
         case 11:
         {
-            controller_status = central_zone_controller.RequestNodeHealth();
+            operator_status = operator_service.RequestNodeHealth();
 
-            const body_control::lighting::domain::NodeHealthStatus
-                node_health_status =
-                    central_zone_controller.GetCachedNodeHealthStatus();
+            body_control::lighting::domain::NodeHealthStatus node_health_status {};
+            operator_service.GetNodeHealthStatus(node_health_status);
 
             using body_control::lighting::hmi::NodeHealthStateToString;
             std::cout << "Node health: "
@@ -242,7 +258,7 @@ int main()
             continue;
         }
 
-        if (controller_status != ControllerStatus::kSuccess)
+        if (operator_status != OperatorServiceStatus::kSuccess)
         {
             std::cout << "Command failed.\n";
             continue;
@@ -250,16 +266,16 @@ int main()
 
         if (should_print_lamp_status)
         {
-            PrintLampStatus(
-                central_zone_controller,
+            PrintCachedLampStatus(
+                operator_service,
                 status_function_to_print);
         }
     }
 
-    const ControllerStatus shutdown_status =
-        central_zone_controller.Shutdown();
+    const OperatorServiceStatus shutdown_status =
+        operator_service.Shutdown();
 
-    if (shutdown_status != ControllerStatus::kSuccess)
+    if (shutdown_status != OperatorServiceStatus::kSuccess)
     {
         std::cerr << "Diagnostic console shutdown completed with errors.\n";
         return 1;

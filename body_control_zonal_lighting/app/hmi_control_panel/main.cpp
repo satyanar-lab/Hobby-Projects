@@ -1,12 +1,12 @@
 #include <iostream>
 #include <memory>
 
-#include "body_control/lighting/application/central_zone_controller.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
+#include "body_control/lighting/domain/lighting_service_ids.hpp"
 #include "body_control/lighting/hmi/hmi_command_mapper.hpp"
 #include "body_control/lighting/hmi/hmi_display_strings.hpp"
 #include "body_control/lighting/hmi/main_window.hpp"
-#include "body_control/lighting/service/rear_lighting_service_consumer.hpp"
+#include "body_control/lighting/service/operator_service_consumer.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
 namespace body_control
@@ -19,7 +19,7 @@ namespace vsomeip
 {
 
 std::unique_ptr<TransportAdapterInterface>
-CreateCentralZoneControllerVsomeipClientAdapter();
+CreateOperatorClientVsomeipClientAdapter();
 
 }  // namespace vsomeip
 }  // namespace transport
@@ -42,39 +42,15 @@ void PrintMenu()
     std::cout << "Selection: ";
 }
 
-void RefreshViewModelFromController(
-    body_control::lighting::application::CentralZoneController& central_zone_controller,
-    body_control::lighting::hmi::MainWindow& main_window)
-{
-    using body_control::lighting::domain::LampFunction;
-    using body_control::lighting::domain::LampStatus;
-
-    constexpr LampFunction kLampFunctions[] = {
-        LampFunction::kLeftIndicator,
-        LampFunction::kRightIndicator,
-        LampFunction::kHazardLamp,
-        LampFunction::kParkLamp,
-        LampFunction::kHeadLamp};
-
-    for (const LampFunction lamp_function : kLampFunctions)
-    {
-        LampStatus lamp_status {};
-        if (central_zone_controller.GetCachedLampStatus(lamp_function, lamp_status))
-        {
-            main_window.UpdateLampStatus(lamp_status);
-        }
-    }
-
-    main_window.UpdateNodeHealthStatus(
-        central_zone_controller.GetCachedNodeHealthStatus());
-}
-
 void PrintViewModel(
     const body_control::lighting::hmi::HmiViewModel& view_model)
 {
     using body_control::lighting::domain::LampFunction;
     using body_control::lighting::domain::LampStatus;
     using body_control::lighting::domain::NodeHealthStatus;
+    using body_control::lighting::hmi::LampFunctionToString;
+    using body_control::lighting::hmi::LampOutputStateToString;
+    using body_control::lighting::hmi::NodeHealthStateToString;
 
     constexpr LampFunction kLampFunctions[] = {
         LampFunction::kLeftIndicator,
@@ -82,10 +58,6 @@ void PrintViewModel(
         LampFunction::kHazardLamp,
         LampFunction::kParkLamp,
         LampFunction::kHeadLamp};
-
-    using body_control::lighting::hmi::LampFunctionToString;
-    using body_control::lighting::hmi::LampOutputStateToString;
-    using body_control::lighting::hmi::NodeHealthStateToString;
 
     std::cout << "\n--- Lamp Status ---\n";
     for (const LampFunction lamp_function : kLampFunctions)
@@ -124,18 +96,19 @@ void PrintViewModel(
 
 int main()
 {
-    using body_control::lighting::application::CentralZoneController;
-    using body_control::lighting::application::ControllerStatus;
+    using body_control::lighting::domain::operator_service::
+        kHmiControlPanelApplicationId;
     using body_control::lighting::hmi::HmiAction;
     using body_control::lighting::hmi::HmiCommandMapper;
     using body_control::lighting::hmi::MainWindow;
     using body_control::lighting::hmi::MainWindowStatus;
-    using body_control::lighting::service::RearLightingServiceConsumer;
+    using body_control::lighting::service::OperatorServiceConsumer;
+    using body_control::lighting::service::OperatorServiceStatus;
     using body_control::lighting::transport::TransportAdapterInterface;
 
     std::unique_ptr<TransportAdapterInterface> transport_adapter =
         body_control::lighting::transport::vsomeip::
-            CreateCentralZoneControllerVsomeipClientAdapter();
+            CreateOperatorClientVsomeipClientAdapter();
 
     if (transport_adapter == nullptr)
     {
@@ -143,18 +116,17 @@ int main()
         return 1;
     }
 
-    RearLightingServiceConsumer rear_lighting_service_consumer {
-        *transport_adapter};
+    OperatorServiceConsumer operator_service {
+        *transport_adapter,
+        kHmiControlPanelApplicationId};
 
-    CentralZoneController central_zone_controller {
-        rear_lighting_service_consumer};
+    MainWindow main_window {operator_service};
+    operator_service.SetEventListener(&main_window);
 
-    MainWindow main_window {central_zone_controller};
+    const OperatorServiceStatus init_status =
+        operator_service.Initialize();
 
-    const ControllerStatus init_status =
-        central_zone_controller.Initialize();
-
-    if (init_status != ControllerStatus::kSuccess)
+    if (init_status != OperatorServiceStatus::kSuccess)
     {
         std::cerr << "Failed to initialize HMI control panel.\n";
         return 1;
@@ -181,10 +153,6 @@ int main()
         const MainWindowStatus window_status =
             main_window.ProcessAction(action);
 
-        RefreshViewModelFromController(
-            central_zone_controller,
-            main_window);
-
         if (window_status != MainWindowStatus::kSuccess)
         {
             std::cout << "Action failed.\n";
@@ -194,10 +162,10 @@ int main()
         PrintViewModel(main_window.GetViewModel());
     }
 
-    const ControllerStatus shutdown_status =
-        central_zone_controller.Shutdown();
+    const OperatorServiceStatus shutdown_status =
+        operator_service.Shutdown();
 
-    if (shutdown_status != ControllerStatus::kSuccess)
+    if (shutdown_status != OperatorServiceStatus::kSuccess)
     {
         std::cerr << "HMI control panel shutdown completed with errors.\n";
         return 1;
