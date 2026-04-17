@@ -16,3 +16,9 @@ This is an automotive-style portfolio project. Hold the line on:
   must both be green
 
 Do not push to git without explicit confirmation in each session.
+
+## Model selection
+
+Prefer Claude Opus 4.7 for this project when available. Sonnet is
+acceptable for small mechanical edits but architectural work, cross-cutting
+refactors, and code reviews should use Opus.
