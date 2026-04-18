@@ -87,36 +87,53 @@ AUTOSAR / SDV concepts that informed each choice.
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-## 3. Physical topology (Linux phase)
+## 3. Physical topology (Linux phase — Phase 4)
 
-Four OS processes on the same host, communicating through the transport
-adapter:
+Four OS processes on the same host, connected by two independent UDP
+service paths.  The controller is the single decision-making process;
+HMI and diagnostic console are thin operator clients that never see the
+rear node directly.
 
 ```
-  ┌──────────────────────┐           ┌──────────────────────────┐
-  │ hmi_control_panel    │           │ diagnostic_console       │
-  └──────────┬───────────┘           └──────────┬───────────────┘
-             │    user intent                   │  debug intent
-             ▼                                  ▼
+  ┌──────────────────────┐         ┌──────────────────────────┐
+  │  hmi_control_panel   │         │   diagnostic_console     │
+  │  OperatorServiceConsumer       │   OperatorServiceConsumer│
+  └──────────┬───────────┘         └───────────┬──────────────┘
+             │  UDP :41003 ──────────────────── │
+             │       (operator client port)     │
+             └─────────────────┬────────────────┘
+                               │
+                               ▼  UDP :41002  (operator server port)
   ┌────────────────────────────────────────────────────────────┐
-  │ central_zone_controller_app                                │
-  │   ├─ CommandArbitrator                                     │
-  │   ├─ LampStateManager / NodeHealthMonitor                  │
-  │   └─ RearLightingServiceConsumer ─┐                        │
-  └────────────────────────────────────┼───────────────────────┘
-                                       │ service path
-                                       ▼
+  │  central_zone_controller_app                               │
+  │    ├─ OperatorServiceProvider  (recv :41002, reply :41003) │
+  │    ├─ CommandArbitrator                                     │
+  │    ├─ LampStateManager / NodeHealthMonitor                  │
+  │    └─ RearLightingServiceConsumer  (send :41001)           │
+  └───────────────────────────┬────────────────────────────────┘
+                               │  UDP :41001  (rear-node client port)
+                               ▼  UDP :41000  (rear-node server port)
   ┌────────────────────────────────────────────────────────────┐
-  │ rear_lighting_node_simulator                               │
-  │   ├─ RearLightingServiceProvider ◀────────────────────────┐│
-  │   ├─ RearLightingFunctionManager                          ││
-  │   └─ (optional) NodeHealthSource ─ feeds health events ───┘│
+  │  rear_lighting_node_simulator                              │
+  │    ├─ RearLightingServiceProvider  (recv :41000)           │
+  │    ├─ RearLightingFunctionManager                          │
+  │    └─ (optional) NodeHealthSource ── feeds health events   │
   └────────────────────────────────────────────────────────────┘
 ```
 
-Today the HMI and diagnostic console each hold their own
-`CentralZoneController` in-process; in a future step they will talk to the
-controller over the same service path rather than embedding it.
+**Operator service** (ports 41002 / 41003) carries lamp toggle / activate /
+deactivate requests from operator clients to the controller, and
+`LampStatus` + `NodeHealth` events back.  Multiple clients may share the
+client port because each binds by application ID, not by port.
+
+**Rear lighting service** (ports 41000 / 41001) carries `SetLampCommand`
+requests from the controller to the rear node, and `LampStatus` /
+`NodeHealth` events back.  This path is internal to the controller subsystem
+and is never exposed to operator clients.
+
+**Start order:** the rear node must be up before the controller connects;
+the controller must be up before the HMI or diagnostic console send their
+first request.
 
 ## 4. Transport — what we ship vs. what we're targeting
 

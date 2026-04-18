@@ -80,18 +80,32 @@ install needed.
 
 ## Running the Linux demo
 
-In four terminals (or with the helper scripts under `tools/`):
+**Start order matters.** The rear node must be up before the controller
+connects; the controller must be up before the HMI or diagnostic console
+send their first request.
+
+In four terminals:
 
 ```bash
-./build/app/rear_lighting_node_simulator     # start the node first
-./build/app/central_zone_controller_app      # controller connects
-./build/app/hmi_control_panel                # operate the lamps
-./build/app/diagnostic_console               # optional: introspect
+# Terminal 1 — rear node (must be first)
+./build/app/rear_lighting_node_simulator
+
+# Terminal 2 — controller (must start before HMI / diagnostic console)
+./build/app/central_zone_controller_app
+
+# Terminal 3 — HMI operator panel
+./build/app/hmi_control_panel
+
+# Terminal 4 — engineering console (optional)
+./build/app/diagnostic_console
 ```
 
-The HMI drives the feature; the controller arbitrates and forwards commands
-over the service path; the simulator applies them and publishes status/health
-back. All four can be stopped with `Ctrl-C` / `ENTER`.
+The HMI and diagnostic console are thin operator clients: they send lamp
+requests over the operator service path (UDP 41003 → 41002) and receive
+`LampStatus` / `NodeHealth` events back.  The controller arbitrates every
+request, talks to the rear node over the rear lighting service path
+(UDP 41001 → 41000), and fans status events out to all connected operator
+clients.  All four processes can be stopped with `Ctrl-C` / `ENTER`.
 
 ## Engineering rules
 
