@@ -1,3 +1,5 @@
 body_control_lighting_add_test(test_request_response_path.cpp)
 body_control_lighting_add_test(test_hazard_priority_behavior.cpp)
 body_control_lighting_add_test(test_node_timeout_behavior.cpp)
+body_control_lighting_add_test(test_operator_service_roundtrip.cpp)
+body_control_lighting_add_test(test_controller_arbitration_via_operator.cpp)
