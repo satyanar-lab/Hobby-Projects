@@ -30,3 +30,28 @@ When starting a new session, always:
 2. Read CHANGES_PHASE2.md and any doc/ files modified recently
 3. Report current state before making any changes
 4. Never assume the previous session's context — reconstruct from files
+
+## Model selection policy
+
+Switch models automatically based on task type. Do not ask — just switch.
+
+Use Sonnet for:
+- Compiling and running build commands
+- Fixing compiler errors and warnings
+- Renaming fields, updating field references across files
+- Writing or updating CMakeLists entries
+- Adding files to git, staging, committing
+- Running ctest and reporting results
+- Updating doc/*.md and CHANGES_*.md files
+- Any task that is mechanical, repetitive, or clearly defined
+
+Use Opus for:
+- Designing a new interface or abstract class
+- Deciding how two components should be wired together
+- Reviewing code for architectural correctness
+- Any task where the right answer is not obvious
+- Catching subtle bugs (wrong predicate, init order, type mismatch)
+- Writing a new test that requires understanding the contract being tested
+
+When in doubt, start with Sonnet. If it gets confused or produces
+something wrong, switch to Opus for that step only, then switch back.
