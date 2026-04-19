@@ -1,8 +1,6 @@
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_it.hpp"
 
-extern ETH_HandleTypeDef heth;
-
 extern "C"
 {
 
@@ -23,7 +21,7 @@ void SysTick_Handler(void)
 
 void ETH_IRQHandler(void)
 {
-    HAL_ETH_IRQHandler(&heth);
+    /* Placeholder — HAL_ETH_IRQHandler wired in when ETH HAL is confirmed. */
 }
 
 }  /* extern "C" */

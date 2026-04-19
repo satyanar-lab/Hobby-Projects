@@ -3,6 +3,7 @@
 
 ENTRY(Reset_Handler)
 
+_estack         = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM);  /* top of stack */
 _Min_Heap_Size  = 0x2000;   /* 8 KB heap  */
 _Min_Stack_Size = 0x1000;   /* 4 KB stack */
 

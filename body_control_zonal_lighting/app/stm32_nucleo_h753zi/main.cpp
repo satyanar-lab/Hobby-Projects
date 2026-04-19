@@ -19,6 +19,7 @@
 #include "lwip/ip_addr.h"
 #include "lwip/netif.h"
 #include "lwip/timeouts.h"
+#include "netif/ethernet.h"
 
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/platform/stm32/ethernet_link_supervisor.hpp"
@@ -33,9 +34,12 @@ extern "C"
 {
 err_t  ethernetif_init(struct netif* netif);
 void   ethernetif_input(struct netif* netif);
+
+// LwIP NO_SYS=1 requires sys_now() returning a millisecond tick count.
+uint32_t sys_now(void) { return HAL_GetTick(); }
 }
 
-ETH_HandleTypeDef heth;  // referenced by stm32h7xx_it.cpp and ethernetif.cpp
+extern ETH_HandleTypeDef heth;  // defined in ethernetif.cpp
 
 namespace
 {
@@ -87,22 +91,6 @@ void SystemClock_Config(void)
     clk_init.APB2CLKDivider = RCC_APB2_DIV2;
     clk_init.APB4CLKDivider = RCC_APB4_DIV2;
     HAL_RCC_ClockConfig(&clk_init, FLASH_LATENCY_4);
-}
-
-// ---- ETH HAL init ----------------------------------------------------------
-
-void MX_ETH_Init(void)
-{
-    static std::uint8_t mac_addr[6U] = {0x02U, 0x00U, 0x00U, 0x00U, 0x00U, 0x01U};
-
-    heth.Instance          = ETH;
-    heth.Init.MACAddr      = mac_addr;
-    heth.Init.MediaInterface= HAL_ETH_RMII_MODE;
-    heth.Init.TxDesc       = nullptr;  // set by ethernetif low_level_init
-    heth.Init.RxDesc       = nullptr;
-    heth.Init.RxBuffLen    = ETH_MAX_PACKET_SIZE;
-
-    HAL_ETH_Init(&heth);
 }
 
 // ---- UART (virtual COM port) init ------------------------------------------
@@ -172,7 +160,6 @@ int main()
 {
     HAL_Init();
     SystemClock_Config();
-    MX_ETH_Init();
     MX_USART3_UART_Init();
 
     // --- LwIP ---------------------------------------------------------------

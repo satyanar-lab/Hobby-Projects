@@ -226,12 +226,10 @@ TransportStatus LwipUdpTransportAdapter::SendMessage(
 
     std::memcpy(p->payload, frame.data(), frame.size());
 
+    // Build IPv4 address without using IP4_ADDR() which expands C-style casts.
+    // With LWIP_IPV6=0, ip_addr_t is a typedef for ip4_addr_t so .addr is direct.
     ip_addr_t dest {};
-    IP4_ADDR(&dest,
-             static_cast<std::uint8_t>((config_.remote_ip_addr >> 24U) & 0xFFU),
-             static_cast<std::uint8_t>((config_.remote_ip_addr >> 16U) & 0xFFU),
-             static_cast<std::uint8_t>((config_.remote_ip_addr >>  8U) & 0xFFU),
-             static_cast<std::uint8_t>( config_.remote_ip_addr         & 0xFFU));
+    dest.addr = lwip_htonl(config_.remote_ip_addr);
 
     const err_t send_err = udp_sendto(pcb_, p, &dest, config_.remote_port);
     pbuf_free(p);
@@ -241,11 +239,11 @@ TransportStatus LwipUdpTransportAdapter::SendMessage(
 }
 
 void LwipUdpTransportAdapter::RecvCallback(
-    void* const       arg,
-    udp_pcb* const    /*pcb*/,
-    pbuf* const       p,
-    const ip_addr* const /*addr*/,
-    const std::uint16_t  /*port*/)
+    void* const          arg,
+    udp_pcb* const       /*pcb*/,
+    pbuf* const          p,
+    const ip_addr_t* const /*addr*/,
+    const std::uint16_t    /*port*/)
 {
     auto* const self = static_cast<LwipUdpTransportAdapter*>(arg);
 

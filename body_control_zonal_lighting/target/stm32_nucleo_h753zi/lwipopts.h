@@ -27,6 +27,10 @@
 #define LWIP_DNS                        0
 #define LWIP_DHCP                       0
 
+/* ---- Sequential / socket API (incompatible with NO_SYS=1) ---------------- */
+#define LWIP_NETCONN                    0
+#define LWIP_SOCKET                     0
+
 /* ---- Timers (required for ARP aging, etc.) ------------------------------- */
 #define LWIP_TIMERS                     1
 

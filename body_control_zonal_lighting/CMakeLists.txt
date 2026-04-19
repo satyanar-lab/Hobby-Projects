@@ -52,6 +52,13 @@ endif()
 message(STATUS
     "Body Control Lighting target platform: ${BODY_CONTROL_LIGHTING_TARGET_PLATFORM}")
 
+# The STM32 target builds HAL (C) and startup (ASM) sources.
+# Enable these languages here, before any add_subdirectory, so CMake
+# generates compile rules for them. The Linux build only needs CXX.
+if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "stm32")
+    enable_language(C ASM)
+endif()
+
 # ----------------------------------------------------------------------------
 # Interface target: project-wide compile options
 #
@@ -75,10 +82,18 @@ target_compile_options(body_control_lighting_project_options
         $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wpedantic>
         $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wshadow>
         $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wconversion>
-        $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wold-style-cast>
         $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wnon-virtual-dtor>
         $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
+# -Wold-style-cast is enabled on Linux where we control all headers.
+# On STM32 the CMSIS/HAL peripheral macros (ETH, GPIOB, …) expand C-style
+# casts that we cannot change; suppress the warning for that target only.
+if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "linux")
+    target_compile_options(body_control_lighting_project_options
+        INTERFACE
+            $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wold-style-cast>
+    )
+endif()
 
 if(BODY_CONTROL_LIGHTING_WARNINGS_AS_ERRORS)
     target_compile_options(body_control_lighting_project_options

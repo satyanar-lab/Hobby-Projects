@@ -6,9 +6,12 @@
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 #include "body_control/lighting/transport/transport_status.hpp"
 
+// LwIP forward declarations — udp_pcb and pbuf are real structs; ip_addr_t is
+// a typedef so it cannot be forward-declared; include ip_addr.h for it.
+#include "lwip/ip_addr.h"
+
 struct udp_pcb;
 struct pbuf;
-struct ip_addr;
 
 namespace body_control::lighting::transport::lwip
 {
@@ -55,7 +58,7 @@ private:
         void* arg,
         udp_pcb* pcb,
         pbuf* p,
-        const ip_addr* addr,
+        const ip_addr_t* addr,
         std::uint16_t port);
 
     LwipUdpConfig config_;
