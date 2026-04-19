@@ -108,8 +108,16 @@ ControllerStatus CentralZoneController::SendLampCommand(
         return ControllerStatus::kRejected;
     }
 
-    const service::ServiceStatus service_status =
-        rear_lighting_service_consumer_.SendLampCommand(decision.command);
+    service::ServiceStatus service_status {service::ServiceStatus::kSuccess};
+    for (std::uint8_t i {0U}; i < decision.command_count; ++i)
+    {
+        service_status =
+            rear_lighting_service_consumer_.SendLampCommand(decision.commands[i]);
+        if (service_status != service::ServiceStatus::kSuccess)
+        {
+            break;
+        }
+    }
 
     return ConvertServiceStatus(service_status);
 }

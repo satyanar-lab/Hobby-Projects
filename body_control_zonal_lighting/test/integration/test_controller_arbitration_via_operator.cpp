@@ -186,26 +186,28 @@ TEST(ControllerArbitrationViaOperator, IndicatorBlockedByActiveHazard)
     ASSERT_EQ(controller.Initialize(), ControllerStatus::kSuccess);
     ASSERT_EQ(op_consumer.Initialize(), OperatorServiceStatus::kSuccess);
 
-    // First toggle: hazard lamp is off → activates.  The LampStatus event
-    // flows back synchronously and the CZC lamp-state manager records
-    // hazard as active.
+    // First toggle: hazard lamp is off → activates.  The arbitrator expands
+    // hazard activate into three commands (hazard, left indicator, right
+    // indicator), so three LampStatus events flow back synchronously.
+    // After these three events the CZC lamp-state manager records hazard,
+    // left indicator, and right indicator all as active.
     EXPECT_EQ(
         op_consumer.RequestLampToggle(LampFunction::kHazardLamp),
         OperatorServiceStatus::kSuccess);
 
-    ASSERT_EQ(listener.lamp_status_update_count_, 1U);
-    EXPECT_EQ(listener.last_lamp_status_.function, LampFunction::kHazardLamp);
+    ASSERT_EQ(listener.lamp_status_update_count_, 3U);
+    EXPECT_EQ(listener.last_lamp_status_.function,     LampFunction::kRightIndicator);
     EXPECT_EQ(listener.last_lamp_status_.output_state, LampOutputState::kOn);
 
     // Second toggle: left indicator while hazard is active.  The CZC
     // arbitrator rejects the command; no message reaches the rear node,
-    // so no LampStatus event is published and the listener count stays at 1.
+    // so no LampStatus event is published and the listener count stays at 3.
     EXPECT_EQ(
         op_consumer.RequestLampToggle(LampFunction::kLeftIndicator),
         OperatorServiceStatus::kSuccess);
 
-    EXPECT_EQ(listener.lamp_status_update_count_, 1U);
-    EXPECT_EQ(listener.last_lamp_status_.function, LampFunction::kHazardLamp);
+    EXPECT_EQ(listener.lamp_status_update_count_, 3U);
+    EXPECT_EQ(listener.last_lamp_status_.function, LampFunction::kRightIndicator);
 
     EXPECT_EQ(op_consumer.Shutdown(), OperatorServiceStatus::kSuccess);
     EXPECT_EQ(controller.Shutdown(), ControllerStatus::kSuccess);

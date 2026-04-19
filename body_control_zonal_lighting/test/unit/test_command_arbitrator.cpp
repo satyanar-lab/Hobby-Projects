@@ -5,10 +5,14 @@
  * Covered behaviors:
  *   1. Structurally invalid commands are rejected.
  *   2. A kNoAction command is rejected even if every other field is valid.
- *   3. Hazard activation is always accepted.
- *   4. Indicator activation is rejected while hazard is active.
- *   5. Indicator deactivation is accepted even while hazard is active.
- *   6. Park and head lamp commands are independent of hazard state.
+ *   3. Hazard activation expands to three commands (hazard + left + right).
+ *   4. Hazard deactivation expands to three commands (hazard + left + right).
+ *   5. Indicator activation is rejected while hazard is active.
+ *   6. Indicator deactivation is accepted even while hazard is active.
+ *   7. Park and head lamp commands are independent of hazard state.
+ *   8. Accepted single-command decision preserves original command fields.
+ *   9. Left indicator activation auto-deactivates right when right is active.
+ *  10. Right indicator activation auto-deactivates left when left is active.
  */
 
 #include <gtest/gtest.h>
@@ -38,7 +42,7 @@ LampCommand MakeCommand(
     return command;
 }
 
-}  // namespace
+} // namespace
 
 TEST(CommandArbitratorTest, RejectsCommandWithUnknownFunction)
 {
@@ -51,6 +55,7 @@ TEST(CommandArbitratorTest, RejectsCommandWithUnknownFunction)
     const auto decision = arbitrator.Arbitrate(command, context);
 
     EXPECT_EQ(decision.result, ArbitrationResult::kRejected);
+    EXPECT_EQ(decision.command_count, 0U);
 }
 
 TEST(CommandArbitratorTest, RejectsNoActionCommand)
@@ -64,9 +69,10 @@ TEST(CommandArbitratorTest, RejectsNoActionCommand)
     const auto decision = arbitrator.Arbitrate(command, context);
 
     EXPECT_EQ(decision.result, ArbitrationResult::kRejected);
+    EXPECT_EQ(decision.command_count, 0U);
 }
 
-TEST(CommandArbitratorTest, AcceptsHazardActivationUnconditionally)
+TEST(CommandArbitratorTest, HazardActivationProducesThreeCommands)
 {
     const CommandArbitrator arbitrator {};
     ArbitrationContext context {};
@@ -79,6 +85,34 @@ TEST(CommandArbitratorTest, AcceptsHazardActivationUnconditionally)
     const auto decision = arbitrator.Arbitrate(command, context);
 
     EXPECT_EQ(decision.result, ArbitrationResult::kAccepted);
+    ASSERT_EQ(decision.command_count, 3U);
+    EXPECT_EQ(decision.commands[0U].function, LampFunction::kHazardLamp);
+    EXPECT_EQ(decision.commands[0U].action,   LampCommandAction::kActivate);
+    EXPECT_EQ(decision.commands[1U].function, LampFunction::kLeftIndicator);
+    EXPECT_EQ(decision.commands[1U].action,   LampCommandAction::kActivate);
+    EXPECT_EQ(decision.commands[2U].function, LampFunction::kRightIndicator);
+    EXPECT_EQ(decision.commands[2U].action,   LampCommandAction::kActivate);
+}
+
+TEST(CommandArbitratorTest, HazardDeactivationProducesThreeCommands)
+{
+    const CommandArbitrator arbitrator {};
+    ArbitrationContext context {};
+    context.hazard_lamp_active = true;
+
+    const LampCommand command =
+        MakeCommand(LampFunction::kHazardLamp, LampCommandAction::kDeactivate);
+
+    const auto decision = arbitrator.Arbitrate(command, context);
+
+    EXPECT_EQ(decision.result, ArbitrationResult::kAccepted);
+    ASSERT_EQ(decision.command_count, 3U);
+    EXPECT_EQ(decision.commands[0U].function, LampFunction::kHazardLamp);
+    EXPECT_EQ(decision.commands[0U].action,   LampCommandAction::kDeactivate);
+    EXPECT_EQ(decision.commands[1U].function, LampFunction::kLeftIndicator);
+    EXPECT_EQ(decision.commands[1U].action,   LampCommandAction::kDeactivate);
+    EXPECT_EQ(decision.commands[2U].function, LampFunction::kRightIndicator);
+    EXPECT_EQ(decision.commands[2U].action,   LampCommandAction::kDeactivate);
 }
 
 TEST(CommandArbitratorTest, RejectsIndicatorActivationWhenHazardActive)
@@ -110,6 +144,7 @@ TEST(CommandArbitratorTest, AcceptsIndicatorDeactivationEvenWhenHazardActive)
     const auto decision = arbitrator.Arbitrate(left_off, context);
 
     EXPECT_EQ(decision.result, ArbitrationResult::kAccepted);
+    EXPECT_EQ(decision.command_count, 1U);
 }
 
 TEST(CommandArbitratorTest, ParkAndHeadLampAreIndependentOfHazardState)
@@ -140,8 +175,47 @@ TEST(CommandArbitratorTest, AcceptedDecisionPreservesOriginalCommand)
     const auto decision = arbitrator.Arbitrate(command, context);
 
     EXPECT_EQ(decision.result, ArbitrationResult::kAccepted);
-    EXPECT_EQ(decision.command.function, command.function);
-    EXPECT_EQ(decision.command.action, command.action);
-    EXPECT_EQ(decision.command.source, command.source);
-    EXPECT_EQ(decision.command.sequence_counter, command.sequence_counter);
+    ASSERT_EQ(decision.command_count, 1U);
+    EXPECT_EQ(decision.commands[0U].function,         command.function);
+    EXPECT_EQ(decision.commands[0U].action,           command.action);
+    EXPECT_EQ(decision.commands[0U].source,           command.source);
+    EXPECT_EQ(decision.commands[0U].sequence_counter, command.sequence_counter);
+}
+
+TEST(CommandArbitratorTest, LeftIndicatorDeactivatesRightWhenRightIsActive)
+{
+    const CommandArbitrator arbitrator {};
+    ArbitrationContext context {};
+    context.right_indicator_active = true;
+
+    const LampCommand left_on =
+        MakeCommand(LampFunction::kLeftIndicator, LampCommandAction::kActivate);
+
+    const auto decision = arbitrator.Arbitrate(left_on, context);
+
+    EXPECT_EQ(decision.result, ArbitrationResult::kModified);
+    ASSERT_EQ(decision.command_count, 2U);
+    EXPECT_EQ(decision.commands[0U].function, LampFunction::kRightIndicator);
+    EXPECT_EQ(decision.commands[0U].action,   LampCommandAction::kDeactivate);
+    EXPECT_EQ(decision.commands[1U].function, LampFunction::kLeftIndicator);
+    EXPECT_EQ(decision.commands[1U].action,   LampCommandAction::kActivate);
+}
+
+TEST(CommandArbitratorTest, RightIndicatorDeactivatesLeftWhenLeftIsActive)
+{
+    const CommandArbitrator arbitrator {};
+    ArbitrationContext context {};
+    context.left_indicator_active = true;
+
+    const LampCommand right_on =
+        MakeCommand(LampFunction::kRightIndicator, LampCommandAction::kActivate);
+
+    const auto decision = arbitrator.Arbitrate(right_on, context);
+
+    EXPECT_EQ(decision.result, ArbitrationResult::kModified);
+    ASSERT_EQ(decision.command_count, 2U);
+    EXPECT_EQ(decision.commands[0U].function, LampFunction::kLeftIndicator);
+    EXPECT_EQ(decision.commands[0U].action,   LampCommandAction::kDeactivate);
+    EXPECT_EQ(decision.commands[1U].function, LampFunction::kRightIndicator);
+    EXPECT_EQ(decision.commands[1U].action,   LampCommandAction::kActivate);
 }
