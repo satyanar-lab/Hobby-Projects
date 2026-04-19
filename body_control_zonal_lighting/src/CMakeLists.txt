@@ -54,8 +54,26 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_LINUX
     transport/ethernet/udp_transport_adapter.cpp
 )
 
+# STM32 source list is intentionally standalone — it excludes
+# CentralZoneController (uses std::thread) and HMI/operator sources.
+# The STM32 node role only needs domain, codec, service-provider, and
+# the platform/transport drivers.
 set(BODY_CONTROL_LIGHTING_CORE_SOURCES_STM32
+    application/command_arbitrator.cpp
+    application/lamp_state_manager.cpp
+    application/rear_lighting_function_manager.cpp
+
+    domain/domain_type_validators.cpp
+    domain/lighting_payload_codec.cpp
+
+    service/rear_lighting_service_provider.cpp
+
+    transport/someip_message_builder.cpp
+    transport/someip_message_parser.cpp
+    transport/lwip/lwip_udp_transport_adapter.cpp
+
     platform/stm32/ethernet_link_supervisor.cpp
+    platform/stm32/ethernetif.cpp
     platform/stm32/gpio_output_driver.cpp
     platform/stm32/stm32_diagnostic_logger.cpp
 )
@@ -98,6 +116,55 @@ target_compile_definitions(body_control_lighting_core
         BODY_CONTROL_LIGHTING_PROJECT_NAME="${PROJECT_NAME}"
         BODY_CONTROL_LIGHTING_PROJECT_VERSION="${PROJECT_VERSION}"
 )
+
+# STM32 platform-specific dependencies.
+if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "stm32")
+    include(FetchContent)
+
+    FetchContent_Declare(lwip
+        GIT_REPOSITORY https://github.com/lwip-tcpip/lwip.git
+        GIT_TAG        STABLE-2_2_0_RELEASE
+        GIT_SHALLOW    TRUE
+    )
+    FetchContent_MakeAvailable(lwip)
+
+    # Build only the LwIP modules needed for bare-metal UDP with ARP.
+    add_library(lwip_stm32 STATIC
+        ${lwip_SOURCE_DIR}/src/core/def.c
+        ${lwip_SOURCE_DIR}/src/core/inet_chksum.c
+        ${lwip_SOURCE_DIR}/src/core/init.c
+        ${lwip_SOURCE_DIR}/src/core/ip.c
+        ${lwip_SOURCE_DIR}/src/core/mem.c
+        ${lwip_SOURCE_DIR}/src/core/memp.c
+        ${lwip_SOURCE_DIR}/src/core/netif.c
+        ${lwip_SOURCE_DIR}/src/core/pbuf.c
+        ${lwip_SOURCE_DIR}/src/core/stats.c
+        ${lwip_SOURCE_DIR}/src/core/sys.c
+        ${lwip_SOURCE_DIR}/src/core/timeouts.c
+        ${lwip_SOURCE_DIR}/src/core/udp.c
+        ${lwip_SOURCE_DIR}/src/core/ipv4/etharp.c
+        ${lwip_SOURCE_DIR}/src/core/ipv4/icmp.c
+        ${lwip_SOURCE_DIR}/src/core/ipv4/ip4.c
+        ${lwip_SOURCE_DIR}/src/core/ipv4/ip4_addr.c
+        ${lwip_SOURCE_DIR}/src/core/ipv4/ip4_frag.c
+        ${lwip_SOURCE_DIR}/src/netif/ethernet.c
+    )
+
+    target_include_directories(lwip_stm32
+        PUBLIC
+            ${lwip_SOURCE_DIR}/src/include
+            ${PROJECT_SOURCE_DIR}/target/stm32_nucleo_h753zi   # lwipopts.h
+    )
+
+    # Suppress warnings from LwIP source (external dependency).
+    target_compile_options(lwip_stm32 PRIVATE -w)
+
+    target_link_libraries(body_control_lighting_core
+        PUBLIC
+            lwip_stm32
+            stm32h7xx_hal
+    )
+endif()
 
 # Linux platform-specific link dependencies.
 if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "linux")

@@ -91,13 +91,22 @@ endif()
 # ----------------------------------------------------------------------------
 # Sub-directories
 # ----------------------------------------------------------------------------
+
+# Board-support library must be added before src/ so that the stm32h7xx_hal
+# and stm32h753zi_startup targets exist when src/CMakeLists.txt links them.
+if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "stm32")
+    add_subdirectory(target/stm32_nucleo_h753zi)
+endif()
+
 add_subdirectory(src)
 
 if(BODY_CONTROL_LIGHTING_BUILD_APPS)
     add_subdirectory(app)
 endif()
 
-if(BODY_CONTROL_LIGHTING_BUILD_TESTS)
+# Tests require GoogleTest which uses POSIX threading — only build on Linux.
+if(BODY_CONTROL_LIGHTING_BUILD_TESTS
+   AND BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "linux")
     enable_testing()
     add_subdirectory(test)
 endif()
