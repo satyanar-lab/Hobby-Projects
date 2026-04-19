@@ -71,8 +71,16 @@ bool LampStateManager::IsFunctionActive(
 ArbitrationContext LampStateManager::GetArbitrationContext() const noexcept
 {
     ArbitrationContext context {};
+    context.left_indicator_active =
+        IsFunctionActive(domain::LampFunction::kLeftIndicator);
+    context.right_indicator_active =
+        IsFunctionActive(domain::LampFunction::kRightIndicator);
     context.hazard_lamp_active =
         IsFunctionActive(domain::LampFunction::kHazardLamp);
+    context.park_lamp_active =
+        IsFunctionActive(domain::LampFunction::kParkLamp);
+    context.head_lamp_active =
+        IsFunctionActive(domain::LampFunction::kHeadLamp);
     return context;
 }
 
