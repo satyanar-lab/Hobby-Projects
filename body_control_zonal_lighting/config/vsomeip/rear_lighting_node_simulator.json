@@ -10,9 +10,13 @@
         {
             "name": "rear_lighting_node_simulator",
             "id": "0x2001"
+        },
+        {
+            "name": "hmi_control_panel",
+            "id": "0x1003"
         }
     ],
-    "routing": "rear_lighting_node_simulator",
+    "routing": "central_zone_controller",
     "service-discovery": {
         "enable": "true",
         "multicast": "224.224.224.245",

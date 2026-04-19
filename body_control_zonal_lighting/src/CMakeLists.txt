@@ -52,12 +52,6 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_LINUX
 
     transport/ethernet/ethernet_frame_adapter.cpp
     transport/ethernet/udp_transport_adapter.cpp
-
-    transport/vsomeip/vsomeip_client_adapter.cpp
-    transport/vsomeip/vsomeip_operator_client_adapter.cpp
-    transport/vsomeip/vsomeip_operator_server_adapter.cpp
-    transport/vsomeip/vsomeip_runtime_manager.cpp
-    transport/vsomeip/vsomeip_server_adapter.cpp
 )
 
 set(BODY_CONTROL_LIGHTING_CORE_SOURCES_STM32
@@ -105,11 +99,50 @@ target_compile_definitions(body_control_lighting_core
         BODY_CONTROL_LIGHTING_PROJECT_VERSION="${PROJECT_VERSION}"
 )
 
-# Linux platform-specific link dependencies (pthread for the UDP receiver thread).
+# Linux platform-specific link dependencies.
 if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "linux")
     find_package(Threads REQUIRED)
     target_link_libraries(body_control_lighting_core
         PUBLIC
             Threads::Threads
+    )
+
+    # ----------------------------------------------------------------------------
+    # vsomeip3 transport — compiled as its own static library so that the
+    # vsomeip3 shared-library dependency is scoped to this target only.
+    # ----------------------------------------------------------------------------
+    list(APPEND CMAKE_PREFIX_PATH "/usr/local")
+    find_package(vsomeip3 REQUIRED)
+
+    # Suppress warnings from vsomeip3 headers (external dependency).
+    get_target_property(_vsomeip3_inc vsomeip3 INTERFACE_INCLUDE_DIRECTORIES)
+    set_target_properties(vsomeip3 PROPERTIES
+        INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${_vsomeip3_inc}"
+    )
+
+    add_library(body_control_lighting_vsomeip_transport STATIC
+        transport/vsomeip/vsomeip_client_adapter.cpp
+        transport/vsomeip/vsomeip_operator_client_adapter.cpp
+        transport/vsomeip/vsomeip_operator_server_adapter.cpp
+        transport/vsomeip/vsomeip_runtime_manager.cpp
+        transport/vsomeip/vsomeip_server_adapter.cpp
+    )
+    add_library(body_control_lighting::vsomeip_transport
+        ALIAS body_control_lighting_vsomeip_transport)
+
+    target_include_directories(body_control_lighting_vsomeip_transport
+        PUBLIC
+            ${PROJECT_SOURCE_DIR}/include
+    )
+
+    target_link_libraries(body_control_lighting_vsomeip_transport
+        PUBLIC
+            body_control_lighting::project_options
+            vsomeip3
+    )
+
+    target_link_libraries(body_control_lighting_core
+        PUBLIC
+            body_control_lighting_vsomeip_transport
     )
 endif()

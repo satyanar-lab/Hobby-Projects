@@ -10,6 +10,10 @@
         {
             "name": "central_zone_controller",
             "id": "0x1001"
+        },
+        {
+            "name": "controller_operator",
+            "id": "0x1005"
         }
     ],
     "routing": "central_zone_controller",
@@ -28,10 +32,10 @@
     },
     "services": [
         {
-            "service": "0x5100",
+            "service": "0x5200",
             "instance": "0x0001",
             "reliable": {
-                "port": "30510",
+                "port": "30520",
                 "enable-magic-cookies": "false"
             },
             "events": [
