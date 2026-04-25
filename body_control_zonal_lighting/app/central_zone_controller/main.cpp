@@ -25,9 +25,124 @@ std::unique_ptr<TransportAdapterInterface>
 CreateControllerOperatorVsomeipServerAdapter();
 
 }  // namespace vsomeip
+
+namespace ethernet
+{
+
+std::unique_ptr<TransportAdapterInterface>
+CreateDirectUdpTransportAdapter(
+    const char*   remote_ip,
+    std::uint16_t remote_port);
+
+}  // namespace ethernet
 }  // namespace transport
 }  // namespace lighting
 }  // namespace body_control
+
+namespace
+{
+
+// Forwards every send to both primary (vsomeip) and secondary (NUCLEO UDP).
+// Secondary failures are silently ignored — it is a best-effort path.
+//
+// Also acts as a proxy TransportMessageHandlerInterface so it can intercept
+// OnTransportAvailabilityChanged from vsomeip: the fanout always reports
+// available=true to the consumer once initialized, regardless of whether
+// vsomeip has completed service discovery.  Without this, the consumer's
+// is_service_available_ guard blocks all sends when the simulator is not
+// running, so the NUCLEO never receives commands.
+class FanoutTransportAdapter final
+    : public body_control::lighting::transport::TransportAdapterInterface
+    , public body_control::lighting::transport::TransportMessageHandlerInterface
+{
+    using TAI  = body_control::lighting::transport::TransportAdapterInterface;
+    using TMHI = body_control::lighting::transport::TransportMessageHandlerInterface;
+    using TM   = body_control::lighting::transport::TransportMessage;
+    using TS   = body_control::lighting::transport::TransportStatus;
+
+public:
+    FanoutTransportAdapter(
+        std::unique_ptr<TAI> primary,
+        std::unique_ptr<TAI> secondary) noexcept
+        : primary_(std::move(primary))
+        , secondary_(std::move(secondary))
+        , outer_handler_(nullptr)
+    {
+    }
+
+    ~FanoutTransportAdapter() override
+    {
+        static_cast<void>(Shutdown());
+    }
+
+    [[nodiscard]] TS Initialize() override
+    {
+        static_cast<void>(secondary_->Initialize());
+        const TS result = primary_->Initialize();
+        // Report available immediately — do not wait for vsomeip discovery.
+        if (outer_handler_ != nullptr)
+        {
+            outer_handler_->OnTransportAvailabilityChanged(true);
+        }
+        return result;
+    }
+
+    [[nodiscard]] TS Shutdown() override
+    {
+        static_cast<void>(secondary_->Shutdown());
+        return primary_->Shutdown();
+    }
+
+    [[nodiscard]] TS SendRequest(const TM& msg) override
+    {
+        static_cast<void>(secondary_->SendRequest(msg));
+        return primary_->SendRequest(msg);
+    }
+
+    [[nodiscard]] TS SendResponse(const TM& msg) override
+    {
+        static_cast<void>(secondary_->SendResponse(msg));
+        return primary_->SendResponse(msg);
+    }
+
+    [[nodiscard]] TS SendEvent(const TM& msg) override
+    {
+        static_cast<void>(secondary_->SendEvent(msg));
+        return primary_->SendEvent(msg);
+    }
+
+    // Route primary's handler through this proxy so availability is intercepted.
+    void SetMessageHandler(TMHI* handler) noexcept override
+    {
+        outer_handler_ = handler;
+        primary_->SetMessageHandler(this);
+    }
+
+    // Proxy: suppress availability changes from vsomeip — always stay available.
+    void OnTransportAvailabilityChanged(bool /*is_available*/) override
+    {
+        if (outer_handler_ != nullptr)
+        {
+            outer_handler_->OnTransportAvailabilityChanged(true);
+        }
+    }
+
+    // Proxy: pass received messages straight through to the consumer.
+    void OnTransportMessageReceived(const TM& msg) override
+    {
+        if (outer_handler_ != nullptr)
+        {
+            outer_handler_->OnTransportMessageReceived(msg);
+        }
+    }
+
+private:
+    std::unique_ptr<TAI> primary_;
+    std::unique_ptr<TAI> secondary_;
+    TMHI*                outer_handler_;
+};
+
+}  // namespace
 
 int main()
 {
@@ -47,15 +162,24 @@ int main()
         return 1;
     }
 
-    std::unique_ptr<TransportAdapterInterface> rear_transport =
+    std::unique_ptr<TransportAdapterInterface> vsomeip_rear_transport =
         body_control::lighting::transport::vsomeip::
             CreateCentralZoneControllerVsomeipClientAdapter();
 
-    if (rear_transport == nullptr)
+    if (vsomeip_rear_transport == nullptr)
     {
-        std::cerr << "Failed to create rear lighting transport adapter.\n";
+        std::cerr << "Failed to create rear lighting vsomeip transport adapter.\n";
         return 1;
     }
+
+    std::unique_ptr<TransportAdapterInterface> nucleo_transport =
+        body_control::lighting::transport::ethernet::
+            CreateDirectUdpTransportAdapter("192.168.0.20", 41001U);
+
+    std::unique_ptr<TransportAdapterInterface> rear_transport =
+        std::make_unique<FanoutTransportAdapter>(
+            std::move(vsomeip_rear_transport),
+            std::move(nucleo_transport));
 
     std::unique_ptr<TransportAdapterInterface> operator_transport =
         body_control::lighting::transport::vsomeip::

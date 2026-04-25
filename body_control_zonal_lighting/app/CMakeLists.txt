@@ -39,8 +39,19 @@ if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "linux")
 
 elseif(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "stm32")
 
+    # stm32h7xx_hal_msp.cpp and stm32h7xx_it.cpp are compiled directly into the
+    # executable (not into the stm32h7xx_hal static library) so their strong
+    # definitions of HAL_ETH_MspInit, HAL_UART_MspInit, HardFault_Handler, and
+    # SysTick_Handler unconditionally override the __weak stubs in the HAL.
+    # If these files were in the archive, the linker would silently keep the
+    # weak no-op stubs because no undefined reference ever forces the archive
+    # member to be extracted.
+    set(_MSP_DIR ${PROJECT_SOURCE_DIR}/target/stm32_nucleo_h753zi)
+
     add_executable(body_control_stm32
         stm32_nucleo_h753zi/main.cpp
+        ${_MSP_DIR}/stm32h7xx_hal_msp.cpp
+        ${_MSP_DIR}/stm32h7xx_it.cpp
     )
 
     target_link_libraries(body_control_stm32

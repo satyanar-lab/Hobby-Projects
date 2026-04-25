@@ -13,7 +13,7 @@
 #define HAL_UART_MODULE_ENABLED
 
 /* ---- Oscillator values assumed by HAL drivers ---------------------------- */
-#define HSE_VALUE               8000000U    /* NUCLEO-H753ZI on-board 8 MHz */
+#define HSE_VALUE               8000000U    /* NUCLEO-H753ZI HSE = ST-Link MCO at 8 MHz (BYPASS mode) */
 #define HSE_STARTUP_TIMEOUT     100U
 #define HSI_VALUE               64000000U
 #define CSI_VALUE               4000000U
@@ -29,6 +29,7 @@
 #define PREFETCH_ENABLE         1U
 
 /* ---- ETH ----------------------------------------------------------------- */
+#define ETH_SWRESET_TIMEOUT             50U
 #define ETH_TX_DESC_CNT         4U
 #define ETH_RX_DESC_CNT         4U
 

@@ -50,6 +50,7 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_LINUX
     platform/linux/linux_logger.cpp
     platform/linux/process_signal_handler.cpp
 
+    transport/ethernet/direct_udp_transport_adapter.cpp
     transport/ethernet/ethernet_frame_adapter.cpp
     transport/ethernet/udp_transport_adapter.cpp
 )
@@ -118,14 +119,7 @@ target_compile_definitions(body_control_lighting_core
 
 # STM32 platform-specific dependencies.
 if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "stm32")
-    include(FetchContent)
-
-    FetchContent_Declare(lwip
-        GIT_REPOSITORY https://github.com/lwip-tcpip/lwip.git
-        GIT_TAG        STABLE-2_2_0_RELEASE
-        GIT_SHALLOW    TRUE
-    )
-    FetchContent_MakeAvailable(lwip)
+    set(lwip_SOURCE_DIR "${STM32CUBEH7_DIR}/Middlewares/Third_Party/LwIP")
 
     # Build only the LwIP modules needed for bare-metal UDP with ARP.
     add_library(lwip_stm32 STATIC

@@ -17,7 +17,7 @@ set(CMAKE_ASM_FLAGS_INIT "${_BCL_MCU_FLAGS} -x assembler-with-cpp")
 
 # nosys.specs — stub syscalls; nano.specs — reduced newlib footprint.
 set(CMAKE_EXE_LINKER_FLAGS_INIT
-    "${_BCL_MCU_FLAGS} -specs=nosys.specs -specs=nano.specs -Wl,--gc-sections")
+    "${_BCL_MCU_FLAGS} -specs=nosys.specs -specs=nano.specs -nostartfiles -Wl,--gc-sections")
 
 # Prevent CMake's linker sanity probe from failing before the vector table is in place.
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)

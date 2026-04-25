@@ -75,26 +75,38 @@ SECTIONS
         PROVIDE_HIDDEN(__fini_array_end = .);
     } >FLASH
 
-    /* ETH DMA descriptors must reside in RAM_D2 (accessible by ETH DMA). */
+    /* ETH DMA descriptors and RX buffers in RAM_D2 (accessible by ETH DMA).
+     * 32-byte alignment matches the M7 D-cache line so that cache maintenance
+     * (SCB_InvalidateDCache_by_Addr) operates on clean boundaries.           */
     .RxDecripSection (NOLOAD) :
     {
-        . = ALIGN(4);
+        . = ALIGN(32);
         *(.RxDecripSection)
-        . = ALIGN(4);
+        . = ALIGN(32);
     } >RAM_D2
 
     .TxDecripSection (NOLOAD) :
     {
-        . = ALIGN(4);
+        . = ALIGN(32);
         *(.TxDecripSection)
-        . = ALIGN(4);
+        . = ALIGN(32);
     } >RAM_D2
 
     .RxArraySection (NOLOAD) :
     {
-        . = ALIGN(4);
+        . = ALIGN(32);
         *(.RxArraySection)
-        . = ALIGN(4);
+        . = ALIGN(32);
+    } >RAM_D2
+
+    /* TX bounce buffer — single flat copy destination for low_level_output.
+     * Placed in RAM_D2 (non-cacheable via MPU, DMA-accessible) because the
+     * ETH DMA cannot reach DTCMRAM where LwIP pbuf payloads live.           */
+    .TxScratchSection (NOLOAD) :
+    {
+        . = ALIGN(32);
+        *(.TxScratchSection)
+        . = ALIGN(32);
     } >RAM_D2
 
     _sidata = LOADADDR(.data);

@@ -60,7 +60,7 @@ GpioDriverStatus GpioOutputDriver::Initialize()
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
     GPIO_InitTypeDef gpio_init {};
-    gpio_init.Pin  = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4;
+    gpio_init.Pin  = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5;
     gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
     gpio_init.Pull = GPIO_NOPULL;
     gpio_init.Speed= GPIO_SPEED_FREQ_LOW;
@@ -68,7 +68,7 @@ GpioDriverStatus GpioOutputDriver::Initialize()
 
     HAL_GPIO_WritePin(
         GPIOB,
-        GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4,
+        GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5,
         GPIO_PIN_RESET);
 #endif
 
@@ -86,7 +86,7 @@ GpioDriverStatus GpioOutputDriver::ResetAllOutputs()
 #ifdef USE_HAL_DRIVER
     HAL_GPIO_WritePin(
         GPIOB,
-        GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4,
+        GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5,
         GPIO_PIN_RESET);
 #endif
 

@@ -48,7 +48,11 @@ add_library(stm32h7xx_hal STATIC
     ${_HAL_ROOT}/Src/stm32h7xx_hal_uart.c
     ${_HAL_ROOT}/Src/stm32h7xx_hal_uart_ex.c
     ${_CMSIS_DEV}/Source/Templates/system_stm32h7xx.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stm32h7xx_it.cpp
+    # stm32h7xx_hal_msp.cpp and stm32h7xx_it.cpp are intentionally NOT here.
+    # Weak-symbol overrides (HAL_ETH_MspInit, HAL_UART_MspInit, HardFault_Handler,
+    # SysTick_Handler) must be object files linked directly into the executable —
+    # not archive members — so the linker always includes them and the strong
+    # definitions beat the __weak stubs in the HAL source files.
 )
 
 target_include_directories(stm32h7xx_hal
@@ -74,7 +78,7 @@ add_library(stm32h753zi_startup INTERFACE)
 
 target_sources(stm32h753zi_startup
     INTERFACE
-        ${_CMSIS_DEV}/Source/Templates/gcc/startup_stm32h753xx.s
+        ${CMAKE_CURRENT_SOURCE_DIR}/startup_stm32h753xx.s
 )
 
 target_link_options(stm32h753zi_startup
