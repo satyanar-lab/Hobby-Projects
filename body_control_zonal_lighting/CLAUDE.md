@@ -55,3 +55,30 @@ Use Opus for:
 
 When in doubt, start with Sonnet. If it gets confused or produces
 something wrong, switch to Opus for that step only, then switch back.
+
+## Advisor strategy — mandatory for all remaining work
+
+You are the Executor running on Sonnet. You run every turn.
+
+You have access to an Advisor (Opus) via the Task tool.
+Call the Advisor ONLY for:
+- Designing a new interface or abstract class
+- Deciding how two components should be wired together  
+- Architectural decisions with non-obvious tradeoffs
+- Catching subtle bugs where the root cause is unclear
+- Any decision where you are not confident in the correct answer
+
+Do NOT call the Advisor for:
+- Building, compiling, running tests
+- Renaming fields or updating references
+- Writing CMakeLists entries
+- Git operations
+- Updating documentation
+- Any task with a clear mechanical answer
+
+When calling the Advisor:
+- Pass only the minimal context needed — not the full conversation
+- Ask one specific question — not "what should I do generally"
+- Apply the advice and continue without asking again
+
+This saves tokens and gets better results on hard problems.
