@@ -32,7 +32,8 @@ namespace ethernet
 std::unique_ptr<TransportAdapterInterface>
 CreateDirectUdpTransportAdapter(
     const char*   remote_ip,
-    std::uint16_t remote_port);
+    std::uint16_t remote_port,
+    std::uint16_t local_port);
 
 }  // namespace ethernet
 }  // namespace transport
@@ -111,11 +112,13 @@ public:
         return primary_->SendEvent(msg);
     }
 
-    // Route primary's handler through this proxy so availability is intercepted.
+    // Route both adapters' handlers through this proxy.
+    // primary_ handles vsomeip events; secondary_ handles NUCLEO UDP events.
     void SetMessageHandler(TMHI* handler) noexcept override
     {
         outer_handler_ = handler;
         primary_->SetMessageHandler(this);
+        secondary_->SetMessageHandler(this);
     }
 
     // Proxy: suppress availability changes from vsomeip — always stay available.
@@ -174,7 +177,7 @@ int main()
 
     std::unique_ptr<TransportAdapterInterface> nucleo_transport =
         body_control::lighting::transport::ethernet::
-            CreateDirectUdpTransportAdapter("192.168.0.20", 41001U);
+            CreateDirectUdpTransportAdapter("192.168.0.20", 41001U, 41000U);
 
     std::unique_ptr<TransportAdapterInterface> rear_transport =
         std::make_unique<FanoutTransportAdapter>(

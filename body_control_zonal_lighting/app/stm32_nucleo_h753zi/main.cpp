@@ -29,6 +29,7 @@
 #include "body_control/lighting/platform/stm32/gpio_output_driver.hpp"
 #include "body_control/lighting/platform/stm32/stm32_diagnostic_logger.hpp"
 #include "body_control/lighting/transport/lwip/lwip_udp_transport_adapter.hpp"
+#include "body_control/lighting/transport/someip_message_builder.hpp"
 #include "body_control/lighting/transport/someip_message_parser.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
@@ -60,6 +61,10 @@ constexpr std::uint32_t kGatewayAddr   {0xC0A80001U};  // 192.168.0.1
 
 constexpr std::uint16_t kRearLightingNodePort       {41001U};
 constexpr std::uint16_t kCentralZoneControllerPort  {41000U};
+
+constexpr std::uint32_t kNodeHealthPublishPeriodMs {
+    static_cast<std::uint32_t>(
+        body_control::lighting::domain::timing::kNodeHealthPublishPeriod.count())};
 
 // ---- Clock config ----------------------------------------------------------
 
@@ -314,6 +319,7 @@ public:
             // Park lamp / head lamp: no arbitration, apply as received.
             if (fmgr_.ApplyCommand(cmd))
             {
+                SendLampStatusEvent(cmd.function);
                 LogResult(cmd.function);
             }
         }
@@ -323,6 +329,23 @@ public:
     {
         if (is_available) { logger_.LogInfo("Transport up"); }
         else              { logger_.LogWarning("Transport down"); }
+    }
+
+    void PublishNodeHealth() noexcept
+    {
+        using body_control::lighting::domain::NodeHealthStatus;
+        using body_control::lighting::domain::NodeHealthState;
+        using body_control::lighting::transport::SomeipMessageBuilder;
+
+        NodeHealthStatus health {};
+        health.health_state              = NodeHealthState::kOperational;
+        health.ethernet_link_available   = true;
+        health.service_available         = true;
+        health.lamp_driver_fault_present = false;
+        health.active_fault_count        = 0U;
+
+        const auto msg = SomeipMessageBuilder::BuildNodeHealthEvent(health);
+        static_cast<void>(transport_.SendEvent(msg));
     }
 
 private:
@@ -351,10 +374,14 @@ private:
             static_cast<void>(fmgr_.ApplyCommand(off));
             off.function = LF::kRightIndicator;
             static_cast<void>(fmgr_.ApplyCommand(off));
+            SendLampStatusEvent(LF::kHazardLamp);
+            SendLampStatusEvent(LF::kLeftIndicator);
+            SendLampStatusEvent(LF::kRightIndicator);
             logger_.LogInfo("Hazard: OFF");
         }
         else
         {
+            SendLampStatusEvent(LF::kHazardLamp);
             logger_.LogInfo("Hazard: ON");
         }
     }
@@ -397,11 +424,24 @@ private:
                 deactivate.function = opposite;
                 deactivate.action   = LCA::kDeactivate;
                 static_cast<void>(fmgr_.ApplyCommand(deactivate));
+                SendLampStatusEvent(opposite);
             }
         }
 
         static_cast<void>(fmgr_.ApplyCommand(resolved));
+        SendLampStatusEvent(cmd.function);
         LogResult(cmd.function);
+    }
+
+    void SendLampStatusEvent(const LF func) noexcept
+    {
+        using body_control::lighting::transport::SomeipMessageBuilder;
+        LS status {};
+        if (fmgr_.GetLampStatus(func, status))
+        {
+            const auto msg = SomeipMessageBuilder::BuildLampStatusEvent(status);
+            static_cast<void>(transport_.SendEvent(msg));
+        }
     }
 
     bool IsOn(const LF func) const noexcept
@@ -504,8 +544,9 @@ int main()
     logger.LogInfo("Rear lighting node started");
 
     // --- Main loop ----------------------------------------------------------
-    std::uint32_t last_tick   = HAL_GetTick();
-    std::uint32_t last_phy_ms = HAL_GetTick();
+    std::uint32_t last_tick      = HAL_GetTick();
+    std::uint32_t last_phy_ms    = HAL_GetTick();
+    std::uint32_t last_health_ms = HAL_GetTick();
 
     while (true)
     {
@@ -520,6 +561,12 @@ int main()
         {
             last_phy_ms = now;
             ethernetif_poll_phy(&gnetif);
+        }
+
+        if ((now - last_health_ms) >= kNodeHealthPublishPeriodMs)
+        {
+            last_health_ms = now;
+            handler.PublishNodeHealth();
         }
 
         // BlinkManager owns all five GPIO outputs each tick.
