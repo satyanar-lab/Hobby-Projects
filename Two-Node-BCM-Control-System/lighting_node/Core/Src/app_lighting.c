@@ -19,36 +19,44 @@
 #define APP_LIGHTING_OSC_REGISTER_ADDRESS  (0x0E00U)
 #define APP_LIGHTING_OSC_READY_MASK        (0x00000400UL)
 
+/*
+ * NOTE — uint32_t tick arithmetic:
+ *   Heartbeat timeout uses (now_ms - last_heartbeat_tick) > THRESHOLD.
+ *   uint32_t subtraction wraps correctly, so this is safe across the
+ *   ~49-day HAL_GetTick() rollover boundary.
+ *   last_heartbeat_tick starts at 0; the > 350 ms check fires immediately
+ *   on boot — intentional, keeps the node in fail-safe until first valid HB.
+ */
 typedef struct
 {
-    Lighting_BcmCommandFrame_t command_frame;
-    Lighting_StatusFrame_t status_frame;
-    IoLightingOutputs_State_t outputs;
-    uint8_t spi_ok;
-    uint8_t node_ready;
-    uint8_t fd_mode;
-    uint8_t last_heartbeat;
+    Lighting_BcmCommandFrame_t  command_frame;
+    Lighting_StatusFrame_t      status_frame;
+    IoLightingOutputs_State_t   outputs;
+    bool_t   spi_ok;
+    bool_t   node_ready;
+    uint8_t  fd_mode;              /* MCP2517FD_MODE_* value — not bool */
+    uint8_t  last_heartbeat;       /* counter value — not bool */
     uint32_t last_heartbeat_tick;
-    uint8_t heartbeat_timeout;
-    uint8_t fail_safe;
-    uint8_t indicator_phase;
+    bool_t   heartbeat_timeout;
+    bool_t   fail_safe;
+    bool_t   indicator_phase;
     uint32_t heartbeat_led_tick;
     uint32_t indicator_tick;
     uint32_t rx_count;
     uint32_t status_tx_count;
     uint32_t status_last_tx_tick;
     uint32_t last_summary_tick;
-    uint8_t command_rx_checksum;
-    uint8_t command_calc_checksum;
-    uint8_t command_checksum_error;
+    uint8_t  command_rx_checksum;  /* CRC-8 value — not bool */
+    uint8_t  command_calc_checksum;/* CRC-8 value — not bool */
+    bool_t   command_checksum_error;
     uint32_t command_checksum_ok_count;
     uint32_t command_checksum_fail_count;
-    uint8_t status_checksum;
-    uint8_t last_logged_command_bits;
-    uint8_t last_logged_hb_timeout;
-    uint8_t last_logged_fail_safe;
-    uint8_t last_logged_state;
-    uint8_t last_logged_checksum_error;
+    uint8_t  status_checksum;      /* CRC-8 value — not bool */
+    uint8_t  last_logged_command_bits;     /* 0xFF sentinel — not bool */
+    uint8_t  last_logged_hb_timeout;       /* 0xFF sentinel — not bool */
+    uint8_t  last_logged_fail_safe;        /* 0xFF sentinel — not bool */
+    uint8_t  last_logged_state;            /* 0xFF sentinel — not bool */
+    uint8_t  last_logged_checksum_error;   /* 0xFF sentinel — not bool */
 } AppLighting_Context_t;
 
 static AppLighting_Context_t g_lighting_ctx;
@@ -56,51 +64,50 @@ volatile AppLighting_Diag_t g_app_lighting_diag;
 
 static void AppLighting_UpdateDiag(void)
 {
-    g_app_lighting_diag.command_bits = g_lighting_ctx.command_frame.command_bits;
-    g_app_lighting_diag.last_heartbeat = g_lighting_ctx.last_heartbeat;
-    g_app_lighting_diag.command_checksum_error = g_lighting_ctx.command_checksum_error;
-    g_app_lighting_diag.command_rx_checksum = g_lighting_ctx.command_rx_checksum;
-    g_app_lighting_diag.command_calc_checksum = g_lighting_ctx.command_calc_checksum;
+    g_app_lighting_diag.command_bits              = g_lighting_ctx.command_frame.command_bits;
+    g_app_lighting_diag.last_heartbeat            = g_lighting_ctx.last_heartbeat;
+    g_app_lighting_diag.command_checksum_error    = g_lighting_ctx.command_checksum_error;
+    g_app_lighting_diag.command_rx_checksum       = g_lighting_ctx.command_rx_checksum;
+    g_app_lighting_diag.command_calc_checksum     = g_lighting_ctx.command_calc_checksum;
     g_app_lighting_diag.command_checksum_ok_count = g_lighting_ctx.command_checksum_ok_count;
     g_app_lighting_diag.command_checksum_fail_count = g_lighting_ctx.command_checksum_fail_count;
-    g_app_lighting_diag.rx_count = g_lighting_ctx.rx_count;
-    g_app_lighting_diag.lighting_state = g_lighting_ctx.outputs.state;
-    g_app_lighting_diag.fail_safe = g_lighting_ctx.fail_safe;
-    g_app_lighting_diag.heartbeat_timeout = g_lighting_ctx.heartbeat_timeout;
-    g_app_lighting_diag.head_lamp_on = g_lighting_ctx.outputs.head_lamp_on;
-    g_app_lighting_diag.park_lamp_on = g_lighting_ctx.outputs.park_lamp_on;
-    g_app_lighting_diag.left_indicator_on = g_lighting_ctx.outputs.left_indicator_on;
-    g_app_lighting_diag.right_indicator_on = g_lighting_ctx.outputs.right_indicator_on;
-    g_app_lighting_diag.hazard_lamp_on = g_lighting_ctx.outputs.hazard_lamp_on;
-    g_app_lighting_diag.heartbeat_led_on = g_lighting_ctx.outputs.heartbeat_led_on;
-    g_app_lighting_diag.status_checksum = g_lighting_ctx.status_checksum;
-    g_app_lighting_diag.status_tx_count = g_lighting_ctx.status_tx_count;
+    g_app_lighting_diag.rx_count                  = g_lighting_ctx.rx_count;
+    g_app_lighting_diag.lighting_state            = g_lighting_ctx.outputs.state;
+    g_app_lighting_diag.fail_safe                 = g_lighting_ctx.fail_safe;
+    g_app_lighting_diag.heartbeat_timeout         = g_lighting_ctx.heartbeat_timeout;
+    g_app_lighting_diag.head_lamp_on              = g_lighting_ctx.outputs.head_lamp_on;
+    g_app_lighting_diag.park_lamp_on              = g_lighting_ctx.outputs.park_lamp_on;
+    g_app_lighting_diag.left_indicator_on         = g_lighting_ctx.outputs.left_indicator_on;
+    g_app_lighting_diag.right_indicator_on        = g_lighting_ctx.outputs.right_indicator_on;
+    g_app_lighting_diag.hazard_lamp_on            = g_lighting_ctx.outputs.hazard_lamp_on;
+    g_app_lighting_diag.heartbeat_led_on          = g_lighting_ctx.outputs.heartbeat_led_on;
+    g_app_lighting_diag.status_checksum           = g_lighting_ctx.status_checksum;
+    g_app_lighting_diag.status_tx_count           = g_lighting_ctx.status_tx_count;
 }
 
 static void AppLighting_ClearDiag(void)
 {
-    g_app_lighting_diag.command_bits = 0U;
-    g_app_lighting_diag.last_heartbeat = 0U;
-    g_app_lighting_diag.command_checksum_error = 0U;
-    g_app_lighting_diag.command_rx_checksum = 0U;
-    g_app_lighting_diag.command_calc_checksum = 0U;
-    g_app_lighting_diag.command_checksum_ok_count = 0UL;
+    g_app_lighting_diag.command_bits               = 0U;
+    g_app_lighting_diag.last_heartbeat             = 0U;
+    g_app_lighting_diag.command_checksum_error     = FALSE;
+    g_app_lighting_diag.command_rx_checksum        = 0U;
+    g_app_lighting_diag.command_calc_checksum      = 0U;
+    g_app_lighting_diag.command_checksum_ok_count  = 0UL;
     g_app_lighting_diag.command_checksum_fail_count = 0UL;
-    g_app_lighting_diag.rx_count = 0UL;
-    g_app_lighting_diag.lighting_state = LIGHTING_STATE_INIT;
-    g_app_lighting_diag.fail_safe = 1U;
-    g_app_lighting_diag.heartbeat_timeout = 1U;
-    g_app_lighting_diag.head_lamp_on = 0U;
-    g_app_lighting_diag.park_lamp_on = 0U;
-    g_app_lighting_diag.left_indicator_on = 0U;
-    g_app_lighting_diag.right_indicator_on = 0U;
-    g_app_lighting_diag.hazard_lamp_on = 0U;
-    g_app_lighting_diag.heartbeat_led_on = 0U;
-    g_app_lighting_diag.status_checksum = 0U;
-    g_app_lighting_diag.status_tx_count = 0UL;
+    g_app_lighting_diag.rx_count                   = 0UL;
+    g_app_lighting_diag.lighting_state             = LIGHTING_STATE_INIT;
+    g_app_lighting_diag.fail_safe                  = TRUE;
+    g_app_lighting_diag.heartbeat_timeout          = TRUE;
+    g_app_lighting_diag.head_lamp_on               = FALSE;
+    g_app_lighting_diag.park_lamp_on               = FALSE;
+    g_app_lighting_diag.left_indicator_on          = FALSE;
+    g_app_lighting_diag.right_indicator_on         = FALSE;
+    g_app_lighting_diag.hazard_lamp_on             = FALSE;
+    g_app_lighting_diag.heartbeat_led_on           = FALSE;
+    g_app_lighting_diag.status_checksum            = 0U;
+    g_app_lighting_diag.status_tx_count            = 0UL;
 }
 
-/* log helpers simplified */
 static void AppLighting_LogSimple(const char *prefix)
 {
     SvcLog_Buffer_t b; SvcLog_WriteSeparator(); SvcLog_BufferInit(&b); SvcLog_AppendU32(&b, HAL_GetTick()); SvcLog_AppendText(&b, " "); SvcLog_AppendText(&b, prefix); SvcLog_AppendCrLf(&b); SvcLog_Transmit(&b);
@@ -116,36 +123,37 @@ static void AppLighting_LogSummary(void){SvcLog_Buffer_t b; SvcLog_WriteSeparato
 static void AppLighting_InitContext(void)
 {
     IoLightingOutputs_Init(&g_lighting_ctx.outputs);
-    g_lighting_ctx.command_frame.command_bits = 0U;
+    g_lighting_ctx.command_frame.command_bits          = 0U;
     g_lighting_ctx.status_frame.diagnostic_pattern_a5 = 0xA5U;
-    g_lighting_ctx.status_frame.node_id = APP_LIGHTING_NODE_ID;
-    g_lighting_ctx.spi_ok = 0U;
-    g_lighting_ctx.node_ready = 0U;
-    g_lighting_ctx.fd_mode = 0U;
-    g_lighting_ctx.last_heartbeat = 0U;
-    g_lighting_ctx.last_heartbeat_tick = 0UL;
-    g_lighting_ctx.heartbeat_timeout = 1U;
-    g_lighting_ctx.fail_safe = 1U;
-    g_lighting_ctx.indicator_phase = 0U;
-    g_lighting_ctx.heartbeat_led_tick = 0UL;
-    g_lighting_ctx.indicator_tick = 0UL;
-    g_lighting_ctx.rx_count = 0UL;
-    g_lighting_ctx.status_tx_count = 0UL;
-    g_lighting_ctx.status_last_tx_tick = 0UL;
-    g_lighting_ctx.last_summary_tick = 0UL;
-    g_lighting_ctx.command_rx_checksum = 0U;
-    g_lighting_ctx.command_calc_checksum = 0U;
-    g_lighting_ctx.command_checksum_error = 0U;
-    g_lighting_ctx.command_checksum_ok_count = 0UL;
+    g_lighting_ctx.status_frame.node_id                = APP_LIGHTING_NODE_ID;
+    g_lighting_ctx.spi_ok             = FALSE;
+    g_lighting_ctx.node_ready         = FALSE;
+    g_lighting_ctx.fd_mode            = 0U;
+    g_lighting_ctx.last_heartbeat     = 0U;
+    g_lighting_ctx.last_heartbeat_tick      = 0UL;
+    g_lighting_ctx.heartbeat_timeout        = TRUE;
+    g_lighting_ctx.fail_safe                = TRUE;
+    g_lighting_ctx.indicator_phase          = FALSE;
+    g_lighting_ctx.heartbeat_led_tick       = 0UL;
+    g_lighting_ctx.indicator_tick           = 0UL;
+    g_lighting_ctx.rx_count                 = 0UL;
+    g_lighting_ctx.status_tx_count          = 0UL;
+    g_lighting_ctx.status_last_tx_tick      = 0UL;
+    g_lighting_ctx.last_summary_tick        = 0UL;
+    g_lighting_ctx.command_rx_checksum      = 0U;
+    g_lighting_ctx.command_calc_checksum    = 0U;
+    g_lighting_ctx.command_checksum_error   = FALSE;
+    g_lighting_ctx.command_checksum_ok_count   = 0UL;
     g_lighting_ctx.command_checksum_fail_count = 0UL;
-    g_lighting_ctx.status_checksum = 0U;
-    g_lighting_ctx.last_logged_command_bits = 0xFFU;
-    g_lighting_ctx.last_logged_hb_timeout = 0xFFU;
-    g_lighting_ctx.last_logged_fail_safe = 0xFFU;
-    g_lighting_ctx.last_logged_state = 0xFFU;
+    g_lighting_ctx.status_checksum          = 0U;
+    /* 0xFF sentinel: ensures every real value triggers a log event on first cycle */
+    g_lighting_ctx.last_logged_command_bits   = 0xFFU;
+    g_lighting_ctx.last_logged_hb_timeout     = 0xFFU;
+    g_lighting_ctx.last_logged_fail_safe      = 0xFFU;
+    g_lighting_ctx.last_logged_state          = 0xFFU;
     g_lighting_ctx.last_logged_checksum_error = 0xFFU;
     IoLightingOutputs_ApplyFailSafe(&g_lighting_ctx.outputs);
-    g_lighting_ctx.outputs.heartbeat_led_on = 0U;
+    g_lighting_ctx.outputs.heartbeat_led_on = FALSE;
     AppLighting_ClearDiag();
 }
 
@@ -166,12 +174,12 @@ static void AppLighting_ConfigureController(void)
         local_status = CANFD_SPI_ReadWord(APP_LIGHTING_OSC_REGISTER_ADDRESS, &osc_value);
         if ((local_status == HAL_OK) && ((osc_value & APP_LIGHTING_OSC_READY_MASK) != 0UL))
         {
-            g_lighting_ctx.spi_ok = 1U;
-            g_lighting_ctx.node_ready = 1U;
+            g_lighting_ctx.spi_ok     = TRUE;
+            g_lighting_ctx.node_ready = TRUE;
         }
     }
 
-    if (g_lighting_ctx.node_ready == 1U)
+    if (g_lighting_ctx.node_ready == TRUE)
     {
         local_status = MCP2517FD_CAN_RequestMode(MCP2517FD_MODE_CONFIG, &mode_value);
         if (local_status == HAL_OK){ local_status = MCP2517FD_CAN_SetNominalBitTiming_500k_20MHz(); }
@@ -189,38 +197,46 @@ static void AppLighting_PollCommand(uint32_t now_ms)
 {
     uint8_t payload[LIGHTING_FRAME_LENGTH];
     uint16_t standard_id = 0U;
-    uint8_t dlc_value = 0U;
-    uint8_t got_frame = 0U;
-    uint8_t fdf_value = 0U;
-    uint8_t brs_value = 0U;
+    uint8_t dlc_value    = 0U;
+    uint8_t got_frame    = 0U;
+    uint8_t fdf_value    = 0U;
+    uint8_t brs_value    = 0U;
     HAL_StatusTypeDef local_status;
-    uint8_t valid_frame;
+    bool_t valid_frame;
 
-    local_status = MCP2517FD_CAN_RxFifo2PollFd16(&standard_id, payload, &dlc_value, &fdf_value, &brs_value, &got_frame);
+    local_status = MCP2517FD_CAN_RxFifo2PollFd16(&standard_id, payload,
+                                                  &dlc_value, &fdf_value,
+                                                  &brs_value, &got_frame);
 
-    if ((local_status == HAL_OK) && (got_frame == 1U) && (standard_id == LIGHTING_BCM_COMMAND_ID) && (fdf_value == 1U))
+    if ((local_status == HAL_OK) && (got_frame == 1U) &&
+        (standard_id == LIGHTING_BCM_COMMAND_ID) && (fdf_value == 1U))
     {
-        SvcLog_WriteTrace(now_ms, "CH1", "RX", LIGHTING_BCM_COMMAND_ID, LIGHTING_FRAME_LENGTH, fdf_value, brs_value, payload, LIGHTING_FRAME_LENGTH);
-        valid_frame = ComLighting_DecodeBcmCommand(payload, &g_lighting_ctx.command_frame, &g_lighting_ctx.command_rx_checksum, &g_lighting_ctx.command_calc_checksum);
+        SvcLog_WriteTrace(now_ms, "CH1", "RX", LIGHTING_BCM_COMMAND_ID,
+                          LIGHTING_FRAME_LENGTH, fdf_value, brs_value,
+                          payload, LIGHTING_FRAME_LENGTH);
+        valid_frame = ComLighting_DecodeBcmCommand(payload,
+                                                   &g_lighting_ctx.command_frame,
+                                                   &g_lighting_ctx.command_rx_checksum,
+                                                   &g_lighting_ctx.command_calc_checksum);
 
-        if (valid_frame == 1U)
+        if (valid_frame == TRUE)
         {
             g_lighting_ctx.command_checksum_ok_count++;
-            g_lighting_ctx.command_checksum_error = 0U;
+            g_lighting_ctx.command_checksum_error = FALSE;
             g_lighting_ctx.rx_count++;
 
             if (g_lighting_ctx.command_frame.heartbeat_counter != g_lighting_ctx.last_heartbeat)
             {
-                g_lighting_ctx.last_heartbeat = g_lighting_ctx.command_frame.heartbeat_counter;
+                g_lighting_ctx.last_heartbeat      = g_lighting_ctx.command_frame.heartbeat_counter;
                 g_lighting_ctx.last_heartbeat_tick = now_ms;
-                g_lighting_ctx.heartbeat_timeout = 0U;
-                g_lighting_ctx.fail_safe = 0U;
+                g_lighting_ctx.heartbeat_timeout   = FALSE;
+                g_lighting_ctx.fail_safe           = FALSE;
             }
         }
         else
         {
             g_lighting_ctx.command_checksum_fail_count++;
-            g_lighting_ctx.command_checksum_error = 1U;
+            g_lighting_ctx.command_checksum_error = TRUE;
         }
     }
 }
@@ -229,24 +245,26 @@ static void AppLighting_UpdateTiming(uint32_t now_ms)
 {
     if ((now_ms - g_lighting_ctx.last_heartbeat_tick) > APP_LIGHTING_HEARTBEAT_TIMEOUT_MS)
     {
-        g_lighting_ctx.heartbeat_timeout = 1U;
-        g_lighting_ctx.fail_safe = 1U;
-        g_lighting_ctx.indicator_phase = 0U;
+        g_lighting_ctx.heartbeat_timeout = TRUE;
+        g_lighting_ctx.fail_safe         = TRUE;
+        g_lighting_ctx.indicator_phase   = FALSE;
         IoLightingOutputs_ApplyFailSafe(&g_lighting_ctx.outputs);
-        g_lighting_ctx.outputs.heartbeat_led_on = 0U;
+        g_lighting_ctx.outputs.heartbeat_led_on = FALSE;
     }
     else
     {
         if ((now_ms - g_lighting_ctx.heartbeat_led_tick) >= APP_LIGHTING_HEARTBEAT_LED_MS)
         {
-            g_lighting_ctx.heartbeat_led_tick = now_ms;
-            g_lighting_ctx.outputs.heartbeat_led_on ^= 1U;
+            g_lighting_ctx.heartbeat_led_tick       = now_ms;
+            g_lighting_ctx.outputs.heartbeat_led_on =
+                (g_lighting_ctx.outputs.heartbeat_led_on == FALSE) ? TRUE : FALSE;
         }
 
         if ((now_ms - g_lighting_ctx.indicator_tick) >= APP_LIGHTING_INDICATOR_MS)
         {
-            g_lighting_ctx.indicator_tick = now_ms;
-            g_lighting_ctx.indicator_phase ^= 1U;
+            g_lighting_ctx.indicator_tick  = now_ms;
+            g_lighting_ctx.indicator_phase =
+                (g_lighting_ctx.indicator_phase == FALSE) ? TRUE : FALSE;
         }
 
         IoLightingOutputs_ApplyCommand(&g_lighting_ctx.outputs,
@@ -266,36 +284,37 @@ static void AppLighting_SendStatus(uint32_t now_ms)
     {
         g_lighting_ctx.status_frame.flags = 0U;
 
-        if (g_lighting_ctx.outputs.head_lamp_on == 1U){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_HEAD_ACTIVE_BIT; }
-        if (g_lighting_ctx.outputs.park_lamp_on == 1U){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_PARK_ACTIVE_BIT; }
-        if (g_lighting_ctx.outputs.left_indicator_on == 1U){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_LEFT_ACTIVE_BIT; }
-        if (g_lighting_ctx.outputs.right_indicator_on == 1U){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_RIGHT_ACTIVE_BIT; }
-        if (g_lighting_ctx.outputs.hazard_lamp_on == 1U){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_HAZARD_ACTIVE_BIT; }
-        if (g_lighting_ctx.heartbeat_timeout == 1U){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_HB_TIMEOUT_BIT; }
-        if (g_lighting_ctx.fail_safe == 1U){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_FAIL_SAFE_BIT; }
+        if (g_lighting_ctx.outputs.head_lamp_on      == TRUE){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_HEAD_ACTIVE_BIT; }
+        if (g_lighting_ctx.outputs.park_lamp_on      == TRUE){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_PARK_ACTIVE_BIT; }
+        if (g_lighting_ctx.outputs.left_indicator_on == TRUE){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_LEFT_ACTIVE_BIT; }
+        if (g_lighting_ctx.outputs.right_indicator_on == TRUE){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_RIGHT_ACTIVE_BIT; }
+        if (g_lighting_ctx.outputs.hazard_lamp_on    == TRUE){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_HAZARD_ACTIVE_BIT; }
+        if (g_lighting_ctx.heartbeat_timeout         == TRUE){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_HB_TIMEOUT_BIT; }
+        if (g_lighting_ctx.fail_safe                 == TRUE){ g_lighting_ctx.status_frame.flags |= LIGHTING_STATUS_FAIL_SAFE_BIT; }
 
-        g_lighting_ctx.status_frame.state = g_lighting_ctx.outputs.state;
-        g_lighting_ctx.status_frame.last_heartbeat_rx = g_lighting_ctx.last_heartbeat;
-        g_lighting_ctx.status_frame.status_counter = (uint8_t)(g_lighting_ctx.status_tx_count & 0xFFU);
-        g_lighting_ctx.status_frame.command_bits_echo = g_lighting_ctx.command_frame.command_bits;
-        g_lighting_ctx.status_frame.rx_count_lsb = (uint8_t)(g_lighting_ctx.rx_count & 0xFFU);
-        g_lighting_ctx.status_frame.heartbeat_led_state = g_lighting_ctx.outputs.heartbeat_led_on;
-        g_lighting_ctx.status_frame.indicator_blink_state = g_lighting_ctx.indicator_phase;
-        g_lighting_ctx.status_frame.head_command_echo = ((g_lighting_ctx.command_frame.command_bits & LIGHTING_CMD_HEAD_LAMP_BIT) != 0U) ? 1U : 0U;
-        g_lighting_ctx.status_frame.park_command_echo = ((g_lighting_ctx.command_frame.command_bits & LIGHTING_CMD_PARK_LAMP_BIT) != 0U) ? 1U : 0U;
-        g_lighting_ctx.status_frame.left_command_echo = ((g_lighting_ctx.command_frame.command_bits & LIGHTING_CMD_LEFT_IND_BIT) != 0U) ? 1U : 0U;
+        g_lighting_ctx.status_frame.state              = g_lighting_ctx.outputs.state;
+        g_lighting_ctx.status_frame.last_heartbeat_rx  = g_lighting_ctx.last_heartbeat;
+        g_lighting_ctx.status_frame.status_counter     = (uint8_t)(g_lighting_ctx.status_tx_count & 0xFFU);
+        g_lighting_ctx.status_frame.command_bits_echo  = g_lighting_ctx.command_frame.command_bits;
+        g_lighting_ctx.status_frame.rx_count_lsb       = (uint8_t)(g_lighting_ctx.rx_count & 0xFFU);
+        g_lighting_ctx.status_frame.heartbeat_led_state   = (uint8_t)g_lighting_ctx.outputs.heartbeat_led_on;
+        g_lighting_ctx.status_frame.indicator_blink_state = (uint8_t)g_lighting_ctx.indicator_phase;
+        g_lighting_ctx.status_frame.head_command_echo  = ((g_lighting_ctx.command_frame.command_bits & LIGHTING_CMD_HEAD_LAMP_BIT) != 0U) ? 1U : 0U;
+        g_lighting_ctx.status_frame.park_command_echo  = ((g_lighting_ctx.command_frame.command_bits & LIGHTING_CMD_PARK_LAMP_BIT) != 0U) ? 1U : 0U;
+        g_lighting_ctx.status_frame.left_command_echo  = ((g_lighting_ctx.command_frame.command_bits & LIGHTING_CMD_LEFT_IND_BIT)  != 0U) ? 1U : 0U;
         g_lighting_ctx.status_frame.right_command_echo = ((g_lighting_ctx.command_frame.command_bits & LIGHTING_CMD_RIGHT_IND_BIT) != 0U) ? 1U : 0U;
-        g_lighting_ctx.status_frame.hazard_command_echo = ((g_lighting_ctx.command_frame.command_bits & LIGHTING_CMD_HAZARD_BIT) != 0U) ? 1U : 0U;
+        g_lighting_ctx.status_frame.hazard_command_echo = ((g_lighting_ctx.command_frame.command_bits & LIGHTING_CMD_HAZARD_BIT)  != 0U) ? 1U : 0U;
 
         ComLighting_EncodeLightingStatus(&g_lighting_ctx.status_frame, payload);
-        g_lighting_ctx.status_checksum = payload[15];
-        g_lighting_ctx.status_frame.checksum = payload[15];
+        g_lighting_ctx.status_checksum          = payload[15];
+        g_lighting_ctx.status_frame.checksum    = payload[15];
 
         local_status = MCP2517FD_CAN_TxFifo1SendFd16(LIGHTING_STATUS_ID, payload, 1U);
         if (local_status == HAL_OK)
         {
             g_lighting_ctx.status_tx_count++;
-            SvcLog_WriteTrace(now_ms, "CH1", "TX", LIGHTING_STATUS_ID, LIGHTING_FRAME_LENGTH, 1U, 1U, payload, LIGHTING_FRAME_LENGTH);
+            SvcLog_WriteTrace(now_ms, "CH1", "TX", LIGHTING_STATUS_ID,
+                              LIGHTING_FRAME_LENGTH, 1U, 1U, payload, LIGHTING_FRAME_LENGTH);
         }
         g_lighting_ctx.status_last_tx_tick = now_ms;
     }
@@ -309,26 +328,26 @@ static void AppLighting_ProcessLogs(uint32_t now_ms)
         g_lighting_ctx.last_logged_command_bits = g_lighting_ctx.command_frame.command_bits;
     }
 
-    if (g_lighting_ctx.command_checksum_error != g_lighting_ctx.last_logged_checksum_error)
+    if ((uint8_t)g_lighting_ctx.command_checksum_error != g_lighting_ctx.last_logged_checksum_error)
     {
-        if (g_lighting_ctx.command_checksum_error == 1U){ AppLighting_LogChecksumFail(); }
+        if (g_lighting_ctx.command_checksum_error == TRUE){ AppLighting_LogChecksumFail(); }
         else { AppLighting_LogChecksumOk(); }
-        g_lighting_ctx.last_logged_checksum_error = g_lighting_ctx.command_checksum_error;
+        g_lighting_ctx.last_logged_checksum_error = (uint8_t)g_lighting_ctx.command_checksum_error;
     }
 
-    if (g_lighting_ctx.heartbeat_timeout != g_lighting_ctx.last_logged_hb_timeout)
+    if ((uint8_t)g_lighting_ctx.heartbeat_timeout != g_lighting_ctx.last_logged_hb_timeout)
     {
-        if (g_lighting_ctx.heartbeat_timeout == 1U){ AppLighting_LogHeartbeatTimeout(); }
+        if (g_lighting_ctx.heartbeat_timeout == TRUE){ AppLighting_LogHeartbeatTimeout(); }
         else { AppLighting_LogHeartbeatRestored(); }
-        g_lighting_ctx.last_logged_hb_timeout = g_lighting_ctx.heartbeat_timeout;
+        g_lighting_ctx.last_logged_hb_timeout = (uint8_t)g_lighting_ctx.heartbeat_timeout;
     }
 
-    if ((g_lighting_ctx.outputs.state != g_lighting_ctx.last_logged_state) ||
-        (g_lighting_ctx.fail_safe != g_lighting_ctx.last_logged_fail_safe))
+    if ((g_lighting_ctx.outputs.state    != g_lighting_ctx.last_logged_state) ||
+        ((uint8_t)g_lighting_ctx.fail_safe != g_lighting_ctx.last_logged_fail_safe))
     {
         AppLighting_LogStateEvent();
-        g_lighting_ctx.last_logged_state = g_lighting_ctx.outputs.state;
-        g_lighting_ctx.last_logged_fail_safe = g_lighting_ctx.fail_safe;
+        g_lighting_ctx.last_logged_state     = g_lighting_ctx.outputs.state;
+        g_lighting_ctx.last_logged_fail_safe = (uint8_t)g_lighting_ctx.fail_safe;
     }
 
     if ((now_ms - g_lighting_ctx.last_summary_tick) >= APP_LIGHTING_SUMMARY_MS)

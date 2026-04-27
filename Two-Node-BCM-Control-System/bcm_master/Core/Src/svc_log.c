@@ -135,7 +135,7 @@ void SvcLog_Transmit(const SvcLog_Buffer_t * p_buffer)
     if ((gp_uart != NULL) && (p_buffer != NULL))
     {
         (void)HAL_UART_Transmit(gp_uart,
-                                (uint8_t *)p_buffer->data,
+                                (uint8_t *)(void *)p_buffer->data,
                                 p_buffer->length,
                                 100U);
     }

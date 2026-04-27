@@ -2,6 +2,7 @@
 #define LIGHTING_MESSAGES_H
 
 #include <stdint.h>
+#include "platform_types.h"
 
 /* Message identifiers */
 #define LIGHTING_BCM_COMMAND_ID         (0x123U)
@@ -37,6 +38,12 @@
 #define LIGHTING_STATE_HAZARD_ACTIVE    (6U)
 #define LIGHTING_STATE_FAIL_SAFE_PARK   (7U)
 
+/*
+ * Wire-format structs: all fields map 1-to-1 to CAN FD payload bytes and
+ * must therefore remain uint8_t regardless of their boolean semantics.
+ * Do not change field types here; use bool_t only in application-layer
+ * context and diagnostic structs that are never serialised.
+ */
 typedef struct
 {
     uint8_t command_bits;

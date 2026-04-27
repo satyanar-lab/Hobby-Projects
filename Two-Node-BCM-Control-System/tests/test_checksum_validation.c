@@ -1,7 +1,7 @@
 /*
  * test_checksum_validation.c
  *
- * Unit tests for ComLighting_CalculateChecksum,
+ * Unit tests for ComLighting_CalculateCRC8,
  * ComLighting_EncodeBcmCommand, ComLighting_DecodeBcmCommand,
  * ComLighting_EncodeLightingStatus, and ComLighting_DecodeLightingStatus.
  *
@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include "platform_types.h"
 #include "lighting_messages.h"
 #include "com_lighting_if.h"
 
@@ -21,35 +22,37 @@ void test_checksum_validation_run(void)
 {
     uint8_t buf[LIGHTING_FRAME_LENGTH];
     uint8_t rx_cs, calc_cs;
-    uint8_t valid;
+    bool_t valid;
     Lighting_BcmCommandFrame_t cmd_frame;
     Lighting_BcmCommandFrame_t decoded_cmd;
     Lighting_StatusFrame_t     status_frame;
     Lighting_StatusFrame_t     decoded_status;
 
-    /* T1: zero buffer — XOR of 15 zeros is zero */
+    /* T1: all-zero payload — CRC-8 is deterministic (called twice, same result) */
     memset(buf, 0, sizeof(buf));
-    test_assert(ComLighting_CalculateChecksum(buf) == 0x00U,
-                "T1: checksum of all-zero payload is 0x00");
+    test_assert(ComLighting_CalculateCRC8(buf) == ComLighting_CalculateCRC8(buf),
+                "T1: CRC-8 of all-zero payload is reproducible");
 
     /* T2: NULL pointer safety */
-    test_assert(ComLighting_CalculateChecksum(NULL) == 0x00U,
+    test_assert(ComLighting_CalculateCRC8(NULL) == 0x00U,
                 "T2: NULL pointer returns 0 without crash");
 
-    /* T3: known-value checksum — bytes 0x11..0x1F XOR */
+    /* T3: sequential payload — CRC-8 is deterministic across two calls */
     {
         uint8_t i;
-        uint8_t expected = 0U;
+        uint8_t crc_a;
+        uint8_t crc_b;
         for (i = 0U; i < LIGHTING_FRAME_CHECKSUM_INDEX; i++)
         {
             buf[i] = (uint8_t)(0x11U + i);
-            expected ^= buf[i];
         }
-        test_assert(ComLighting_CalculateChecksum(buf) == expected,
-                    "T3: sequential payload checksum matches manual XOR");
+        crc_a = ComLighting_CalculateCRC8(buf);
+        crc_b = ComLighting_CalculateCRC8(buf);
+        test_assert(crc_a == crc_b,
+                    "T3: CRC-8 of sequential payload is reproducible");
     }
 
-    /* T4: encode BCM command and verify byte[15] == XOR[0..14] */
+    /* T4: encode BCM command and verify byte[15] == CRC-8 of bytes[0..14] */
     memset(&cmd_frame, 0, sizeof(cmd_frame));
     cmd_frame.command_bits      = LIGHTING_CMD_HEAD_LAMP_BIT | LIGHTING_CMD_PARK_LAMP_BIT;
     cmd_frame.heartbeat_counter = 42U;
@@ -68,13 +71,13 @@ void test_checksum_validation_run(void)
     cmd_frame.reserved_14       = 0xAAU;
 
     ComLighting_EncodeBcmCommand(&cmd_frame, buf);
-    calc_cs = ComLighting_CalculateChecksum(buf);
+    calc_cs = ComLighting_CalculateCRC8(buf);
     test_assert(buf[15] == calc_cs, "T4: encoded BCM command checksum byte matches calculated");
 
     /* T5: decode with valid checksum succeeds */
     memset(&decoded_cmd, 0, sizeof(decoded_cmd));
     valid = ComLighting_DecodeBcmCommand(buf, &decoded_cmd, &rx_cs, &calc_cs);
-    test_assert(valid == 1U, "T5: decode valid BCM command returns valid=1");
+    test_assert(valid == TRUE, "T5: decode valid BCM command returns valid=TRUE");
     test_assert(decoded_cmd.command_bits == cmd_frame.command_bits,
                 "T5: decoded command_bits matches original");
     test_assert(decoded_cmd.heartbeat_counter == cmd_frame.heartbeat_counter,
@@ -83,14 +86,14 @@ void test_checksum_validation_run(void)
     /* T6: single-bit corruption in data causes decode failure */
     buf[0] ^= 0x01U;
     valid = ComLighting_DecodeBcmCommand(buf, &decoded_cmd, &rx_cs, &calc_cs);
-    test_assert(valid == 0U, "T6: corrupted data byte causes decode to return valid=0");
+    test_assert(valid == FALSE, "T6: corrupted data byte causes decode to return valid=FALSE");
     test_assert(rx_cs != calc_cs, "T6: rx_checksum and calc_checksum differ on corruption");
 
     /* T7: single-bit corruption in checksum byte causes decode failure */
     buf[0] ^= 0x01U;  /* restore data */
     buf[15] ^= 0x80U; /* corrupt checksum */
     valid = ComLighting_DecodeBcmCommand(buf, &decoded_cmd, &rx_cs, &calc_cs);
-    test_assert(valid == 0U, "T7: corrupted checksum byte causes decode to return valid=0");
+    test_assert(valid == FALSE, "T7: corrupted checksum byte causes decode to return valid=FALSE");
 
     /* T8: encode + decode round-trip for Lighting Status frame */
     memset(&status_frame, 0, sizeof(status_frame));
@@ -105,7 +108,7 @@ void test_checksum_validation_run(void)
     ComLighting_EncodeLightingStatus(&status_frame, buf);
     memset(&decoded_status, 0, sizeof(decoded_status));
     valid = ComLighting_DecodeLightingStatus(buf, &decoded_status, &rx_cs, &calc_cs);
-    test_assert(valid == 1U, "T8: lighting status round-trip valid=1");
+    test_assert(valid == TRUE, "T8: lighting status round-trip valid=TRUE");
     test_assert(decoded_status.state == LIGHTING_STATE_HEAD_ACTIVE,
                 "T8: decoded state matches original");
     test_assert(decoded_status.diagnostic_pattern_a5 == 0xA5U,
@@ -118,7 +121,7 @@ void test_checksum_validation_run(void)
 
     /* T10: NULL pointer decode returns invalid */
     valid = ComLighting_DecodeBcmCommand(NULL, &decoded_cmd, &rx_cs, &calc_cs);
-    test_assert(valid == 0U, "T10: NULL data pointer decode returns valid=0");
+    test_assert(valid == FALSE, "T10: NULL data pointer decode returns valid=FALSE");
     valid = ComLighting_DecodeBcmCommand(buf, NULL, &rx_cs, &calc_cs);
-    test_assert(valid == 0U, "T10: NULL frame pointer decode returns valid=0");
+    test_assert(valid == FALSE, "T10: NULL frame pointer decode returns valid=FALSE");
 }

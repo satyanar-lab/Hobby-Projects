@@ -24,33 +24,42 @@
 #define APP_BCM_OSC_REGISTER_ADDRESS       (0x0E00U)
 #define APP_BCM_OSC_READY_MASK             (0x00000400UL)
 
+/*
+ * NOTE — uint32_t tick arithmetic:
+ *   All timeout checks use the form (now_ms - last_valid_tick) > THRESHOLD.
+ *   uint32_t subtraction wraps correctly under unsigned arithmetic, so the
+ *   comparison is safe across the ~49-day HAL_GetTick() rollover boundary.
+ *   status_last_valid_tick is initialised to 0, meaning the very first
+ *   cycle will satisfy the > 500 ms check; this is intentional — the node
+ *   boots in status_timeout = TRUE until the first valid frame arrives.
+ */
 typedef struct
 {
-    IoBcmInputs_State_t inputs;
-    Lighting_BcmCommandFrame_t command_frame;
-    Lighting_StatusFrame_t status_frame;
-    uint8_t spi_ok;
-    uint8_t node_ready;
-    uint8_t fd_mode;
+    IoBcmInputs_State_t          inputs;
+    Lighting_BcmCommandFrame_t   command_frame;
+    Lighting_StatusFrame_t       status_frame;
+    bool_t   spi_ok;
+    bool_t   node_ready;
+    uint8_t  fd_mode;              /* MCP2517FD_MODE_* value — not bool */
     uint32_t tx_count;
     uint32_t last_tx_tick;
     uint32_t last_summary_tick;
     uint32_t status_last_valid_tick;
-    uint8_t status_timeout;
-    uint8_t status_rx_checksum;
-    uint8_t status_calc_checksum;
-    uint8_t status_checksum_error;
+    bool_t   status_timeout;
+    uint8_t  status_rx_checksum;   /* CRC-8 value — not bool */
+    uint8_t  status_calc_checksum; /* CRC-8 value — not bool */
+    bool_t   status_checksum_error;
     uint32_t status_checksum_ok_count;
     uint32_t status_checksum_fail_count;
-    uint8_t link_led_state;
+    bool_t   link_led_state;
     uint32_t link_led_tick;
     uint32_t link_led_blink_count;
-    uint8_t last_logged_command_bits;
-    uint8_t last_logged_status_timeout;
-    uint8_t last_logged_status_checksum_error;
-    uint8_t last_logged_state;
-    uint8_t last_logged_fail_safe;
-    uint8_t last_logged_hb_timeout;
+    uint8_t  last_logged_command_bits;        /* 0xFF sentinel — not bool */
+    uint8_t  last_logged_status_timeout;      /* 0xFF sentinel — not bool */
+    uint8_t  last_logged_status_checksum_error; /* 0xFF sentinel — not bool */
+    uint8_t  last_logged_state;               /* 0xFF sentinel — not bool */
+    uint8_t  last_logged_fail_safe;           /* 0xFF sentinel — not bool */
+    uint8_t  last_logged_hb_timeout;          /* 0xFF sentinel — not bool */
 } AppBcm_Context_t;
 
 static AppBcm_Context_t g_bcm_ctx;
@@ -58,60 +67,59 @@ volatile AppBcm_Diag_t g_app_bcm_diag;
 
 static void AppBcm_ClearDiag(void)
 {
-    g_app_bcm_diag.command_bits = 0U;
-    g_app_bcm_diag.heartbeat_counter = 0U;
-    g_app_bcm_diag.command_checksum = 0U;
-    g_app_bcm_diag.tx_count = 0UL;
-    g_app_bcm_diag.lighting_status_timeout = 1U;
-    g_app_bcm_diag.lighting_state = LIGHTING_STATE_INIT;
-    g_app_bcm_diag.lighting_fail_safe = 0U;
-    g_app_bcm_diag.lighting_hb_timeout = 0U;
-    g_app_bcm_diag.lighting_head_active = 0U;
-    g_app_bcm_diag.lighting_park_active = 0U;
-    g_app_bcm_diag.lighting_left_active = 0U;
-    g_app_bcm_diag.lighting_right_active = 0U;
-    g_app_bcm_diag.lighting_hazard_active = 0U;
-    g_app_bcm_diag.status_checksum_error = 0U;
-    g_app_bcm_diag.status_rx_checksum = 0U;
-    g_app_bcm_diag.status_calc_checksum = 0U;
-    g_app_bcm_diag.status_checksum_ok_count = 0UL;
-    g_app_bcm_diag.status_checksum_fail_count = 0UL;
-    g_app_bcm_diag.link_led_state = 0U;
-    g_app_bcm_diag.link_led_blink_count = 0UL;
+    g_app_bcm_diag.command_bits                = 0U;
+    g_app_bcm_diag.heartbeat_counter           = 0U;
+    g_app_bcm_diag.command_checksum            = 0U;
+    g_app_bcm_diag.tx_count                    = 0UL;
+    g_app_bcm_diag.lighting_status_timeout     = TRUE;
+    g_app_bcm_diag.lighting_state             = LIGHTING_STATE_INIT;
+    g_app_bcm_diag.lighting_fail_safe          = FALSE;
+    g_app_bcm_diag.lighting_hb_timeout         = FALSE;
+    g_app_bcm_diag.lighting_head_active        = FALSE;
+    g_app_bcm_diag.lighting_park_active        = FALSE;
+    g_app_bcm_diag.lighting_left_active        = FALSE;
+    g_app_bcm_diag.lighting_right_active       = FALSE;
+    g_app_bcm_diag.lighting_hazard_active      = FALSE;
+    g_app_bcm_diag.status_checksum_error       = FALSE;
+    g_app_bcm_diag.status_rx_checksum          = 0U;
+    g_app_bcm_diag.status_calc_checksum        = 0U;
+    g_app_bcm_diag.status_checksum_ok_count    = 0UL;
+    g_app_bcm_diag.status_checksum_fail_count  = 0UL;
+    g_app_bcm_diag.link_led_state              = FALSE;
+    g_app_bcm_diag.link_led_blink_count        = 0UL;
 }
 
 static void AppBcm_UpdateDiag(void)
 {
-    g_app_bcm_diag.command_bits = g_bcm_ctx.command_frame.command_bits;
-    g_app_bcm_diag.heartbeat_counter = g_bcm_ctx.command_frame.heartbeat_counter;
-    g_app_bcm_diag.command_checksum = g_bcm_ctx.command_frame.checksum;
-    g_app_bcm_diag.tx_count = g_bcm_ctx.tx_count;
+    g_app_bcm_diag.command_bits           = g_bcm_ctx.command_frame.command_bits;
+    g_app_bcm_diag.heartbeat_counter      = g_bcm_ctx.command_frame.heartbeat_counter;
+    g_app_bcm_diag.command_checksum       = g_bcm_ctx.command_frame.checksum;
+    g_app_bcm_diag.tx_count               = g_bcm_ctx.tx_count;
     g_app_bcm_diag.lighting_status_timeout = g_bcm_ctx.status_timeout;
-    g_app_bcm_diag.lighting_state = g_bcm_ctx.status_frame.state;
-    g_app_bcm_diag.lighting_fail_safe =
+    g_app_bcm_diag.lighting_state         = g_bcm_ctx.status_frame.state;
+    g_app_bcm_diag.lighting_fail_safe     =
         ComLighting_IsFlagSet(g_bcm_ctx.status_frame.flags, LIGHTING_STATUS_FAIL_SAFE_BIT);
-    g_app_bcm_diag.lighting_hb_timeout =
+    g_app_bcm_diag.lighting_hb_timeout    =
         ComLighting_IsFlagSet(g_bcm_ctx.status_frame.flags, LIGHTING_STATUS_HB_TIMEOUT_BIT);
-    g_app_bcm_diag.lighting_head_active =
+    g_app_bcm_diag.lighting_head_active   =
         ComLighting_IsFlagSet(g_bcm_ctx.status_frame.flags, LIGHTING_STATUS_HEAD_ACTIVE_BIT);
-    g_app_bcm_diag.lighting_park_active =
+    g_app_bcm_diag.lighting_park_active   =
         ComLighting_IsFlagSet(g_bcm_ctx.status_frame.flags, LIGHTING_STATUS_PARK_ACTIVE_BIT);
-    g_app_bcm_diag.lighting_left_active =
+    g_app_bcm_diag.lighting_left_active   =
         ComLighting_IsFlagSet(g_bcm_ctx.status_frame.flags, LIGHTING_STATUS_LEFT_ACTIVE_BIT);
-    g_app_bcm_diag.lighting_right_active =
+    g_app_bcm_diag.lighting_right_active  =
         ComLighting_IsFlagSet(g_bcm_ctx.status_frame.flags, LIGHTING_STATUS_RIGHT_ACTIVE_BIT);
     g_app_bcm_diag.lighting_hazard_active =
         ComLighting_IsFlagSet(g_bcm_ctx.status_frame.flags, LIGHTING_STATUS_HAZARD_ACTIVE_BIT);
-    g_app_bcm_diag.status_checksum_error = g_bcm_ctx.status_checksum_error;
-    g_app_bcm_diag.status_rx_checksum = g_bcm_ctx.status_rx_checksum;
-    g_app_bcm_diag.status_calc_checksum = g_bcm_ctx.status_calc_checksum;
-    g_app_bcm_diag.status_checksum_ok_count = g_bcm_ctx.status_checksum_ok_count;
+    g_app_bcm_diag.status_checksum_error  = g_bcm_ctx.status_checksum_error;
+    g_app_bcm_diag.status_rx_checksum     = g_bcm_ctx.status_rx_checksum;
+    g_app_bcm_diag.status_calc_checksum   = g_bcm_ctx.status_calc_checksum;
+    g_app_bcm_diag.status_checksum_ok_count   = g_bcm_ctx.status_checksum_ok_count;
     g_app_bcm_diag.status_checksum_fail_count = g_bcm_ctx.status_checksum_fail_count;
-    g_app_bcm_diag.link_led_state = g_bcm_ctx.link_led_state;
-    g_app_bcm_diag.link_led_blink_count = g_bcm_ctx.link_led_blink_count;
+    g_app_bcm_diag.link_led_state         = g_bcm_ctx.link_led_state;
+    g_app_bcm_diag.link_led_blink_count   = g_bcm_ctx.link_led_blink_count;
 }
 
-/* Logging helper functions omitted from this snippet? No, include them */
 static void AppBcm_LogCommandEvent(void)
 {
     SvcLog_Buffer_t log_buffer;
@@ -169,45 +177,49 @@ static void AppBcm_LogSummary(void){SvcLog_Buffer_t b;SvcLog_WriteSeparator();Sv
 static void AppBcm_InitContext(void)
 {
     IoBcmInputs_Init(&g_bcm_ctx.inputs);
-    g_bcm_ctx.command_frame.command_bits = 0U;
+    g_bcm_ctx.command_frame.command_bits      = 0U;
     g_bcm_ctx.command_frame.heartbeat_counter = 0U;
-    g_bcm_ctx.command_frame.sender_node_id = APP_BCM_NODE_ID;
-    g_bcm_ctx.command_frame.bcm_alive = APP_BCM_ALIVE_VALUE;
-    g_bcm_ctx.command_frame.rolling_counter = 0U;
-    g_bcm_ctx.command_frame.reserved_5 = 0x11U;
-    g_bcm_ctx.command_frame.reserved_6 = 0x22U;
-    g_bcm_ctx.command_frame.reserved_7 = 0x33U;
-    g_bcm_ctx.command_frame.reserved_8 = 0x44U;
-    g_bcm_ctx.command_frame.reserved_9 = 0x55U;
+    g_bcm_ctx.command_frame.sender_node_id    = APP_BCM_NODE_ID;
+    g_bcm_ctx.command_frame.bcm_alive         = APP_BCM_ALIVE_VALUE;
+    g_bcm_ctx.command_frame.rolling_counter   = 0U;
+    /* Fixed walking pattern in reserved bytes — aids oscilloscope verification
+     * of payload byte alignment during bring-up and fills the 16-byte CAN FD
+     * data phase.  Values are intentional, not accidental constants. */
+    g_bcm_ctx.command_frame.reserved_5  = 0x11U;
+    g_bcm_ctx.command_frame.reserved_6  = 0x22U;
+    g_bcm_ctx.command_frame.reserved_7  = 0x33U;
+    g_bcm_ctx.command_frame.reserved_8  = 0x44U;
+    g_bcm_ctx.command_frame.reserved_9  = 0x55U;
     g_bcm_ctx.command_frame.reserved_10 = 0x66U;
     g_bcm_ctx.command_frame.reserved_11 = 0x77U;
     g_bcm_ctx.command_frame.reserved_12 = 0x88U;
     g_bcm_ctx.command_frame.reserved_13 = 0x99U;
     g_bcm_ctx.command_frame.reserved_14 = 0xAAU;
-    g_bcm_ctx.status_frame.flags = 0U;
-    g_bcm_ctx.status_frame.state = LIGHTING_STATE_INIT;
-    g_bcm_ctx.spi_ok = 0U;
-    g_bcm_ctx.node_ready = 0U;
-    g_bcm_ctx.fd_mode = 0U;
-    g_bcm_ctx.tx_count = 0UL;
-    g_bcm_ctx.last_tx_tick = 0UL;
-    g_bcm_ctx.last_summary_tick = 0UL;
-    g_bcm_ctx.status_last_valid_tick = 0UL;
-    g_bcm_ctx.status_timeout = 1U;
-    g_bcm_ctx.status_rx_checksum = 0U;
-    g_bcm_ctx.status_calc_checksum = 0U;
-    g_bcm_ctx.status_checksum_error = 0U;
-    g_bcm_ctx.status_checksum_ok_count = 0UL;
+    g_bcm_ctx.status_frame.flags  = 0U;
+    g_bcm_ctx.status_frame.state  = LIGHTING_STATE_INIT;
+    g_bcm_ctx.spi_ok               = FALSE;
+    g_bcm_ctx.node_ready           = FALSE;
+    g_bcm_ctx.fd_mode              = 0U;
+    g_bcm_ctx.tx_count             = 0UL;
+    g_bcm_ctx.last_tx_tick         = 0UL;
+    g_bcm_ctx.last_summary_tick    = 0UL;
+    g_bcm_ctx.status_last_valid_tick     = 0UL;
+    g_bcm_ctx.status_timeout             = TRUE;
+    g_bcm_ctx.status_rx_checksum         = 0U;
+    g_bcm_ctx.status_calc_checksum       = 0U;
+    g_bcm_ctx.status_checksum_error      = FALSE;
+    g_bcm_ctx.status_checksum_ok_count   = 0UL;
     g_bcm_ctx.status_checksum_fail_count = 0UL;
-    g_bcm_ctx.link_led_state = 0U;
-    g_bcm_ctx.link_led_tick = 0UL;
-    g_bcm_ctx.link_led_blink_count = 0UL;
-    g_bcm_ctx.last_logged_command_bits = 0xFFU;
-    g_bcm_ctx.last_logged_status_timeout = 0xFFU;
-    g_bcm_ctx.last_logged_status_checksum_error = 0xFFU;
-    g_bcm_ctx.last_logged_state = 0xFFU;
-    g_bcm_ctx.last_logged_fail_safe = 0xFFU;
-    g_bcm_ctx.last_logged_hb_timeout = 0xFFU;
+    g_bcm_ctx.link_led_state        = FALSE;
+    g_bcm_ctx.link_led_tick         = 0UL;
+    g_bcm_ctx.link_led_blink_count  = 0UL;
+    /* 0xFF sentinel: ensures every real value triggers a log event on first cycle */
+    g_bcm_ctx.last_logged_command_bits           = 0xFFU;
+    g_bcm_ctx.last_logged_status_timeout         = 0xFFU;
+    g_bcm_ctx.last_logged_status_checksum_error  = 0xFFU;
+    g_bcm_ctx.last_logged_state                  = 0xFFU;
+    g_bcm_ctx.last_logged_fail_safe              = 0xFFU;
+    g_bcm_ctx.last_logged_hb_timeout             = 0xFFU;
     AppBcm_ClearDiag();
 }
 
@@ -216,7 +228,7 @@ static void AppBcm_ConfigureController(void)
     HAL_StatusTypeDef local_status;
     uint32_t osc_value;
     uint8_t mode_value;
-    osc_value = 0UL;
+    osc_value  = 0UL;
     mode_value = 0U;
 
     HAL_GPIO_WritePin(LIGHTING_LINK_LED_GPIO_Port, LIGHTING_LINK_LED_Pin, GPIO_PIN_RESET);
@@ -231,12 +243,12 @@ static void AppBcm_ConfigureController(void)
         local_status = CANFD_SPI_ReadWord(APP_BCM_OSC_REGISTER_ADDRESS, &osc_value);
         if ((local_status == HAL_OK) && ((osc_value & APP_BCM_OSC_READY_MASK) != 0UL))
         {
-            g_bcm_ctx.spi_ok = 1U;
-            g_bcm_ctx.node_ready = 1U;
+            g_bcm_ctx.spi_ok     = TRUE;
+            g_bcm_ctx.node_ready = TRUE;
         }
     }
 
-    if (g_bcm_ctx.node_ready == 1U)
+    if (g_bcm_ctx.node_ready == TRUE)
     {
         local_status = MCP2517FD_CAN_RequestMode(MCP2517FD_MODE_CONFIG, &mode_value);
         if (local_status == HAL_OK){ local_status = MCP2517FD_CAN_SetNominalBitTiming_500k_20MHz(); }
@@ -257,9 +269,9 @@ static void AppBcm_SendCommand(uint32_t now_ms)
 
     if ((now_ms - g_bcm_ctx.last_tx_tick) >= APP_BCM_TX_PERIOD_MS)
     {
-        g_bcm_ctx.command_frame.command_bits = IoBcmInputs_GetCommandBits(&g_bcm_ctx.inputs);
+        g_bcm_ctx.command_frame.command_bits     = IoBcmInputs_GetCommandBits(&g_bcm_ctx.inputs);
         g_bcm_ctx.command_frame.heartbeat_counter++;
-        g_bcm_ctx.command_frame.rolling_counter = (uint8_t)(g_bcm_ctx.tx_count & 0xFFU);
+        g_bcm_ctx.command_frame.rolling_counter  = (uint8_t)(g_bcm_ctx.tx_count & 0xFFU);
 
         ComLighting_EncodeBcmCommand(&g_bcm_ctx.command_frame, payload);
         g_bcm_ctx.command_frame.checksum = payload[15];
@@ -268,7 +280,8 @@ static void AppBcm_SendCommand(uint32_t now_ms)
         if (local_status == HAL_OK)
         {
             g_bcm_ctx.tx_count++;
-            SvcLog_WriteTrace(now_ms, "CH1", "TX", LIGHTING_BCM_COMMAND_ID, LIGHTING_FRAME_LENGTH, 1U, 1U, payload, LIGHTING_FRAME_LENGTH);
+            SvcLog_WriteTrace(now_ms, "CH1", "TX", LIGHTING_BCM_COMMAND_ID,
+                              LIGHTING_FRAME_LENGTH, 1U, 1U, payload, LIGHTING_FRAME_LENGTH);
         }
         g_bcm_ctx.last_tx_tick = now_ms;
     }
@@ -278,31 +291,39 @@ static void AppBcm_PollStatus(uint32_t now_ms)
 {
     uint8_t payload[LIGHTING_FRAME_LENGTH];
     uint16_t standard_id = 0U;
-    uint8_t dlc_value = 0U;
-    uint8_t got_frame = 0U;
-    uint8_t fdf_value = 0U;
-    uint8_t brs_value = 0U;
+    uint8_t dlc_value    = 0U;
+    uint8_t got_frame    = 0U;
+    uint8_t fdf_value    = 0U;
+    uint8_t brs_value    = 0U;
     HAL_StatusTypeDef local_status;
-    uint8_t valid_frame;
+    bool_t valid_frame;
 
-    local_status = MCP2517FD_CAN_RxFifo2PollFd16(&standard_id, payload, &dlc_value, &fdf_value, &brs_value, &got_frame);
+    local_status = MCP2517FD_CAN_RxFifo2PollFd16(&standard_id, payload,
+                                                  &dlc_value, &fdf_value,
+                                                  &brs_value, &got_frame);
 
-    if ((local_status == HAL_OK) && (got_frame == 1U) && (standard_id == LIGHTING_STATUS_ID) && (fdf_value == 1U))
+    if ((local_status == HAL_OK) && (got_frame == 1U) &&
+        (standard_id == LIGHTING_STATUS_ID) && (fdf_value == 1U))
     {
-        SvcLog_WriteTrace(now_ms, "CH1", "RX", LIGHTING_STATUS_ID, LIGHTING_FRAME_LENGTH, fdf_value, brs_value, payload, LIGHTING_FRAME_LENGTH);
-        valid_frame = ComLighting_DecodeLightingStatus(payload, &g_bcm_ctx.status_frame, &g_bcm_ctx.status_rx_checksum, &g_bcm_ctx.status_calc_checksum);
+        SvcLog_WriteTrace(now_ms, "CH1", "RX", LIGHTING_STATUS_ID,
+                          LIGHTING_FRAME_LENGTH, fdf_value, brs_value,
+                          payload, LIGHTING_FRAME_LENGTH);
+        valid_frame = ComLighting_DecodeLightingStatus(payload,
+                                                       &g_bcm_ctx.status_frame,
+                                                       &g_bcm_ctx.status_rx_checksum,
+                                                       &g_bcm_ctx.status_calc_checksum);
 
-        if (valid_frame == 1U)
+        if (valid_frame == TRUE)
         {
             g_bcm_ctx.status_checksum_ok_count++;
-            g_bcm_ctx.status_checksum_error = 0U;
-            g_bcm_ctx.status_timeout = 0U;
-            g_bcm_ctx.status_last_valid_tick = now_ms;
+            g_bcm_ctx.status_checksum_error  = FALSE;
+            g_bcm_ctx.status_timeout         = FALSE;
+            g_bcm_ctx.status_last_valid_tick  = now_ms;
         }
         else
         {
             g_bcm_ctx.status_checksum_fail_count++;
-            g_bcm_ctx.status_checksum_error = 1U;
+            g_bcm_ctx.status_checksum_error = TRUE;
         }
     }
 }
@@ -311,39 +332,46 @@ static void AppBcm_UpdateStatusTimeout(uint32_t now_ms)
 {
     if ((now_ms - g_bcm_ctx.status_last_valid_tick) > APP_BCM_STATUS_TIMEOUT_MS)
     {
-        g_bcm_ctx.status_timeout = 1U;
+        g_bcm_ctx.status_timeout = TRUE;
     }
 }
 
 static void AppBcm_UpdateLinkLed(uint32_t now_ms)
 {
-    uint8_t fail_safe_active = ComLighting_IsFlagSet(g_bcm_ctx.status_frame.flags, LIGHTING_STATUS_FAIL_SAFE_BIT);
+    bool_t fail_safe_active = ComLighting_IsFlagSet(g_bcm_ctx.status_frame.flags,
+                                                    LIGHTING_STATUS_FAIL_SAFE_BIT);
 
-    if (g_bcm_ctx.status_timeout == 1U)
+    if (g_bcm_ctx.status_timeout == TRUE)
     {
-        g_bcm_ctx.link_led_state = 0U;
+        g_bcm_ctx.link_led_state = FALSE;
         HAL_GPIO_WritePin(LIGHTING_LINK_LED_GPIO_Port, LIGHTING_LINK_LED_Pin, GPIO_PIN_RESET);
     }
-    else if (fail_safe_active == 1U)
+    else if (fail_safe_active == TRUE)
     {
-        g_bcm_ctx.link_led_state = 1U;
+        g_bcm_ctx.link_led_state = TRUE;
         HAL_GPIO_WritePin(LIGHTING_LINK_LED_GPIO_Port, LIGHTING_LINK_LED_Pin, GPIO_PIN_SET);
     }
     else if ((now_ms - g_bcm_ctx.link_led_tick) >= APP_BCM_LINK_LED_BLINK_MS)
     {
-        g_bcm_ctx.link_led_tick = now_ms;
-        g_bcm_ctx.link_led_state ^= 1U;
+        g_bcm_ctx.link_led_tick  = now_ms;
+        g_bcm_ctx.link_led_state = (g_bcm_ctx.link_led_state == FALSE) ? TRUE : FALSE;
         HAL_GPIO_WritePin(LIGHTING_LINK_LED_GPIO_Port,
                           LIGHTING_LINK_LED_Pin,
-                          (g_bcm_ctx.link_led_state == 1U) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+                          (g_bcm_ctx.link_led_state == TRUE) ? GPIO_PIN_SET : GPIO_PIN_RESET);
         g_bcm_ctx.link_led_blink_count++;
+    }
+    else
+    {
+        /* no state change this cycle */
     }
 }
 
 static void AppBcm_ProcessLogs(uint32_t now_ms)
 {
-    uint8_t fail_safe_active = ComLighting_IsFlagSet(g_bcm_ctx.status_frame.flags, LIGHTING_STATUS_FAIL_SAFE_BIT);
-    uint8_t hb_timeout_active = ComLighting_IsFlagSet(g_bcm_ctx.status_frame.flags, LIGHTING_STATUS_HB_TIMEOUT_BIT);
+    bool_t fail_safe_active  = ComLighting_IsFlagSet(g_bcm_ctx.status_frame.flags,
+                                                     LIGHTING_STATUS_FAIL_SAFE_BIT);
+    bool_t hb_timeout_active = ComLighting_IsFlagSet(g_bcm_ctx.status_frame.flags,
+                                                     LIGHTING_STATUS_HB_TIMEOUT_BIT);
 
     if (g_bcm_ctx.command_frame.command_bits != g_bcm_ctx.last_logged_command_bits)
     {
@@ -351,30 +379,30 @@ static void AppBcm_ProcessLogs(uint32_t now_ms)
         g_bcm_ctx.last_logged_command_bits = g_bcm_ctx.command_frame.command_bits;
     }
 
-    if (g_bcm_ctx.status_timeout != g_bcm_ctx.last_logged_status_timeout)
+    if ((uint8_t)g_bcm_ctx.status_timeout != g_bcm_ctx.last_logged_status_timeout)
     {
-        if (g_bcm_ctx.status_timeout == 1U){ AppBcm_LogStatusTimeout(); }
+        if (g_bcm_ctx.status_timeout == TRUE){ AppBcm_LogStatusTimeout(); }
         else { AppBcm_LogStatusRestored(); }
-        g_bcm_ctx.last_logged_status_timeout = g_bcm_ctx.status_timeout;
+        g_bcm_ctx.last_logged_status_timeout = (uint8_t)g_bcm_ctx.status_timeout;
     }
 
-    if (g_bcm_ctx.status_checksum_error != g_bcm_ctx.last_logged_status_checksum_error)
+    if ((uint8_t)g_bcm_ctx.status_checksum_error != g_bcm_ctx.last_logged_status_checksum_error)
     {
-        if (g_bcm_ctx.status_checksum_error == 1U){ AppBcm_LogChecksumFail(); }
+        if (g_bcm_ctx.status_checksum_error == TRUE){ AppBcm_LogChecksumFail(); }
         else { AppBcm_LogChecksumOk(); }
-        g_bcm_ctx.last_logged_status_checksum_error = g_bcm_ctx.status_checksum_error;
+        g_bcm_ctx.last_logged_status_checksum_error = (uint8_t)g_bcm_ctx.status_checksum_error;
     }
 
-    if (g_bcm_ctx.status_timeout == 0U)
+    if (g_bcm_ctx.status_timeout == FALSE)
     {
-        if ((g_bcm_ctx.status_frame.state != g_bcm_ctx.last_logged_state) ||
-            (fail_safe_active != g_bcm_ctx.last_logged_fail_safe) ||
-            (hb_timeout_active != g_bcm_ctx.last_logged_hb_timeout))
+        if ((g_bcm_ctx.status_frame.state    != g_bcm_ctx.last_logged_state)        ||
+            ((uint8_t)fail_safe_active        != g_bcm_ctx.last_logged_fail_safe)   ||
+            ((uint8_t)hb_timeout_active       != g_bcm_ctx.last_logged_hb_timeout))
         {
             AppBcm_LogStatusEvent();
-            g_bcm_ctx.last_logged_state = g_bcm_ctx.status_frame.state;
-            g_bcm_ctx.last_logged_fail_safe = fail_safe_active;
-            g_bcm_ctx.last_logged_hb_timeout = hb_timeout_active;
+            g_bcm_ctx.last_logged_state      = g_bcm_ctx.status_frame.state;
+            g_bcm_ctx.last_logged_fail_safe  = (uint8_t)fail_safe_active;
+            g_bcm_ctx.last_logged_hb_timeout = (uint8_t)hb_timeout_active;
         }
     }
 

@@ -2,27 +2,28 @@
 #define APP_LIGHTING_H
 
 #include <stdint.h>
+#include "platform_types.h"
 
 typedef struct
 {
-    uint8_t command_bits;
-    uint8_t last_heartbeat;
-    uint8_t command_checksum_error;
-    uint8_t command_rx_checksum;
-    uint8_t command_calc_checksum;
+    uint8_t  command_bits;              /* bitmask — data, not bool */
+    uint8_t  last_heartbeat;            /* counter value — data, not bool */
+    bool_t   command_checksum_error;
+    uint8_t  command_rx_checksum;       /* CRC-8 value — data, not bool */
+    uint8_t  command_calc_checksum;     /* CRC-8 value — data, not bool */
     uint32_t command_checksum_ok_count;
     uint32_t command_checksum_fail_count;
     uint32_t rx_count;
-    uint8_t lighting_state;
-    uint8_t fail_safe;
-    uint8_t heartbeat_timeout;
-    uint8_t head_lamp_on;
-    uint8_t park_lamp_on;
-    uint8_t left_indicator_on;
-    uint8_t right_indicator_on;
-    uint8_t hazard_lamp_on;
-    uint8_t heartbeat_led_on;
-    uint8_t status_checksum;
+    uint8_t  lighting_state;            /* LIGHTING_STATE_* enum — not bool */
+    bool_t   fail_safe;
+    bool_t   heartbeat_timeout;
+    bool_t   head_lamp_on;
+    bool_t   park_lamp_on;
+    bool_t   left_indicator_on;
+    bool_t   right_indicator_on;
+    bool_t   hazard_lamp_on;
+    bool_t   heartbeat_led_on;
+    uint8_t  status_checksum;           /* CRC-8 value — data, not bool */
     uint32_t status_tx_count;
 } AppLighting_Diag_t;
 

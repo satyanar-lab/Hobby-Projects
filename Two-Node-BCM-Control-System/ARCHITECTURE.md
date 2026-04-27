@@ -94,7 +94,7 @@ Both frames are 16 bytes (DLC = 0xA, FDF = 1, BRS = 1) using standard 11-bit IDs
 | 3 | `bcm_alive` | Fixed = 1 |
 | 4 | `rolling_counter` | LSB of `tx_count`; wraps 0–255 |
 | 5–14 | `reserved_5`–`reserved_14` | Patterned 0x11–0xAA (future use / bus-load padding) |
-| 15 | `checksum` | XOR of bytes [0..14] |
+| 15 | `checksum` | CRC-8/SAE-J1850 of bytes [0..14] |
 
 ### Lighting Status frame — SID 0x124
 
@@ -111,7 +111,7 @@ Both frames are 16 bytes (DLC = 0xA, FDF = 1, BRS = 1) using standard 11-bit IDs
 | 8–12 | Per-lamp echo | head, park, left, right, hazard (0/1 from command_bits) |
 | 13 | `diagnostic_pattern_a5` | Fixed = 0xA5 (integrity marker) |
 | 14 | `node_id` | Fixed = 2 |
-| 15 | `checksum` | XOR of bytes [0..14] |
+| 15 | `checksum` | CRC-8/SAE-J1850 of bytes [0..14] |
 
 ---
 
@@ -170,22 +170,25 @@ Transmitter (encode):                 Receiver (decode):
   data[0..14] populated               data[0..14] received over CAN
         │                                     │
         ▼                                     ▼
-  checksum = XOR(data[0..14])         rx_checksum  = data[15]
-  data[15] = checksum                 calc_checksum = XOR(data[0..14])
+  checksum = CRC-8/SAE-J1850          rx_checksum  = data[15]
+             (data[0..14])            calc_checksum = CRC-8/SAE-J1850
+  data[15] = checksum                              (data[0..14])
         │                                     │
         ▼                                     ▼
   MCP2517FD_CAN_TxFifo1SendFd16       if (rx_checksum == calc_checksum)
                                           → unpack frame fields
-                                          → valid_frame = 1
+                                          → valid_frame = TRUE
                                       else
                                           → discard, increment fail_count
                                           → checksum_error flag set
 ```
 
-Implementation: `ComLighting_CalculateChecksum` (com_lighting_if.c:4–20)
-iterates bytes 0–14 with XOR accumulation. Called from both
-`ComLighting_EncodeBcmCommand` / `ComLighting_EncodeLightingStatus` on TX
-and `ComLighting_DecodeBcmCommand` / `ComLighting_DecodeLightingStatus` on RX.
+Implementation: `ComLighting_CalculateCRC8` (com_lighting_if.c) uses
+CRC-8/SAE-J1850 (poly=0x1D, init=0xFF, final_xor=0xFF, no reflection),
+satisfying ISO 26262 ASIL-B diagnostic coverage requirements. Called from
+both `ComLighting_EncodeBcmCommand` / `ComLighting_EncodeLightingStatus`
+on TX and `ComLighting_DecodeBcmCommand` / `ComLighting_DecodeLightingStatus`
+on RX.
 
 ---
 
