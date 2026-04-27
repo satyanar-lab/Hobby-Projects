@@ -18,8 +18,16 @@ QmlHmiBridge::QmlHmiBridge(MainWindow& main_window, QObject* parent)
 {
 }
 
+// The On* callbacks arrive on the vsomeip dispatch thread.  Qt signal/slot
+// connections and QML property bindings must be driven from the Qt main thread.
+// QMetaObject::invokeMethod with Qt::QueuedConnection marshals each callback
+// safely: the lambda is posted to the Qt event loop and executed on the main
+// thread without blocking the vsomeip thread.
+
 void QmlHmiBridge::OnLampStatusUpdated(const LampStatus& lamp_status)
 {
+    // Capture a value snapshot so the lambda owns its data independently of
+    // the caller's lamp_status reference lifetime.
     const LampStatus snapshot = lamp_status;
     QMetaObject::invokeMethod(this, [this, snapshot]() {
         main_window_.OnLampStatusUpdated(snapshot);
@@ -80,6 +88,8 @@ void QmlHmiBridge::requestNodeHealth()
     static_cast<void>(main_window_.ProcessAction(HmiAction::kRequestNodeHealth));
 }
 
+// Physical output state (kOn/kOff) — drives button glow, badge, and blink animation.
+// Reflects whether the lamp is actually lit, not just whether a command was sent.
 bool QmlHmiBridge::isLampOutputOn(const int lamp_function) const noexcept
 {
     LampStatus status {};
@@ -91,6 +101,9 @@ bool QmlHmiBridge::isLampOutputOn(const int lamp_function) const noexcept
     return false;
 }
 
+// command_applied flag — true when the rear node accepted and applied the last
+// command.  Distinct from isLampOutputOn: a command may be applied (arbitrated
+// through) yet the output_state may still differ briefly before the status event.
 bool QmlHmiBridge::isLampCommandActive(const int lamp_function) const noexcept
 {
     LampStatus status {};

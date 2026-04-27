@@ -147,6 +147,15 @@ private:
 
 }  // namespace
 
+// Component wiring:
+//   FanoutTransportAdapter  (rear transport)
+//     ├─ primary:   vsomeip CZC client  → rear lighting node simulator (Linux)
+//     └─ secondary: DirectUdpTransport  → NUCLEO 192.168.0.20:41001
+//   RearLightingServiceConsumer  (wraps rear transport)
+//   CentralZoneController        (owns consumer, runs health poll thread)
+//   OperatorServiceProvider      (wraps operator vsomeip server transport)
+//     └─ notifies CZC status changes to HMI control panel
+
 int main()
 {
     using body_control::lighting::application::CentralZoneController;
@@ -175,6 +184,7 @@ int main()
         return 1;
     }
 
+    // remote_ip=NUCLEO, remote_port=rear-node port (41001), local_port=CZC port (41000).
     std::unique_ptr<TransportAdapterInterface> nucleo_transport =
         body_control::lighting::transport::ethernet::
             CreateDirectUdpTransportAdapter("192.168.0.20", 41001U, 41000U);
@@ -223,14 +233,17 @@ int main()
         return 1;
     }
 
+    // Trigger an immediate node health snapshot so the CZC cache is populated
+    // before the first HMI request arrives.
     static_cast<void>(central_zone_controller.RequestNodeHealth());
 
     std::cout << "Central zone controller is running.\n";
     std::cout << "Press Ctrl+C to shut down.\n";
 
+    // Main thread is idle — lamp events arrive on the vsomeip/UDP receiver
+    // threads and the health poll runs on its own thread inside the CZC.
     while (!ProcessSignalHandler::IsShutdownRequested())
     {
-        // Idle — events are driven by the UDP receiver thread.
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 

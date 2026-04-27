@@ -121,6 +121,8 @@ int main()
         kHmiControlPanelApplicationId};
 
     MainWindow main_window {operator_service};
+    // Register before Initialize() so events fired during transport bring-up
+    // (e.g. OnControllerAvailabilityChanged) are delivered to the window.
     operator_service.SetEventListener(&main_window);
 
     const OperatorServiceStatus init_status =

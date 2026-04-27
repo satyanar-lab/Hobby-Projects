@@ -43,7 +43,9 @@ err_t ethernetif_init(struct netif* netif);
 void  ethernetif_input(struct netif* netif);
 void  ethernetif_poll_phy(struct netif* netif);
 
-// LwIP NO_SYS=1 requires sys_now() returning a millisecond tick count.
+// sys_now() is called by LwIP's internal timeout machinery (sys_check_timeouts).
+// HAL_GetTick() returns the SysTick millisecond counter, which is the natural
+// bare-metal equivalent of a wall-clock millisecond source on Cortex-M.
 uint32_t sys_now(void) { return HAL_GetTick(); }
 }
 
@@ -528,6 +530,8 @@ int main()
     BlinkManager blink_manager {gpio_driver, function_manager};
 
     // --- Transport ----------------------------------------------------------
+    // remote_ip = CZC host, local_port = rear node port, remote_port = CZC port.
+    // LwipUdpTransportAdapter sends events to remote and receives commands from it.
     const body_control::lighting::transport::lwip::LwipUdpConfig udp_config {
         kCzcIpAddr,
         kRearLightingNodePort,

@@ -47,6 +47,8 @@ void PrintMenu()
     std::cout << "Selection: ";
 }
 
+// Reads from the consumer's local cache, which is updated asynchronously by
+// OnLampStatusUpdated events.  May lag by up to one event cycle after a command.
 void PrintCachedLampStatus(
     const body_control::lighting::service::OperatorServiceConsumer& consumer,
     const body_control::lighting::domain::LampFunction lamp_function)
@@ -69,6 +71,8 @@ void PrintCachedLampStatus(
     }
 }
 
+// Prints events as they arrive from the operator service on the vsomeip
+// dispatch thread, concurrent with the main input loop.
 class DiagnosticEventListener final
     : public body_control::lighting::service::OperatorServiceEventListenerInterface
 {
@@ -231,6 +235,8 @@ int main()
         {
             operator_status = operator_service.RequestNodeHealth();
 
+            // GetNodeHealthStatus returns the locally cached value; the live
+            // response will arrive via the event listener callback separately.
             body_control::lighting::domain::NodeHealthStatus node_health_status {};
             operator_service.GetNodeHealthStatus(node_health_status);
 

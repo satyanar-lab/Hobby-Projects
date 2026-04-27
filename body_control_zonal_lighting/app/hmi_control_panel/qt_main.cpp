@@ -57,6 +57,8 @@ int main(int argc, char* argv[])
 
     QmlHmiBridge bridge {main_window};
 
+    // Register bridge (not main_window) as the event listener: bridge marshals
+    // callbacks to the Qt main thread before forwarding them to main_window.
     operator_service.SetEventListener(&bridge);
 
     const OperatorServiceStatus init_status = operator_service.Initialize();
@@ -67,6 +69,7 @@ int main(int argc, char* argv[])
     }
 
     QQmlApplicationEngine engine;
+    // "hmi" is the property name used in LightingHmi.qml to access the bridge.
     engine.rootContext()->setContextProperty("hmi", &bridge);
     engine.load(QUrl(QStringLiteral("qrc:/LightingHmi.qml")));
 
@@ -77,6 +80,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    // exec() blocks until the window is closed; returns QGuiApplication exit code.
     const int result = QGuiApplication::exec();
     static_cast<void>(operator_service.Shutdown());
     return result;

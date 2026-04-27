@@ -74,17 +74,21 @@ int main()
     std::cout << "Rear lighting node simulator is running.\n";
     std::cout << "Send SIGINT or SIGTERM to shut down.\n";
 
+    // Two independent accumulators so lamp and health can have different
+    // publish periods without one blocking the other.
     std::chrono::milliseconds lamp_elapsed {0};
     std::chrono::milliseconds health_elapsed {0};
 
     while (!ProcessSignalHandler::IsShutdownRequested())
     {
         std::this_thread::sleep_for(kMainLoopPeriod);
-        lamp_elapsed += kMainLoopPeriod;
+        lamp_elapsed   += kMainLoopPeriod;
         health_elapsed += kMainLoopPeriod;
 
         if (lamp_elapsed >= kLampStatusPublishPeriod)
         {
+            // Periodic push so the CZC cache stays current even if no command
+            // arrived since the last broadcast.
             rear_lighting_service_provider.BroadcastAllLampStatuses();
             lamp_elapsed = std::chrono::milliseconds {0};
         }
