@@ -5,30 +5,67 @@ import QtQuick.Layouts
 ApplicationWindow {
     id: root
     title: "Body Control Zonal Lighting — HMI"
-    width: 940
-    height: 480
-    minimumWidth: 760
-    minimumHeight: 420
+    width: 960
+    height: 520
+    minimumWidth: 840
+    minimumHeight: 460
     visible: true
-    color: "#0d1117"
+    color: "#0A0E14"
 
-    // Mirror of domain::LampFunction enum values.
+    // ── Theme tokens (Opus spec: layered depth, never pure black/white) ─────
+    readonly property color bgRoot:        "#0A0E14"
+    readonly property color bgPanel:       "#121821"
+    readonly property color bgPanelHi:     "#1A2230"
+    readonly property color bgButton:      "#1A1F2E"
+    readonly property color bgButtonHover: "#222B3A"
+    readonly property color borderSubtle:  "#1E2733"
+    readonly property color borderMid:     "#2D3A4D"
+    readonly property color textPrimary:   "#E8ECF1"
+    readonly property color textSecondary: "#8B95A7"
+    readonly property color textMuted:     "#5A6478"
+    readonly property color statusOk:      "#3DDC97"
+    readonly property color statusWarn:    "#FFB547"
+    readonly property color statusFault:   "#FF4D5E"
+
+    // ── Lamp function enum values ────────────────────────────────────────────
     readonly property int kLeftIndicator:  1
     readonly property int kRightIndicator: 2
     readonly property int kHazardLamp:     3
     readonly property int kParkLamp:       4
     readonly property int kHeadLamp:       5
 
-    // Local lamp state cache.  Updated via Connections when lampStatusChanged fires
-    // so that Q_INVOKABLE calls read the freshest ViewModel state.
+    // ── Lamp state cache (refreshed from QmlHmiBridge via Connections) ──────
     property var lampOutputOn: ({1: false, 2: false, 3: false, 4: false, 5: false})
     property var lampActive:   ({1: false, 2: false, 3: false, 4: false, 5: false})
 
-    Component.onCompleted: refreshAllLamps()
+    // ── Clock + session uptime ───────────────────────────────────────────────
+    property string currentTime: "00:00:00"
+    property int    uptimeSeconds: 0
+
+    function formatUptime(s) {
+        var h   = Math.floor(s / 3600)
+        var m   = Math.floor((s % 3600) / 60)
+        var sec = s % 60
+        return (h > 0 ? h + "h " : "")
+             + (m < 10 ? "0" : "") + m + "m "
+             + (sec < 10 ? "0" : "") + sec + "s"
+    }
+
+    Timer {
+        interval: 1000; running: true; repeat: true
+        onTriggered: {
+            root.uptimeSeconds++
+            root.currentTime = Qt.formatDateTime(new Date(), "HH:mm:ss")
+        }
+    }
+
+    Component.onCompleted: {
+        root.currentTime = Qt.formatDateTime(new Date(), "HH:mm:ss")
+        refreshAllLamps()
+    }
 
     function refreshAllLamps() {
-        var on  = {}
-        var act = {}
+        var on = {}, act = {}
         for (var f = 1; f <= 5; f++) {
             on[f]  = hmi.isLampOutputOn(f)
             act[f] = hmi.isLampCommandActive(f)
@@ -40,6 +77,9 @@ ApplicationWindow {
     Connections {
         target: hmi
         function onLampStatusChanged(lampFunction) {
+            console.log("lampStatusChanged:", lampFunction,
+                        "on:", hmi.isLampOutputOn(lampFunction),
+                        "active:", hmi.isLampCommandActive(lampFunction))
             var on  = Object.assign({}, root.lampOutputOn)
             var act = Object.assign({}, root.lampActive)
             on[lampFunction]  = hmi.isLampOutputOn(lampFunction)
@@ -49,316 +89,488 @@ ApplicationWindow {
         }
     }
 
-    // ── Inline components ──────────────────────────────────────────────────────
-
-    component StatusDot : Rectangle {
-        property color dotColor: "#64748b"
-        width: 10; height: 10; radius: 5
-        color: dotColor
-        Behavior on color { ColorAnimation { duration: 200 } }
+    // ── Subtle dot-grid background texture ───────────────────────────────────
+    Canvas {
+        anchors.fill: parent
+        z: -1
+        Component.onCompleted: requestPaint()
+        onPaint: {
+            var ctx = getContext("2d")
+            ctx.clearRect(0, 0, width, height)
+            ctx.fillStyle = "#161E2A"
+            var step = 32
+            for (var x = step; x < width; x += step)
+                for (var y = step; y < height; y += step) {
+                    ctx.beginPath()
+                    ctx.arc(x, y, 0.6, 0, Math.PI * 2)
+                    ctx.fill()
+                }
+        }
     }
 
+    // ── Inline components ────────────────────────────────────────────────────
+
+    // Pill-shaped status chip used in the node health bar.
+    component StatusChip : Rectangle {
+        id: chip
+        property color  dotColor:  root.textMuted
+        property string chipLabel: ""
+        property bool   slowPulse: false
+        property bool   fastPulse: false
+
+        height: 28; radius: 14
+        width: chipRow.implicitWidth + 24
+        color: root.bgPanel
+        border.color: root.borderMid; border.width: 1
+
+        Row {
+            id: chipRow
+            anchors.centerIn: parent
+            spacing: 6
+
+            Rectangle {
+                id: dot
+                width: 8; height: 8; radius: 4
+                anchors.verticalCenter: parent.verticalCenter
+                color: chip.dotColor
+                Behavior on color { ColorAnimation { duration: 200 } }
+
+                SequentialAnimation on opacity {
+                    running: chip.slowPulse && !chip.fastPulse
+                    loops: Animation.Infinite
+                    NumberAnimation { to: 0.35; duration: 1100; easing.type: Easing.InOutSine }
+                    NumberAnimation { to: 1.0;  duration: 1100; easing.type: Easing.InOutSine }
+                }
+                SequentialAnimation on opacity {
+                    running: chip.fastPulse
+                    loops: Animation.Infinite
+                    NumberAnimation { to: 0.45; duration: 300; easing.type: Easing.Linear }
+                    NumberAnimation { to: 1.0;  duration: 300; easing.type: Easing.Linear }
+                }
+            }
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: chip.chipLabel
+                color: root.textSecondary
+                font.pixelSize: 10; font.weight: Font.Medium; font.letterSpacing: 0.8
+            }
+        }
+    }
+
+    // Lamp control button with glow, blink animation, and press feedback.
     component LampButton : Rectangle {
         id: btn
 
-        property int    lampFunc:    0
-        property string labelText:   ""
-        property string iconText:    ""
-        property bool   isBlinker:   false
-        property color  activeColor: "#f59e0b"
-        property bool   isOutputOn:  false
-        property bool   isActive:    false
+        property int    lampFunc:   0
+        property string labelText:  ""
+        property string iconText:   ""
+        property bool   isBlinker:  false
+        property color  lampColor:  "#FF8C00"
+        property bool   isOutputOn: false
+        property bool   isActive:   false
 
-        radius: 12
-        color: (btn.isActive || btn.isOutputOn)
-               ? Qt.darker(btn.activeColor, 3.8) : "#161b27"
-        border.color: btn.isActive    ? btn.activeColor
-                    : btn.isOutputOn  ? Qt.lighter(btn.activeColor, 1.3)
-                    : "#252d3d"
-        border.width: 2
+        radius: 6
+        color: btn.isOutputOn ? Qt.darker(btn.lampColor, 5.2) : root.bgButton
+        border.color: btn.isOutputOn ? btn.lampColor : root.borderSubtle
+        border.width: btn.isOutputOn ? 1.5 : 1
 
-        Behavior on color        { ColorAnimation { duration: 180 } }
-        Behavior on border.color { ColorAnimation { duration: 180 } }
+        Behavior on color        { ColorAnimation { duration: 180; easing.type: Easing.InOutQuad } }
+        Behavior on border.color { ColorAnimation { duration: 180; easing.type: Easing.InOutQuad } }
 
-        // Overlay that blinks for indicators/hazard when commanded active.
+        // Outer glow — sits behind the button (z: -1)
         Rectangle {
-            id: blinkOverlay
-            anchors.fill: parent
-            radius: parent.radius
-            color: btn.activeColor
-            opacity: 0.0
+            z: -1
+            anchors.centerIn: parent
+            width:  parent.width  + 14
+            height: parent.height + 14
+            radius: parent.radius + 7
+            color:  btn.lampColor
+            opacity: btn.isOutputOn ? 0.16 : 0.0
+            Behavior on opacity { NumberAnimation { duration: 220 } }
         }
 
+        // 1px inner top-edge "lit edge" highlight
+        Rectangle {
+            anchors { top: parent.top; left: parent.left; right: parent.right }
+            height: 1; radius: btn.radius
+            color: "#FFFFFF"
+            opacity: btn.isOutputOn ? 0.08 : 0.03
+            Behavior on opacity { NumberAnimation { duration: 180 } }
+        }
+
+        // 2px active-state bar along the bottom edge
+        Rectangle {
+            anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
+            height: 2
+            color: btn.lampColor
+            opacity: btn.isOutputOn ? 1.0 : 0.0
+            Behavior on opacity { NumberAnimation { duration: 180 } }
+        }
+
+        // Blink overlay — imperatively started/stopped to avoid binding conflicts
+        Rectangle {
+            id: blinkOverlay
+            anchors.fill: parent; radius: parent.radius
+            color: btn.lampColor; opacity: 0.0
+        }
         SequentialAnimation {
             id: blinkAnim
             loops: Animation.Infinite
+            NumberAnimation { target: blinkOverlay; property: "opacity"; to: 0.22; duration: 460; easing.type: Easing.InOutSine }
+            NumberAnimation { target: blinkOverlay; property: "opacity"; to: 0.0;  duration: 460; easing.type: Easing.InOutSine }
+        }
+        onIsOutputOnChanged: {
+            if (btn.isBlinker && btn.isOutputOn) { blinkAnim.start() }
+            else { blinkAnim.stop(); blinkOverlay.opacity = 0.0 }
+        }
+
+        // Press flash feedback — brief white highlight, no scale (Opus: cars feel snappy)
+        Rectangle {
+            id: pressFlash
+            anchors.fill: parent; radius: parent.radius
+            color: "#FFFFFF"; opacity: 0.0
             NumberAnimation {
-                target: blinkOverlay; property: "opacity"
-                to: 0.28; duration: 440; easing.type: Easing.InOutSine
-            }
-            NumberAnimation {
-                target: blinkOverlay; property: "opacity"
-                to: 0.0;  duration: 440; easing.type: Easing.InOutSine
+                id: pressAnim
+                target: pressFlash; property: "opacity"
+                from: 0.12; to: 0.0; duration: 200; easing.type: Easing.OutQuad
             }
         }
 
-        onIsActiveChanged: {
-            if (btn.isBlinker && btn.isActive) {
-                blinkAnim.start()
-            } else {
-                blinkAnim.stop()
-                blinkOverlay.opacity = 0.0
-            }
-        }
-
-        // Button content.
+        // Button content — icon + label + ON/OFF badge
         Column {
             anchors.centerIn: parent
-            spacing: 10
+            spacing: 8
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: btn.iconText
-                font.pixelSize: 34
-                color: btn.isActive    ? btn.activeColor
-                     : btn.isOutputOn  ? Qt.lighter(btn.activeColor, 1.6)
-                     : "#2e3a50"
+                font.pixelSize: 32
+                color: btn.isOutputOn ? btn.lampColor : root.textMuted
                 Behavior on color { ColorAnimation { duration: 180 } }
             }
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: btn.labelText
-                color: (btn.isActive || btn.isOutputOn) ? "#c8d3e0" : "#3d4f68"
-                font.pixelSize: 11
-                font.bold: true
-                font.letterSpacing: 1.5
+                color: btn.isOutputOn ? root.textPrimary : root.textSecondary
+                font.pixelSize: 10; font.weight: Font.Medium; font.letterSpacing: 1.5
                 horizontalAlignment: Text.AlignHCenter
                 Behavior on color { ColorAnimation { duration: 180 } }
             }
 
-            // ON / OFF badge.
+            // ON / OFF pill badge
             Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
-                width: 54; height: 20; radius: 10
-                color: btn.isOutputOn
-                       ? Qt.darker(btn.activeColor, 3.0) : "#0d1117"
-                border.color: btn.isOutputOn ? btn.activeColor : "#252d3d"
+                width: 46; height: 18; radius: 9
+                color: btn.isOutputOn ? Qt.darker(btn.lampColor, 3.8) : "#0D1218"
+                border.color: btn.isOutputOn ? btn.lampColor : root.textMuted
                 border.width: 1
                 Behavior on color { ColorAnimation { duration: 180 } }
 
                 Text {
                     anchors.centerIn: parent
                     text: btn.isOutputOn ? "ON" : "OFF"
-                    color: btn.isOutputOn ? btn.activeColor : "#3d4f68"
-                    font.pixelSize: 10; font.bold: true; font.letterSpacing: 1
+                    color: btn.isOutputOn ? btn.lampColor : root.textMuted
+                    font.pixelSize: 9; font.weight: Font.DemiBold; font.letterSpacing: 1.2
                 }
             }
         }
 
-        // Click + hover.
+        // Mouse area: hover tint + press flash + command dispatch
         MouseArea {
-            id: btnMouse
-            anchors.fill: parent
-            hoverEnabled: true
+            id: ma; anchors.fill: parent; hoverEnabled: true
             onClicked: {
+                pressAnim.restart()
                 if      (btn.lampFunc === 1) hmi.toggleLeftIndicator()
                 else if (btn.lampFunc === 2) hmi.toggleRightIndicator()
                 else if (btn.lampFunc === 3) hmi.toggleHazardLamp()
                 else if (btn.lampFunc === 4) hmi.toggleParkLamp()
                 else if (btn.lampFunc === 5) hmi.toggleHeadLamp()
             }
-
             Rectangle {
                 anchors.fill: parent; radius: parent.parent.radius
-                color: "#ffffff"
-                opacity: btnMouse.containsMouse ? 0.04 : 0.0
-                Behavior on opacity { NumberAnimation { duration: 100 } }
+                color: "#FFFFFF"
+                opacity: ma.containsMouse && !ma.pressed ? 0.04 : 0.0
+                Behavior on opacity { NumberAnimation { duration: 120 } }
             }
         }
     }
 
-    // ── Main layout ────────────────────────────────────────────────────────────
-
+    // ── Main layout ───────────────────────────────────────────────────────────
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 14
-        spacing: 12
+        spacing: 0
 
-        // Title / controller status bar.
-        Rectangle {
-            Layout.fillWidth: true
-            height: 46
-            radius: 8
-            gradient: Gradient {
-                orientation: Gradient.Horizontal
-                GradientStop { position: 0.0; color: "#1a2236" }
-                GradientStop { position: 1.0; color: "#0d1117" }
-            }
-            border.color: "#252d3d"; border.width: 1
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 18; anchors.rightMargin: 18
-
-                Text {
-                    text: "BODY CONTROL ZONAL LIGHTING"
-                    color: "#7c90aa"
-                    font.pixelSize: 14; font.letterSpacing: 2.5; font.bold: true
-                }
-
-                Item { Layout.fillWidth: true }
-
-                Row {
-                    spacing: 8
-                    StatusDot {
-                        anchors.verticalCenter: parent.verticalCenter
-                        dotColor: hmi.controllerAvailable ? "#22c55e" : "#ef4444"
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: hmi.controllerAvailable
-                              ? "CONTROLLER: ONLINE" : "CONTROLLER: OFFLINE"
-                        color: hmi.controllerAvailable ? "#86efac" : "#fca5a5"
-                        font.pixelSize: 12; font.letterSpacing: 1
-                    }
-                }
-            }
-        }
-
-        // Five lamp buttons.
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            spacing: 10
-
-            LampButton {
-                Layout.fillWidth: true; Layout.fillHeight: true
-                lampFunc: 1; labelText: "LEFT\nINDICATOR"; iconText: "◁"
-                isBlinker: true; activeColor: "#f59e0b"
-                isOutputOn: root.lampOutputOn[1] === true
-                isActive:   root.lampActive[1]   === true
-            }
-            LampButton {
-                Layout.fillWidth: true; Layout.fillHeight: true
-                lampFunc: 2; labelText: "RIGHT\nINDICATOR"; iconText: "▷"
-                isBlinker: true; activeColor: "#f59e0b"
-                isOutputOn: root.lampOutputOn[2] === true
-                isActive:   root.lampActive[2]   === true
-            }
-            LampButton {
-                Layout.fillWidth: true; Layout.fillHeight: true
-                lampFunc: 3; labelText: "HAZARD"; iconText: "⚠"
-                isBlinker: true; activeColor: "#ef4444"
-                isOutputOn: root.lampOutputOn[3] === true
-                isActive:   root.lampActive[3]   === true
-            }
-            LampButton {
-                Layout.fillWidth: true; Layout.fillHeight: true
-                lampFunc: 4; labelText: "PARK\nLAMP"; iconText: "◎"
-                isBlinker: false; activeColor: "#3b82f6"
-                isOutputOn: root.lampOutputOn[4] === true
-                isActive:   root.lampActive[4]   === true
-            }
-            LampButton {
-                Layout.fillWidth: true; Layout.fillHeight: true
-                lampFunc: 5; labelText: "HEAD\nLAMP"; iconText: "☀"
-                isBlinker: false; activeColor: "#facc15"
-                isOutputOn: root.lampOutputOn[5] === true
-                isActive:   root.lampActive[5]   === true
-            }
-        }
-
-        // Node health bar.
+        // ── Header bar ────────────────────────────────────────────────────────
         Rectangle {
             Layout.fillWidth: true
             height: 56
-            radius: 8
-            color: "#111827"
-            border.color: "#252d3d"; border.width: 1
+            color: root.bgPanelHi
+
+            Rectangle {
+                anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
+                height: 1; color: root.borderSubtle
+            }
 
             RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 20; anchors.rightMargin: 20
-                spacing: 20
+                anchors { fill: parent; leftMargin: 24; rightMargin: 24 }
+                spacing: 0
+
+                // Version pill
+                Rectangle {
+                    width: 54; height: 22; radius: 11
+                    color: root.bgPanel
+                    border.color: root.borderMid; border.width: 1
+                    Text {
+                        anchors.centerIn: parent
+                        text: "BCL v8"
+                        color: root.textMuted
+                        font.pixelSize: 9; font.weight: Font.Medium; font.letterSpacing: 0.8
+                    }
+                }
+
+                Item { width: 16 }
 
                 Text {
-                    text: "NODE HEALTH"
-                    color: "#4a5568"
-                    font.pixelSize: 11; font.letterSpacing: 1.5; font.bold: true
-                }
-
-                Row {
-                    spacing: 6
-                    StatusDot {
-                        anchors.verticalCenter: parent.verticalCenter
-                        dotColor: hmi.ethUp ? "#22c55e" : "#ef4444"
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "ETH: " + (hmi.ethUp ? "UP" : "DOWN")
-                        color: hmi.ethUp ? "#86efac" : "#fca5a5"
-                        font.pixelSize: 13
-                    }
-                }
-
-                Row {
-                    spacing: 6
-                    StatusDot {
-                        anchors.verticalCenter: parent.verticalCenter
-                        dotColor: hmi.svcUp ? "#22c55e" : "#ef4444"
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "SVC: " + (hmi.svcUp ? "UP" : "DOWN")
-                        color: hmi.svcUp ? "#86efac" : "#fca5a5"
-                        font.pixelSize: 13
-                    }
-                }
-
-                Row {
-                    spacing: 6
-                    StatusDot {
-                        anchors.verticalCenter: parent.verticalCenter
-                        dotColor: hmi.faultPresent ? "#ef4444" : "#22c55e"
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: hmi.faultPresent
-                              ? "FAULT: YES (" + hmi.faultCount + ")"
-                              : "FAULT: NONE"
-                        color: hmi.faultPresent ? "#fca5a5" : "#86efac"
-                        font.pixelSize: 13
-                    }
+                    text: "BODY CONTROL ZONAL LIGHTING"
+                    color: root.textSecondary
+                    font.pixelSize: 13; font.weight: Font.Medium; font.letterSpacing: 2.5
                 }
 
                 Item { Layout.fillWidth: true }
 
+                // Controller availability chip
+                Rectangle {
+                    height: 28; width: 158; radius: 14
+                    color: root.bgPanel
+                    border.color: hmi.controllerAvailable ? "#1D3D2A" : "#3D1D22"
+                    border.width: 1
+                    Behavior on border.color { ColorAnimation { duration: 300 } }
+
+                    Row {
+                        anchors.centerIn: parent; spacing: 7
+
+                        Rectangle {
+                            width: 8; height: 8; radius: 4
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: hmi.controllerAvailable ? root.statusOk : root.statusFault
+                            Behavior on color { ColorAnimation { duration: 300 } }
+                            SequentialAnimation on opacity {
+                                running: hmi.controllerAvailable
+                                loops: Animation.Infinite
+                                NumberAnimation { to: 0.35; duration: 1100; easing.type: Easing.InOutSine }
+                                NumberAnimation { to: 1.0;  duration: 1100; easing.type: Easing.InOutSine }
+                            }
+                        }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: hmi.controllerAvailable ? "CONTROLLER: ONLINE" : "CONTROLLER: OFFLINE"
+                            color: hmi.controllerAvailable ? root.statusOk : root.statusFault
+                            font.pixelSize: 10; font.weight: Font.Medium; font.letterSpacing: 0.8
+                            Behavior on color { ColorAnimation { duration: 300 } }
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Content area ──────────────────────────────────────────────────────
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            // Subtle top-down car silhouette in the background.
+            // Lamp positions: front corners = indicators, rear = park/head.
+            Canvas {
+                id: carCanvas
+                anchors.centerIn: parent
+                width: 540; height: 200
+                z: 0
+                opacity: 0.07
+                Component.onCompleted: requestPaint()
+
+                onPaint: {
+                    var ctx = getContext("2d")
+                    ctx.clearRect(0, 0, width, height)
+                    ctx.strokeStyle = "#8B95A7"
+                    ctx.lineWidth = 1.5
+
+                    function rr(x, y, w, h, r) {
+                        ctx.beginPath()
+                        ctx.moveTo(x + r, y)
+                        ctx.lineTo(x + w - r, y)
+                        ctx.arcTo(x + w, y,     x + w, y + r,     r)
+                        ctx.lineTo(x + w, y + h - r)
+                        ctx.arcTo(x + w, y + h, x + w - r, y + h, r)
+                        ctx.lineTo(x + r, y + h)
+                        ctx.arcTo(x,     y + h, x,     y + h - r, r)
+                        ctx.lineTo(x,     y + r)
+                        ctx.arcTo(x,     y,     x + r, y,         r)
+                        ctx.closePath()
+                        ctx.stroke()
+                    }
+
+                    rr(65, 14, 410, 172, 18)  // car body
+                    rr(130, 24, 280, 152, 8)  // cabin / roof
+                    rr(18, 28, 42, 54, 8)     // front-left wheel
+                    rr(480, 28, 42, 54, 8)    // front-right wheel
+                    rr(18, 118, 42, 54, 8)    // rear-left wheel
+                    rr(480, 118, 42, 54, 8)   // rear-right wheel
+                    rr(68, 17, 50, 20, 3)     // front-left light
+                    rr(422, 17, 50, 20, 3)    // front-right light
+                    rr(68, 163, 50, 20, 3)    // rear-left light
+                    rr(422, 163, 50, 20, 3)   // rear-right light
+                }
+            }
+
+            // Section label
+            Text {
+                anchors { top: parent.top; topMargin: 14; horizontalCenter: parent.horizontalCenter }
+                text: "EXTERIOR LIGHTING CONTROL"
+                color: root.textMuted
+                font.pixelSize: 10; font.weight: Font.Medium; font.letterSpacing: 2.2
+                z: 1
+            }
+
+            // Lamp buttons — z:1 so they render above the car canvas
+            RowLayout {
+                anchors {
+                    verticalCenter: parent.verticalCenter
+                    left: parent.left; right: parent.right
+                    leftMargin: 24; rightMargin: 24
+                }
+                spacing: 16
+                z: 1
+
+                LampButton {
+                    Layout.fillWidth: true; height: 162
+                    lampFunc: 1; labelText: "LEFT\nINDICATOR"; iconText: "◁"
+                    isBlinker: true; lampColor: "#FF8C00"
+                    isOutputOn: root.lampOutputOn[1] === true
+                    isActive:   root.lampActive[1]   === true
+                }
+                LampButton {
+                    Layout.fillWidth: true; height: 162
+                    lampFunc: 2; labelText: "RIGHT\nINDICATOR"; iconText: "▷"
+                    isBlinker: true; lampColor: "#FF8C00"
+                    isOutputOn: root.lampOutputOn[2] === true
+                    isActive:   root.lampActive[2]   === true
+                }
+                LampButton {
+                    Layout.fillWidth: true; height: 162
+                    lampFunc: 3; labelText: "HAZARD"; iconText: "⚠"
+                    isBlinker: true; lampColor: "#FF4D5E"
+                    isOutputOn: root.lampOutputOn[3] === true
+                    isActive:   root.lampActive[3]   === true
+                }
+                LampButton {
+                    Layout.fillWidth: true; height: 162
+                    lampFunc: 4; labelText: "PARK\nLAMP"; iconText: "◎"
+                    isBlinker: false; lampColor: "#00CC44"
+                    isOutputOn: root.lampOutputOn[4] === true
+                    isActive:   root.lampActive[4]   === true
+                }
+                LampButton {
+                    Layout.fillWidth: true; height: 162
+                    lampFunc: 5; labelText: "HEAD\nLAMP"; iconText: "☀"
+                    isBlinker: false; lampColor: "#C8E4FF"
+                    isOutputOn: root.lampOutputOn[5] === true
+                    isActive:   root.lampActive[5]   === true
+                }
+            }
+        }
+
+        // ── Footer / node health bar ──────────────────────────────────────────
+        Rectangle {
+            Layout.fillWidth: true
+            height: 56
+            color: root.bgPanelHi
+
+            Rectangle {
+                anchors { top: parent.top; left: parent.left; right: parent.right }
+                height: 1; color: root.borderSubtle
+            }
+
+            RowLayout {
+                anchors { fill: parent; leftMargin: 24; rightMargin: 24 }
+                spacing: 16
+
                 Text {
-                    readonly property var stateNames:
-                        ["UNKNOWN", "OPERATIONAL", "DEGRADED", "FAULTED", "UNAVAILABLE"]
-                    text: stateNames[Math.min(hmi.healthState, 4)]
-                    color: hmi.healthState === 1 ? "#22c55e"
-                         : hmi.healthState === 2 ? "#f59e0b"
-                         : hmi.healthState >= 3  ? "#ef4444"
-                         : "#4a5568"
-                    font.pixelSize: 12; font.bold: true; font.letterSpacing: 1.5
+                    text: "NODE HEALTH"
+                    color: root.textMuted
+                    font.pixelSize: 10; font.weight: Font.Medium; font.letterSpacing: 2.0
                 }
 
-                Rectangle {
-                    width: 96; height: 30; radius: 6
-                    color: reqArea.containsMouse ? "#1e293b" : "#0d1117"
-                    border.color: "#374151"; border.width: 1
-                    Behavior on color { ColorAnimation { duration: 100 } }
+                StatusChip {
+                    dotColor:  hmi.ethUp ? root.statusOk : root.statusFault
+                    chipLabel: "ETH: " + (hmi.ethUp ? "UP" : "DOWN")
+                    slowPulse: hmi.ethUp; fastPulse: false
+                }
 
+                StatusChip {
+                    dotColor:  hmi.svcUp ? root.statusOk : root.statusFault
+                    chipLabel: "SVC: " + (hmi.svcUp ? "UP" : "DOWN")
+                    slowPulse: hmi.svcUp; fastPulse: false
+                }
+
+                StatusChip {
+                    dotColor:  hmi.faultPresent ? root.statusFault : root.statusOk
+                    chipLabel: hmi.faultPresent
+                               ? ("FAULT: " + hmi.faultCount) : "FAULT: NONE"
+                    slowPulse: !hmi.faultPresent; fastPulse: hmi.faultPresent
+                }
+
+                // Health state text
+                Text {
+                    readonly property var names:  ["UNKNOWN", "OPERATIONAL", "DEGRADED", "FAULTED", "UNAVAILABLE"]
+                    readonly property var colors: [root.textMuted, root.statusOk,
+                                                   root.statusWarn, root.statusFault, root.statusFault]
+                    text:  names[Math.min(hmi.healthState, 4)]
+                    color: colors[Math.min(hmi.healthState, 4)]
+                    font.pixelSize: 11; font.weight: Font.DemiBold; font.letterSpacing: 1.5
+                    Behavior on color { ColorAnimation { duration: 200 } }
+                }
+
+                Item { Layout.fillWidth: true }
+
+                // REQUEST button
+                Rectangle {
+                    width: 84; height: 28; radius: 6
+                    color: reqArea.containsMouse ? root.bgButton : "transparent"
+                    border.color: root.borderMid; border.width: 1
+                    Behavior on color { ColorAnimation { duration: 100 } }
                     Text {
                         anchors.centerIn: parent
                         text: "REQUEST"
-                        color: "#6b7280"; font.pixelSize: 11; font.letterSpacing: 1
+                        color: root.textSecondary
+                        font.pixelSize: 10; font.weight: Font.Medium; font.letterSpacing: 1.2
                     }
                     MouseArea {
                         id: reqArea; anchors.fill: parent; hoverEnabled: true
                         onClicked: hmi.requestNodeHealth()
+                    }
+                }
+
+                // Divider
+                Rectangle { width: 1; height: 28; color: root.borderSubtle }
+
+                // Clock + uptime
+                Column {
+                    spacing: 3
+                    Text {
+                        anchors.right: parent.right
+                        text: root.currentTime
+                        color: root.textSecondary
+                        font.family: "Consolas, Courier New, monospace"
+                        font.pixelSize: 13; font.weight: Font.Medium; font.letterSpacing: 0.5
+                    }
+                    Text {
+                        anchors.right: parent.right
+                        text: "UP " + root.formatUptime(root.uptimeSeconds)
+                        color: root.textMuted
+                        font.family: "Consolas, Courier New, monospace"
+                        font.pixelSize: 9; font.letterSpacing: 0.4
                     }
                 }
             }
