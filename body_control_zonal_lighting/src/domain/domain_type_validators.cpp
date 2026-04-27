@@ -1,9 +1,15 @@
 /**
- * @file domain_type_validators.cpp
- * @brief Structural validators for domain value types.
+ * Structural validators for the core domain value types.
  *
- * Kept deliberately small and free-function to support MISRA-style use from
- * both the codec (encode/decode) and the managers (before caching).
+ * Each validator casts every enum field to its underlying uint8_t and checks
+ * it lies within the defined range.  Non-enum fields (sequence counters, fault
+ * counts) are intentionally not validated here — any uint16_t value is valid
+ * for those fields and range checking belongs with the business logic that
+ * interprets them.
+ *
+ * These functions are called at two points:
+ *   1. In the codec (before encoding, after decoding) to catch wire corruption.
+ *   2. In the managers (before caching) to reject structurally invalid inputs.
  */
 
 #include "body_control/lighting/domain/lamp_command_types.hpp"
@@ -17,6 +23,9 @@ namespace body_control::lighting::domain
 namespace
 {
 
+// Upper-bound constants derived from the last enumerator of each enum.
+// Computed via static_cast so they automatically stay correct if new values
+// are appended to the enums in the future.
 constexpr std::uint8_t kLampFunctionMaxValue {
     static_cast<std::uint8_t>(LampFunction::kHeadLamp)};
 
@@ -32,6 +41,7 @@ constexpr std::uint8_t kLampOutputStateMaxValue {
 constexpr std::uint8_t kNodeHealthStateMaxValue {
     static_cast<std::uint8_t>(NodeHealthState::kUnavailable)};
 
+// All enums start at 0 so a single upper-bound check covers the full range.
 [[nodiscard]] bool IsInClosedRange(
     const std::uint8_t value,
     const std::uint8_t inclusive_max) noexcept
@@ -72,6 +82,8 @@ bool IsValidNodeHealthStatus(
     const std::uint8_t health_state_value =
         static_cast<std::uint8_t>(node_health_status.health_state);
 
+    // Only the NodeHealthState enum field is range-checked; the boolean flags
+    // and fault count are inherently valid for all bit patterns they can hold.
     return IsInClosedRange(health_state_value, kNodeHealthStateMaxValue);
 }
 

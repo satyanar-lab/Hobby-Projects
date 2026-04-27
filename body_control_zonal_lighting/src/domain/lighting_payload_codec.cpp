@@ -5,15 +5,18 @@ namespace body_control::lighting::domain
 namespace
 {
 
+// Wire protocol uses 0x00/0x01 for boolean fields.  Any other value is a
+// protocol violation caught by IsValidBooleanByte before decoding proceeds.
 constexpr std::uint8_t kBooleanFalseValue {0U};
 constexpr std::uint8_t kBooleanTrueValue {1U};
 
+// SOME/IP specifies big-endian (network byte order) for all multi-byte fields.
 void WriteUint16BigEndian(
     const std::uint16_t value,
     std::uint8_t& most_significant_byte,
     std::uint8_t& least_significant_byte) noexcept
 {
-    most_significant_byte = static_cast<std::uint8_t>((value >> 8U) & 0xFFU);
+    most_significant_byte  = static_cast<std::uint8_t>((value >> 8U) & 0xFFU);
     least_significant_byte = static_cast<std::uint8_t>(value & 0xFFU);
 }
 
@@ -26,6 +29,8 @@ void WriteUint16BigEndian(
         static_cast<std::uint16_t>(least_significant_byte));
 }
 
+// Rejects any byte that is not exactly 0x00 or 0x01.  A corrupted boolean
+// byte (e.g. 0x02 from a bit-flip) would otherwise silently decode as false.
 [[nodiscard]] bool IsValidBooleanByte(const std::uint8_t value) noexcept
 {
     return (value == kBooleanFalseValue) || (value == kBooleanTrueValue);
@@ -47,6 +52,8 @@ PayloadCodecStatus EncodeLampCommand(
         return PayloadCodecStatus::kInvalidArgument;
     }
 
+    // Zero the whole buffer first so reserved bytes are always 0x00 on the wire,
+    // giving deterministic output regardless of stack state.
     payload_buffer.fill(0U);
 
     payload_buffer[0] = static_cast<std::uint8_t>(command.function);
@@ -70,6 +77,8 @@ PayloadCodecStatus DecodeLampCommand(
         return PayloadCodecStatus::kInvalidPayloadLength;
     }
 
+    // Decode into a temporary first, validate, then assign.  This gives a
+    // strong guarantee: command is never partially updated if validation fails.
     const LampCommand decoded_command {
         static_cast<LampFunction>(payload_data[0]),
         static_cast<LampCommandAction>(payload_data[1]),
@@ -117,6 +126,8 @@ PayloadCodecStatus DecodeLampStatus(
         return PayloadCodecStatus::kInvalidPayloadLength;
     }
 
+    // Validate boolean byte before constructing the struct to avoid
+    // storing a status with an ambiguous command_applied value.
     if (!IsValidBooleanByte(payload_data[2]))
     {
         return PayloadCodecStatus::kInvalidPayloadValue;
@@ -149,8 +160,8 @@ PayloadCodecStatus EncodeNodeHealthStatus(
     payload_buffer.fill(0U);
 
     payload_buffer[0] = static_cast<std::uint8_t>(status.health_state);
-    payload_buffer[1] = status.ethernet_link_available ? kBooleanTrueValue : kBooleanFalseValue;
-    payload_buffer[2] = status.service_available ? kBooleanTrueValue : kBooleanFalseValue;
+    payload_buffer[1] = status.ethernet_link_available  ? kBooleanTrueValue : kBooleanFalseValue;
+    payload_buffer[2] = status.service_available        ? kBooleanTrueValue : kBooleanFalseValue;
     payload_buffer[3] = status.lamp_driver_fault_present ? kBooleanTrueValue : kBooleanFalseValue;
     WriteUint16BigEndian(
         status.active_fault_count,
@@ -170,6 +181,7 @@ PayloadCodecStatus DecodeNodeHealthStatus(
         return PayloadCodecStatus::kInvalidPayloadLength;
     }
 
+    // Validate all three boolean bytes before constructing the struct.
     if ((!IsValidBooleanByte(payload_data[1])) ||
         (!IsValidBooleanByte(payload_data[2])) ||
         (!IsValidBooleanByte(payload_data[3])))
