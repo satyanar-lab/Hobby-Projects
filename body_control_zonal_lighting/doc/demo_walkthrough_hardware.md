@@ -155,13 +155,22 @@ the vsomeip simulator path (if running) and directly to the NUCLEO at
 
 ### Terminal 3 — HMI Control Panel
 
+**Qt6 GUI (recommended):**
+
 ```bash
-./build/app/hmi_control_panel
+./build/app/hmi_control_panel_qt
 ```
 
-The ncurses HMI window opens. The status bar at the top should show
-**ETH: UP  SVC: UP** within 1–2 seconds as the NUCLEO sends its first
-`NodeHealthEvent`.
+The Qt6 automotive-style dark window opens.  The controller-online dot in
+the top-right corner turns green, and the node health bar at the bottom
+shows **ETH UP · SVC UP** within 1–2 seconds as the NUCLEO sends its first
+`NodeHealthEvent` via the CZC.
+
+**Terminal fallback (no Qt required):**
+
+```bash
+./build/app/hmi_control_panel_terminal
+```
 
 ### Terminal 4 — (Optional) Rear Lighting Simulator
 
