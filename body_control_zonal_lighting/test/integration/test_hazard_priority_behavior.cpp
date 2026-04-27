@@ -40,6 +40,9 @@ LampCommand MakeCommand(
     return command;
 }
 
+// Produces a fully populated kOn status.  command_applied and
+// last_sequence_counter are set to non-default values so LampStateManager
+// stores and returns a realistic entry, not a zero-initialised placeholder.
 LampStatus MakeActiveStatus(const LampFunction function)
 {
     LampStatus status {};

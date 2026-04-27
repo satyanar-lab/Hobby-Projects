@@ -30,6 +30,8 @@ using body_control::lighting::domain::LampCommand;
 using body_control::lighting::domain::LampCommandAction;
 using body_control::lighting::domain::LampFunction;
 
+// source and sequence_counter are set to minimal valid values; their concrete
+// values do not affect any arbitration rule under test.
 LampCommand MakeCommand(
     const LampFunction function,
     const LampCommandAction action)
@@ -76,6 +78,8 @@ TEST(CommandArbitratorTest, HazardActivationProducesThreeCommands)
 {
     const CommandArbitrator arbitrator {};
     ArbitrationContext context {};
+    // Both indicators are already active to confirm that hazard activation is
+    // not blocked by existing indicator state; hazard takes priority over both.
     context.left_indicator_active = true;
     context.right_indicator_active = true;
 

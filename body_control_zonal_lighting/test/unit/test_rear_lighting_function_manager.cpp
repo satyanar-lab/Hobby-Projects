@@ -24,6 +24,8 @@ using body_control::lighting::domain::LampFunction;
 using body_control::lighting::domain::LampOutputState;
 using body_control::lighting::domain::LampStatus;
 
+// source is set to kCentralZoneController because in the real system only
+// the CZC sends commands to the rear node; the function manager validates source.
 LampCommand MakeCommand(
     const LampFunction function,
     const LampCommandAction action,

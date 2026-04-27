@@ -15,6 +15,8 @@ using body_control::lighting::domain::LampFunction;
 using body_control::lighting::domain::LampOutputState;
 using body_control::lighting::domain::LampStatus;
 
+// command_applied is set to true so round-trip tests can verify the flag is
+// stored and retrieved faithfully, not silently defaulted to false.
 LampStatus MakeStatus(
     const LampFunction function,
     const LampOutputState output_state,
@@ -54,6 +56,8 @@ TEST(LampStateManagerTest, UpdateAndGetRoundTrip)
 {
     LampStateManager manager {};
 
+    // 42U is a non-zero, non-one value that distinguishes a stored counter from
+    // both the zero default and a trivially-passing 1U.
     const LampStatus incoming =
         MakeStatus(LampFunction::kHazardLamp, LampOutputState::kOn, 42U);
 

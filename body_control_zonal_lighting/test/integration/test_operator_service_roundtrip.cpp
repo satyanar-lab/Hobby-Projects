@@ -163,6 +163,8 @@ private:
     bool is_initialized_ {false};
 };
 
+// Records only lamp status updates; health and availability events are not
+// under test here and are silently consumed.
 class RecordingEventListener final : public OperatorServiceEventListenerInterface
 {
 public:

@@ -49,6 +49,8 @@ TEST(LightingPayloadCodecTest, LampCommandRoundTrip)
     original.function = LampFunction::kHazardLamp;
     original.action = LampCommandAction::kActivate;
     original.source = CommandSource::kHmiControlPanel;
+    // 0x1234 has distinct high and low bytes; exercises the big-endian 16-bit
+    // encode/decode path for sequence_counter.
     original.sequence_counter = 0x1234U;
 
     LampCommandPayloadBuffer buffer {};
@@ -101,6 +103,8 @@ TEST(LightingPayloadCodecTest, LampStatusRoundTrip)
     original.function = LampFunction::kLeftIndicator;
     original.output_state = LampOutputState::kOn;
     original.command_applied = true;
+    // 0xBEEF has distinct high and low bytes; confirms big-endian 16-bit
+    // round-trip for sequence_counter on the status path.
     original.last_sequence_counter = 0xBEEFU;
 
     LampStatusPayloadBuffer buffer {};
