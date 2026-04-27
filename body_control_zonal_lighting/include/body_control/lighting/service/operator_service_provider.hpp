@@ -14,66 +14,104 @@ namespace service
 {
 
 /**
- * @brief Operator service provider hosted inside the central zone controller.
+ * Operator service provider, hosted inside the Central Zone Controller process.
  *
- * Bridges the CentralZoneController to operator clients (HMI, diagnostic
- * console).  Two roles in one class:
+ * Acts as a bridge between operator clients (HMI, diagnostic console) and the
+ * CentralZoneController.  Two simultaneous roles:
  *
- *   1. TransportMessageHandlerInterface — receives RequestLampToggle /
- *      RequestLampActivate / RequestLampDeactivate / RequestNodeHealth
- *      datagrams from operator clients and dispatches them to the
- *      CentralZoneController.
+ *   1. TransportMessageHandlerInterface — listens on the operator UDP socket
+ *      for incoming RequestLampToggle / RequestLampActivate /
+ *      RequestLampDeactivate / RequestNodeHealth datagrams and dispatches each
+ *      to the corresponding CentralZoneController method.
  *
- *   2. RearLightingServiceEventListenerInterface — registered as a status
- *      observer on the controller so it is notified inline whenever the
- *      controller's cache is updated; it then broadcasts LampStatus and
- *      NodeHealth events back to connected operator clients via the
- *      operator transport.
+ *   2. RearLightingServiceEventListenerInterface — registered as the controller's
+ *      status observer so it is called inline whenever the controller's lamp or
+ *      health cache is updated.  It immediately re-broadcasts the update as a
+ *      LampStatus or NodeHealthStatus event datagram to all connected operator
+ *      clients via the operator transport.
+ *
+ * There is no polling loop: state changes propagate from rear node → controller
+ * → this provider → operator clients entirely through callbacks.
  */
 class OperatorServiceProvider final
     : public transport::TransportMessageHandlerInterface
     , public RearLightingServiceEventListenerInterface
 {
 public:
+    /**
+     * @param controller  CentralZoneController that commands are forwarded to.
+     * @param transport   Operator-channel transport for sending and receiving
+     *                    operator service datagrams.
+     */
     OperatorServiceProvider(
         application::CentralZoneController& controller,
         transport::TransportAdapterInterface& transport) noexcept;
 
+    /**
+     * Registers this provider as the controller's status observer and
+     * starts the operator transport.
+     *
+     * @return kSuccess or kTransportError.
+     */
     [[nodiscard]] OperatorServiceStatus Initialize();
+
+    /**
+     * Deregisters the controller observer and shuts down the transport.
+     *
+     * @return kSuccess; never fails.
+     */
     [[nodiscard]] OperatorServiceStatus Shutdown();
 
-    // RearLightingServiceEventListenerInterface — called by the controller
-    // observer hook after every cache update.
+    // ── RearLightingServiceEventListenerInterface ────────────────────────────
+    // Called by the controller after every cache update; the provider
+    // immediately re-broadcasts the update to operator clients.
+
+    /** Encodes and publishes a LampStatus event to all operator clients. */
     void OnLampStatusReceived(
         const domain::LampStatus& lamp_status) override;
 
+    /** Encodes and publishes a NodeHealthStatus event to all operator clients. */
     void OnNodeHealthStatusReceived(
         const domain::NodeHealthStatus& node_health_status) override;
 
+    /** Publishes a controller-availability event to all operator clients. */
     void OnServiceAvailabilityChanged(
         bool is_available) override;
 
-    // TransportMessageHandlerInterface — called by the operator transport
-    // when an operator client sends a request.
+    // ── TransportMessageHandlerInterface ────────────────────────────────────
+    // Called by the operator transport when an operator client sends a request.
+
+    /**
+     * Routes the incoming datagram to the appropriate handle* method based
+     * on its SOME/IP method ID.
+     */
     void OnTransportMessageReceived(
         const transport::TransportMessage& transport_message) override;
 
+    /** Tracks operator transport availability; logged but otherwise informational. */
     void OnTransportAvailabilityChanged(
         bool is_available) override;
 
 private:
+    /** Decodes the payload and calls controller_.SendLampCommand() with kToggle. */
     void HandleLampToggleRequest(
         const transport::TransportMessage& transport_message);
 
+    /** Decodes the payload and calls controller_.SendLampCommand() with kActivate. */
     void HandleLampActivateRequest(
         const transport::TransportMessage& transport_message);
 
+    /** Decodes the payload and calls controller_.SendLampCommand() with kDeactivate. */
     void HandleLampDeactivateRequest(
         const transport::TransportMessage& transport_message);
 
+    /** Forwards a NodeHealth request to the controller without decoding a payload. */
     void HandleNodeHealthRequest();
 
+    /** Encodes lamp_status and sends it as a SOME/IP event on the operator transport. */
     void PublishLampStatusEvent(const domain::LampStatus& lamp_status);
+
+    /** Encodes node_health_status and sends it as a SOME/IP event on the operator transport. */
     void PublishNodeHealthEvent(const domain::NodeHealthStatus& node_health_status);
 
     application::CentralZoneController& controller_;

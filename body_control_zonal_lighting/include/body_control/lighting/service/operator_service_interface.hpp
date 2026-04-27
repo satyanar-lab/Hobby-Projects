@@ -14,102 +14,138 @@ namespace service
 {
 
 /**
- * @brief Result status for operator service operations.
+ * Return status for operator service operations.
  *
- * kRejected indicates the request was structurally valid but was blocked
- * by the controller's command arbitration policy (e.g. indicator activate
- * while hazard is active).
+ * kRejected is distinct from kTransportError: the message was delivered to
+ * the controller successfully, but the arbitration policy blocked the
+ * command (e.g. an indicator activate request arrived while hazard was active).
  */
 enum class OperatorServiceStatus : std::uint8_t
 {
-    kSuccess = 0U,
-    kNotInitialized = 1U,
-    kNotAvailable = 2U,
-    kInvalidArgument = 3U,
-    kRejected = 4U,
-    kTransportError = 5U
+    kSuccess         = 0U,  ///< Operation completed or request delivered without error.
+    kNotInitialized  = 1U,  ///< Initialize() has not yet been called.
+    kNotAvailable    = 2U,  ///< Controller is not reachable over the operator transport.
+    kInvalidArgument = 3U,  ///< A LampFunction or other parameter is out of its valid range.
+    kRejected        = 4U,  ///< Controller received the request but arbitration blocked it.
+    kTransportError  = 5U,  ///< UDP send or receive failed at the transport layer.
 };
 
 /**
- * @brief Callback interface delivered to HMI / diagnostic console clients.
+ * Event callbacks pushed to HMI and diagnostic-console clients.
  *
- * The operator service provider fires these callbacks whenever the central
- * zone controller's state changes, allowing thin clients to stay in sync
- * without polling.
+ * The OperatorServiceProvider fires these callbacks whenever the Central Zone
+ * Controller's state changes, so thin clients can render the current lamp
+ * state without polling.  All callbacks are delivered on the transport
+ * receive thread; implementations must not block.
  */
 class OperatorServiceEventListenerInterface
 {
 public:
     virtual ~OperatorServiceEventListenerInterface() = default;
 
+    /** Called when the controller broadcasts a fresh LampStatus for any function. */
     virtual void OnLampStatusUpdated(
         const domain::LampStatus& lamp_status) = 0;
 
+    /** Called when the controller broadcasts a fresh NodeHealthStatus snapshot. */
     virtual void OnNodeHealthUpdated(
         const domain::NodeHealthStatus& node_health_status) = 0;
 
+    /**
+     * Called when the operator transport detects that the controller has
+     * come online or gone offline.
+     *
+     * @param is_available  true = controller reachable; false = lost contact.
+     */
     virtual void OnControllerAvailabilityChanged(
         bool is_available) = 0;
 };
 
 /**
- * @brief Abstract interface for the operator service.
+ * Common interface for both the in-process and out-of-process operator service.
  *
- * Implemented by OperatorServiceProvider (in-process, used by the
- * controller app) and by OperatorServiceConsumer (out-of-process proxy,
- * used by HMI and diagnostic console apps).  Callers hold a pointer to
- * this interface, so the binding — in-process or across UDP — is an
- * implementation detail.
+ * Two concrete implementations exist:
+ *   - OperatorServiceProvider: runs inside the controller process; requests
+ *     are dispatched directly to CentralZoneController without a network hop.
+ *   - OperatorServiceConsumer: runs in the HMI / diagnostic-console process;
+ *     requests are serialised into UDP datagrams and sent to the controller.
+ *
+ * The MainWindow and diagnostic console hold a pointer to this interface,
+ * so they work identically regardless of which implementation is wired in.
  */
 class OperatorServiceProviderInterface
 {
 public:
     virtual ~OperatorServiceProviderInterface() = default;
 
+    /**
+     * Initialises the transport and event subscription.
+     * Must be called before any Request* method.
+     */
     [[nodiscard]] virtual OperatorServiceStatus Initialize() = 0;
+
+    /** Releases all transport resources and deregisters the event listener. */
     [[nodiscard]] virtual OperatorServiceStatus Shutdown() = 0;
 
     /**
-     * @brief Toggle the output state of the named lamp function.
+     * Requests a toggle on the named lamp function.
      *
-     * The controller applies its arbitration policy; the request may be
-     * rejected (e.g. indicator while hazard is active).
+     * The controller resolves the current state and issues an activate or
+     * deactivate command accordingly, applying arbitration rules.
+     *
+     * @param lamp_function  Which lamp to toggle; kUnknown returns kInvalidArgument.
      */
     [[nodiscard]] virtual OperatorServiceStatus RequestLampToggle(
         domain::LampFunction lamp_function) = 0;
 
     /**
-     * @brief Explicitly activate the named lamp function.
+     * Requests unconditional activation of the named lamp function.
+     *
+     * @param lamp_function  Target lamp; subject to arbitration on the controller side.
      */
     [[nodiscard]] virtual OperatorServiceStatus RequestLampActivate(
         domain::LampFunction lamp_function) = 0;
 
     /**
-     * @brief Explicitly deactivate the named lamp function.
+     * Requests unconditional deactivation of the named lamp function.
+     *
+     * @param lamp_function  Target lamp.
      */
     [[nodiscard]] virtual OperatorServiceStatus RequestLampDeactivate(
         domain::LampFunction lamp_function) = 0;
 
     /**
-     * @brief Request a fresh node health snapshot from the controller.
+     * Requests a fresh NodeHealthStatus snapshot from the controller.
+     *
+     * The result arrives asynchronously via OnNodeHealthUpdated().
      */
     [[nodiscard]] virtual OperatorServiceStatus RequestNodeHealth() = 0;
 
     /**
-     * @brief Read the most recent lamp status for a given function.
+     * Reads the most recent cached LampStatus for the given function.
      *
-     * @return true if lamp_status was populated, false if function unknown.
+     * Non-blocking; never queries the controller.
+     *
+     * @param lamp_function  Which function to look up.
+     * @param lamp_status    Populated on true.
+     * @return false if no status has been received yet for this function.
      */
     [[nodiscard]] virtual bool GetLampStatus(
         domain::LampFunction lamp_function,
         domain::LampStatus& lamp_status) const noexcept = 0;
 
     /**
-     * @brief Read the most recent node health snapshot.
+     * Reads the most recent cached NodeHealthStatus.
+     *
+     * @param node_health_status  Always populated (defaults to kUnknown if no data yet).
      */
     virtual void GetNodeHealthStatus(
         domain::NodeHealthStatus& node_health_status) const noexcept = 0;
 
+    /**
+     * Registers the listener that receives asynchronous event callbacks.
+     * Pass nullptr to deregister.
+     */
     virtual void SetEventListener(
         OperatorServiceEventListenerInterface* listener) noexcept = 0;
 };
