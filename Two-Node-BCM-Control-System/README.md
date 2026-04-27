@@ -139,16 +139,22 @@ Two-Node-BCM-Control-System/
 
 ```bash
 cd Two-Node-BCM-Control-System/tests
-gcc -I../bcm_master/Core/Inc \
+gcc -I./stubs \
+    -I../bcm_master/Core/Inc \
+    -I../lighting_node/Core/Inc \
     test_runner.c \
     test_heartbeat_timeout.c \
     test_checksum_validation.c \
     test_lamp_arbitration.c \
     ../bcm_master/Core/Src/com_lighting_if.c \
     ../bcm_master/Core/Src/io_bcm_inputs.c \
+    ../lighting_node/Core/Src/io_lighting_outputs.c \
     -o run_tests && ./run_tests
 ```
 
-The stubs compile and link against the real application code; stub out any
-HAL calls (e.g. `HAL_GetTick`, `HAL_GPIO_ReadPin`) with lightweight shims
-in `test_runner.c`.
+Expected output: `Results: 66 passed, 0 failed`
+
+The `tests/stubs/` directory provides minimal HAL type definitions
+(`stm32l1xx_hal.h`, `main.h`, `gpio.h`). All HAL function calls
+(`HAL_GetTick`, `HAL_GPIO_ReadPin`, `HAL_GPIO_WritePin`, `HAL_Delay`)
+are implemented as lightweight shims in `test_runner.c`.
