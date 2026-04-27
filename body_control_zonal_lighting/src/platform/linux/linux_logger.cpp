@@ -48,6 +48,8 @@ void LinuxLogger::Log(
     const LogLevel log_level,
     const std::string_view message) const
 {
+    // Route errors to stderr so they appear even when stdout is redirected,
+    // and so CI log parsers that scan stderr for failures catch them.
     std::ostream& output_stream =
         (log_level == LogLevel::kError) ? std::cerr : std::cout;
 

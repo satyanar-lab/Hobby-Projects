@@ -35,20 +35,20 @@ struct PinAssignment
     std::uint16_t pin_number {0U};
 };
 
-/**
- * @brief Project lamp output pin assignments.
+/** Lamp output pin assignments for the NUCLEO-H753ZI demo wiring.
  *
- * These assignments are project-level placeholders and can be finalized once
- * the exact external wiring for the NUCLEO-H753ZI setup is locked.
- */
+ *  All five functions are mapped to GPIOB pins 1–5 to allow a single
+ *  GPIO_InitTypeDef bitmask in GpioOutputDriver::Initialize().  Adjust
+ *  these constants if the physical wiring changes; no other code needs
+ *  to be touched because GpioOutputDriver looks up pins via this map. */
 namespace pin_map
 {
 
-constexpr PinAssignment kLeftIndicatorOutput  {GpioPortId::kPortB, 5U};
-constexpr PinAssignment kRightIndicatorOutput {GpioPortId::kPortB, 1U};
-constexpr PinAssignment kHazardLampOutput     {GpioPortId::kPortB, 2U};
-constexpr PinAssignment kParkLampOutput       {GpioPortId::kPortB, 3U};
-constexpr PinAssignment kHeadLampOutput       {GpioPortId::kPortB, 4U};
+constexpr PinAssignment kLeftIndicatorOutput  {GpioPortId::kPortB, 5U}; ///< PB5
+constexpr PinAssignment kRightIndicatorOutput {GpioPortId::kPortB, 1U}; ///< PB1
+constexpr PinAssignment kHazardLampOutput     {GpioPortId::kPortB, 2U}; ///< PB2
+constexpr PinAssignment kParkLampOutput       {GpioPortId::kPortB, 3U}; ///< PB3
+constexpr PinAssignment kHeadLampOutput       {GpioPortId::kPortB, 4U}; ///< PB4
 
 }  // namespace pin_map
 

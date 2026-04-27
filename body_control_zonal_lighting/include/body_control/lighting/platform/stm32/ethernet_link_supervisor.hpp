@@ -7,21 +7,20 @@
 namespace body_control::lighting::platform::stm32
 {
 
-/**
- * @brief Supervised Ethernet link state.
- */
+/** Debounced PHY link state exposed to the application. */
 enum class EthernetLinkState : std::uint8_t
 {
-    kDown = 0U,
-    kUp = 1U
+    kDown = 0U, ///< Link absent or not yet stable for kLinkDebounceTime.
+    kUp = 1U    ///< Link confirmed stable for at least kLinkDebounceTime.
 };
 
-/**
- * @brief Supervises Ethernet PHY link stability on the STM32 target.
+/** Debounces Ethernet PHY link state changes on the STM32 target.
  *
- * The intention is to debounce short link glitches before the application
- * reacts to them.
- */
+ *  The main loop calls UpdateRawLinkState() with the PHY's instantaneous
+ *  link bit, then ProcessMainLoop() with the loop's elapsed time.  The
+ *  supervised state only transitions after the raw state has been stable for
+ *  kLinkDebounceTime, suppressing transient glitches that would otherwise
+ *  trigger unnecessary LwIP link-down/up cycles. */
 class EthernetLinkSupervisor
 {
 public:
@@ -33,24 +32,31 @@ public:
     EthernetLinkSupervisor(EthernetLinkSupervisor&&) = delete;
     EthernetLinkSupervisor& operator=(EthernetLinkSupervisor&&) = delete;
 
+    /** Resets both raw and supervised state to link-down; clears stable timer. */
     void Reset() noexcept;
 
+    /** Feeds a new raw PHY sample; resets the stable timer on any transition. */
     void UpdateRawLinkState(
         bool is_link_up) noexcept;
 
+    /** Accumulates elapsed_time toward the debounce threshold and promotes the
+     *  supervised state when the raw state has been stable long enough. */
     void ProcessMainLoop(
         std::chrono::milliseconds elapsed_time) noexcept;
 
+    /** Returns the debounced link state. */
     [[nodiscard]] EthernetLinkState GetLinkState() const noexcept;
 
+    /** Convenience wrapper: true when GetLinkState() == kUp. */
     [[nodiscard]] bool IsLinkUp() const noexcept;
 
 private:
+    // 100 ms suppresses cable-unplug bounce on standard 100BASE-TX PHYs.
     static constexpr std::chrono::milliseconds kLinkDebounceTime {100};
 
-    bool raw_link_up_ {false};
-    bool supervised_link_up_ {false};
-    std::chrono::milliseconds link_state_stable_time_ {0};
+    bool raw_link_up_ {false};          ///< Latest PHY sample from UpdateRawLinkState().
+    bool supervised_link_up_ {false};   ///< Debounced state reported to the application.
+    std::chrono::milliseconds link_state_stable_time_ {0}; ///< Time raw state has been unchanged.
 };
 
 }  // namespace body_control::lighting::platform::stm32

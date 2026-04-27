@@ -15,6 +15,8 @@ void EthernetLinkSupervisor::UpdateRawLinkState(
 {
     if (raw_link_up_ != is_link_up)
     {
+        // Transition detected: reset the stable timer so the new state must
+        // persist for a full kLinkDebounceTime before being promoted.
         raw_link_up_ = is_link_up;
         link_state_stable_time_ = std::chrono::milliseconds {0};
     }
@@ -25,6 +27,7 @@ void EthernetLinkSupervisor::ProcessMainLoop(
 {
     if (raw_link_up_ == supervised_link_up_)
     {
+        // States are already aligned; nothing to debounce.
         link_state_stable_time_ = std::chrono::milliseconds {0};
         return;
     }
@@ -33,6 +36,7 @@ void EthernetLinkSupervisor::ProcessMainLoop(
 
     if (link_state_stable_time_ >= kLinkDebounceTime)
     {
+        // Raw state has been stable long enough: promote it.
         supervised_link_up_ = raw_link_up_;
         link_state_stable_time_ = std::chrono::milliseconds {0};
     }

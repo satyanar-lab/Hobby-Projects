@@ -8,20 +8,24 @@
 namespace body_control::lighting::platform::stm32
 {
 
-/**
- * @brief Result status for GPIO output operations.
- */
+/** Return status for GPIO driver operations. */
 enum class GpioDriverStatus : std::uint8_t
 {
-    kSuccess = 0U,
-    kNotInitialized = 1U,
-    kInvalidArgument = 2U,
-    kHardwareAccessFailed = 3U
+    kSuccess = 0U,              ///< Pin write completed without error.
+    kNotInitialized = 1U,       ///< Initialize() has not been called.
+    kInvalidArgument = 2U,      ///< LampFunction is kUnknown or has no pin mapping.
+    kHardwareAccessFailed = 3U  ///< HAL port or pin lookup returned null/zero.
 };
 
-/**
- * @brief STM32 GPIO output driver for lamp control pins.
- */
+/** STM32 HAL GPIO output driver for the five lamp control pins.
+ *
+ *  Initialize() enables GPIOB clock and configures pins B1–B5 as push-pull
+ *  outputs.  WriteLampOutput() maps a LampFunction to a PinAssignment via the
+ *  NUCLEO-H753ZI pin map and calls HAL_GPIO_WritePin.
+ *
+ *  When compiled without USE_HAL_DRIVER (host unit-test builds), HAL calls are
+ *  omitted and the driver returns kSuccess so tests can exercise callers without
+ *  a hardware target. */
 class GpioOutputDriver
 {
 public:
@@ -33,9 +37,13 @@ public:
     GpioOutputDriver(GpioOutputDriver&&) = delete;
     GpioOutputDriver& operator=(GpioOutputDriver&&) = delete;
 
+    /** Enables GPIOB clock and configures lamp output pins as push-pull low-speed outputs. */
     [[nodiscard]] GpioDriverStatus Initialize();
+
+    /** Drives all lamp output pins to GPIO_PIN_RESET (lamps off). */
     [[nodiscard]] GpioDriverStatus ResetAllOutputs();
 
+    /** Sets the GPIO pin for function to active (high) or inactive (low). */
     [[nodiscard]] GpioDriverStatus WriteLampOutput(
         domain::LampFunction function,
         bool is_active);

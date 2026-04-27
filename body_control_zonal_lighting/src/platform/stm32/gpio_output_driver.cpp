@@ -13,6 +13,7 @@ namespace body_control::lighting::platform::stm32
 namespace
 {
 
+// Maps the project's logical port ID to the HAL GPIOX peripheral pointer.
 GPIO_TypeDef* PortIdToHalPort(const GpioPortId port_id) noexcept
 {
     switch (port_id)
@@ -30,6 +31,9 @@ GPIO_TypeDef* PortIdToHalPort(const GpioPortId port_id) noexcept
     }
 }
 
+// HAL uses a bitmask (GPIO_PIN_x = 1 << x) rather than a plain index.
+// Returns 0 for any pin number outside the valid 0–15 range so the caller
+// can detect an invalid pin without a separate out-of-range check.
 std::uint16_t PinNumberToHalPin(const std::uint16_t pin_number) noexcept
 {
     if (pin_number > 15U) { return 0U; }
@@ -57,6 +61,7 @@ PinAssignment LampFunctionToPinAssignment(
 GpioDriverStatus GpioOutputDriver::Initialize()
 {
 #ifdef USE_HAL_DRIVER
+    // All five lamp pins are on GPIOB; a single clock enable covers them all.
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
     GPIO_InitTypeDef gpio_init {};
@@ -122,6 +127,9 @@ GpioDriverStatus GpioOutputDriver::WriteLampOutput(
         hal_pin,
         is_active ? GPIO_PIN_SET : GPIO_PIN_RESET);
 #else
+    // Without USE_HAL_DRIVER (host build) there is no GPIO peripheral;
+    // suppress the unused-parameter warning and return success so unit tests
+    // can exercise callers of this driver without a hardware target.
     static_cast<void>(is_active);
 #endif
 

@@ -11,6 +11,9 @@ LinuxClock::TimePoint LinuxClock::GetCurrentTime() const noexcept
 std::uint64_t LinuxClock::GetCurrentTimeMilliseconds() const noexcept
 {
     const auto now_time = GetCurrentTime();
+    // time_since_epoch() on steady_clock is unspecified in absolute terms but
+    // increases monotonically; casting to milliseconds gives a stable counter
+    // suitable for log timestamps and timeout deltas.
     const auto now_milliseconds =
         std::chrono::duration_cast<Milliseconds>(now_time.time_since_epoch());
 

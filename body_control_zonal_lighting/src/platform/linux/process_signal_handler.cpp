@@ -5,6 +5,8 @@
 namespace body_control::lighting::platform::linux
 {
 
+// Static storage for async-signal-safe state.  Atomic types satisfy the
+// signal-handler restriction against non-reentrant operations.
 std::atomic<bool> ProcessSignalHandler::shutdown_requested_ {false};
 std::atomic<int> ProcessSignalHandler::last_signal_number_ {0};
 
@@ -13,6 +15,8 @@ SignalHandlerStatus ProcessSignalHandler::Install() noexcept
     shutdown_requested_.store(false);
     last_signal_number_.store(0);
 
+    // Both SIGINT (Ctrl-C) and SIGTERM (systemd stop / kill) are mapped to the
+    // same handler so any clean-shutdown signal triggers the main loop to exit.
     const auto sigint_result =
         std::signal(SIGINT, &ProcessSignalHandler::HandleSignal);
     const auto sigterm_result =

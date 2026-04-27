@@ -7,12 +7,11 @@
 namespace body_control::lighting::platform::linux
 {
 
-/**
- * @brief Linux clock abstraction based on std::chrono::steady_clock.
+/** Linux clock abstraction based on std::chrono::steady_clock.
  *
- * This wrapper keeps timing access centralized so the application layer does
- * not directly depend on clock selection details.
- */
+ *  steady_clock is monotonic: it never goes backwards and is unaffected by
+ *  wall-clock adjustments (NTP slew, DST).  This makes it safe for timeout
+ *  and heartbeat calculations in the health monitor. */
 class LinuxClock
 {
 public:
@@ -27,10 +26,15 @@ public:
     LinuxClock(LinuxClock&&) = default;
     LinuxClock& operator=(LinuxClock&&) = default;
 
+    /** Returns the current steady-clock time point. */
     [[nodiscard]] TimePoint GetCurrentTime() const noexcept;
 
+    /** Returns milliseconds elapsed since the steady-clock epoch as a uint64.
+     *  Useful when a plain integer timestamp is needed (e.g. logging). */
     [[nodiscard]] std::uint64_t GetCurrentTimeMilliseconds() const noexcept;
 
+    /** Returns the duration between start_time and end_time in milliseconds.
+     *  Caller is responsible for ensuring end_time >= start_time. */
     [[nodiscard]] static Milliseconds GetElapsedTime(
         const TimePoint& start_time,
         const TimePoint& end_time) noexcept;

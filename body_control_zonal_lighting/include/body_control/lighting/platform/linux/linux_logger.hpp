@@ -8,26 +8,25 @@
 namespace body_control::lighting::platform::linux
 {
 
-/**
- * @brief Supported logger severity levels.
- */
+/** Severity levels in ascending order; kError routes to stderr. */
 enum class LogLevel : std::uint8_t
 {
-    kDebug = 0U,
-    kInfo = 1U,
-    kWarning = 2U,
-    kError = 3U
+    kDebug = 0U,   ///< Verbose diagnostic output, disabled in production builds.
+    kInfo = 1U,    ///< Normal operational events (init, shutdown, state changes).
+    kWarning = 2U, ///< Unexpected but recoverable condition.
+    kError = 3U    ///< Non-recoverable fault; written to stderr.
 };
 
-/**
- * @brief Lightweight Linux logger abstraction.
+/** Lightweight Linux logger abstraction.
  *
- * The concrete implementation can write to stdout / stderr now and be replaced
- * later by syslog or another automotive-oriented logging backend if needed.
- */
+ *  Formats messages as "[LEVEL] [component] message" and writes them to
+ *  stdout (kDebug/kInfo/kWarning) or stderr (kError).  The backend can be
+ *  swapped for syslog or an automotive logging daemon without changing any
+ *  higher-level code. */
 class LinuxLogger
 {
 public:
+    /** Constructs a logger tagged with component_name in every output line. */
     explicit LinuxLogger(const std::string& component_name);
 
     LinuxLogger(const LinuxLogger&) = default;
@@ -37,6 +36,7 @@ public:
 
     ~LinuxLogger() = default;
 
+    /** Writes message at the given severity level.  kError goes to stderr. */
     void Log(
         LogLevel log_level,
         std::string_view message) const;
@@ -47,7 +47,7 @@ public:
     void LogError(std::string_view message) const;
 
 private:
-    std::string component_name_ {};
+    std::string component_name_ {}; ///< Inserted into every log line for source identification.
 };
 
 }  // namespace body_control::lighting::platform::linux
