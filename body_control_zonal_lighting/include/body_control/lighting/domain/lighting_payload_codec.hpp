@@ -12,49 +12,64 @@ namespace body_control::lighting::domain
 {
 
 /**
- * @brief Result status for encode / decode operations.
+ * Return status for all encode and decode operations in this codec.
+ *
+ * Every codec function is [[nodiscard]], so callers must inspect this before
+ * using the output buffer or struct.
  */
 enum class PayloadCodecStatus : std::uint8_t
 {
-    kSuccess = 0U,
-    kInvalidArgument = 1U,
-    kInvalidPayloadLength = 2U,
-    kInvalidPayloadValue = 3U
+    kSuccess              = 0U,  ///< Encode or decode completed without error.
+    kInvalidArgument      = 1U,  ///< A domain struct field holds an out-of-range value.
+    kInvalidPayloadLength = 2U,  ///< Incoming byte count does not match the expected fixed length.
+    kInvalidPayloadValue  = 3U,  ///< A decoded byte maps to no known enum value.
 };
 
 /**
- * @brief Fixed payload sizes used by the project.
+ * Fixed byte lengths for each message type carried over the network.
  *
- * Fixed payload sizes keep the transport handling simple and deterministic.
+ * All payloads are padded to 8 bytes with reserved bytes.  Fixed sizes remove
+ * length-negotiation complexity and allow stack-allocated buffers throughout.
  */
 constexpr std::size_t kLampCommandPayloadLength {8U};
 constexpr std::size_t kLampStatusPayloadLength {8U};
 constexpr std::size_t kNodeHealthStatusPayloadLength {8U};
 
-using LampCommandPayloadBuffer = std::array<std::uint8_t, kLampCommandPayloadLength>;
-using LampStatusPayloadBuffer = std::array<std::uint8_t, kLampStatusPayloadLength>;
+/// Stack-allocated buffer types — no heap allocation needed for any codec operation.
+using LampCommandPayloadBuffer    = std::array<std::uint8_t, kLampCommandPayloadLength>;
+using LampStatusPayloadBuffer     = std::array<std::uint8_t, kLampStatusPayloadLength>;
 using NodeHealthStatusPayloadBuffer =
     std::array<std::uint8_t, kNodeHealthStatusPayloadLength>;
 
 /**
- * @brief Encode a LampCommand into a fixed 8-byte payload.
+ * Serialise a LampCommand into a fixed 8-byte network payload (big-endian).
  *
  * Payload layout:
- * Byte 0 : LampFunction
- * Byte 1 : LampCommandAction
- * Byte 2 : CommandSource
- * Byte 3 : Reserved
- * Byte 4 : Sequence counter MSB
- * Byte 5 : Sequence counter LSB
- * Byte 6 : Reserved
- * Byte 7 : Reserved
+ *   Byte 0 : LampFunction        (uint8)
+ *   Byte 1 : LampCommandAction   (uint8)
+ *   Byte 2 : CommandSource       (uint8)
+ *   Byte 3 : Reserved / padding
+ *   Byte 4 : sequence_counter MSB
+ *   Byte 5 : sequence_counter LSB
+ *   Byte 6 : Reserved / padding
+ *   Byte 7 : Reserved / padding
+ *
+ * @param command        Source command struct; must pass IsValidLampCommand().
+ * @param payload_buffer Output buffer; overwritten on kSuccess, undefined otherwise.
+ * @return kSuccess, or kInvalidArgument if any field is out of range.
  */
 [[nodiscard]] PayloadCodecStatus EncodeLampCommand(
     const LampCommand& command,
     LampCommandPayloadBuffer& payload_buffer) noexcept;
 
 /**
- * @brief Decode a LampCommand from a raw payload buffer.
+ * Deserialise a LampCommand from a raw byte buffer.
+ *
+ * @param payload_data   Pointer to the first byte of the received payload.
+ * @param payload_length Must equal kLampCommandPayloadLength; returns
+ *                       kInvalidPayloadLength otherwise.
+ * @param command        Populated on kSuccess; left in initial state otherwise.
+ * @return kSuccess, kInvalidPayloadLength, or kInvalidPayloadValue.
  */
 [[nodiscard]] PayloadCodecStatus DecodeLampCommand(
     const std::uint8_t* payload_data,
@@ -62,24 +77,33 @@ using NodeHealthStatusPayloadBuffer =
     LampCommand& command) noexcept;
 
 /**
- * @brief Encode a LampStatus into a fixed 8-byte payload.
+ * Serialise a LampStatus into a fixed 8-byte network payload (big-endian).
  *
  * Payload layout:
- * Byte 0 : LampFunction
- * Byte 1 : LampOutputState
- * Byte 2 : Command applied flag (0 / 1)
- * Byte 3 : Reserved
- * Byte 4 : Last sequence counter MSB
- * Byte 5 : Last sequence counter LSB
- * Byte 6 : Reserved
- * Byte 7 : Reserved
+ *   Byte 0 : LampFunction      (uint8)
+ *   Byte 1 : LampOutputState   (uint8)
+ *   Byte 2 : command_applied   (0x00 or 0x01)
+ *   Byte 3 : Reserved / padding
+ *   Byte 4 : last_sequence_counter MSB
+ *   Byte 5 : last_sequence_counter LSB
+ *   Byte 6 : Reserved / padding
+ *   Byte 7 : Reserved / padding
+ *
+ * @param status         Source status struct to encode.
+ * @param payload_buffer Output buffer; overwritten on kSuccess.
+ * @return kSuccess or kInvalidArgument.
  */
 [[nodiscard]] PayloadCodecStatus EncodeLampStatus(
     const LampStatus& status,
     LampStatusPayloadBuffer& payload_buffer) noexcept;
 
 /**
- * @brief Decode a LampStatus from a raw payload buffer.
+ * Deserialise a LampStatus from a raw byte buffer.
+ *
+ * @param payload_data   Pointer to the first payload byte.
+ * @param payload_length Must equal kLampStatusPayloadLength.
+ * @param status         Populated on kSuccess.
+ * @return kSuccess, kInvalidPayloadLength, or kInvalidPayloadValue.
  */
 [[nodiscard]] PayloadCodecStatus DecodeLampStatus(
     const std::uint8_t* payload_data,
@@ -87,24 +111,33 @@ using NodeHealthStatusPayloadBuffer =
     LampStatus& status) noexcept;
 
 /**
- * @brief Encode a NodeHealthStatus into a fixed 8-byte payload.
+ * Serialise a NodeHealthStatus into a fixed 8-byte network payload (big-endian).
  *
  * Payload layout:
- * Byte 0 : NodeHealthState
- * Byte 1 : Ethernet link available flag (0 / 1)
- * Byte 2 : Service available flag (0 / 1)
- * Byte 3 : Lamp driver fault present flag (0 / 1)
- * Byte 4 : Active fault count MSB
- * Byte 5 : Active fault count LSB
- * Byte 6 : Reserved
- * Byte 7 : Reserved
+ *   Byte 0 : NodeHealthState              (uint8)
+ *   Byte 1 : ethernet_link_available      (0x00 or 0x01)
+ *   Byte 2 : service_available            (0x00 or 0x01)
+ *   Byte 3 : lamp_driver_fault_present    (0x00 or 0x01)
+ *   Byte 4 : active_fault_count MSB
+ *   Byte 5 : active_fault_count LSB
+ *   Byte 6 : Reserved / padding
+ *   Byte 7 : Reserved / padding
+ *
+ * @param status         Source health snapshot to encode.
+ * @param payload_buffer Output buffer; overwritten on kSuccess.
+ * @return kSuccess or kInvalidArgument.
  */
 [[nodiscard]] PayloadCodecStatus EncodeNodeHealthStatus(
     const NodeHealthStatus& status,
     NodeHealthStatusPayloadBuffer& payload_buffer) noexcept;
 
 /**
- * @brief Decode a NodeHealthStatus from a raw payload buffer.
+ * Deserialise a NodeHealthStatus from a raw byte buffer.
+ *
+ * @param payload_data   Pointer to the first payload byte.
+ * @param payload_length Must equal kNodeHealthStatusPayloadLength.
+ * @param status         Populated on kSuccess.
+ * @return kSuccess, kInvalidPayloadLength, or kInvalidPayloadValue.
  */
 [[nodiscard]] PayloadCodecStatus DecodeNodeHealthStatus(
     const std::uint8_t* payload_data,
