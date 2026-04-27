@@ -14,7 +14,7 @@ CentralZoneController::CentralZoneController(
     : rear_lighting_service_consumer_(rear_lighting_service_consumer)
     , is_initialized_(false)
     , is_rear_node_available_(false)
-    , next_sequence_counter_(1U)
+    , next_sequence_counter_(1U)  // Start at 1; 0 is kInvalidValue and must never be sent.
     , arbitrator_ {}
     , lamp_state_manager_ {}
     , cache_mutex_ {}
@@ -26,6 +26,8 @@ CentralZoneController::CentralZoneController(
     , health_poll_cv_ {}
     , health_poll_thread_ {}
 {
+    // Pre-seed each cache slot with the correct function so GetCachedLampStatus()
+    // returns a properly labelled default before the first event arrives.
     cached_lamp_statuses_[0U].function = domain::LampFunction::kLeftIndicator;
     cached_lamp_statuses_[1U].function = domain::LampFunction::kRightIndicator;
     cached_lamp_statuses_[2U].function = domain::LampFunction::kHazardLamp;
@@ -35,6 +37,8 @@ CentralZoneController::CentralZoneController(
 
 ControllerStatus CentralZoneController::Initialize()
 {
+    // Register as the event listener before calling Initialize() so no events
+    // are lost if the transport delivers a callback during initialisation.
     rear_lighting_service_consumer_.SetEventListener(this);
 
     const service::ServiceStatus service_status =
@@ -56,6 +60,8 @@ ControllerStatus CentralZoneController::Initialize()
 
 ControllerStatus CentralZoneController::Shutdown()
 {
+    // Signal the poll thread to exit, then wake it immediately so it does not
+    // wait out the full kNodeHealthPublishPeriod sleep before terminating.
     health_poll_active_ = false;
     health_poll_cv_.notify_all();
     if (health_poll_thread_.joinable())
@@ -100,6 +106,8 @@ ControllerStatus CentralZoneController::SendLampCommand(
     lamp_command.source = command_source;
     lamp_command.sequence_counter = next_sequence_counter_++;
 
+    // Read the arbitration context immediately before arbitrating to ensure
+    // the decision reflects the most recent output state reported by the node.
     const ArbitrationContext context = lamp_state_manager_.GetArbitrationContext();
     const ArbitrationDecision decision = arbitrator_.Arbitrate(lamp_command, context);
 
@@ -199,8 +207,13 @@ void CentralZoneController::OnLampStatusReceived(
         cached_lamp_statuses_[index] = lamp_status;
     }
 
+    // LampStateManager feeds arbitration context; its return value is
+    // intentionally discarded here — failure just means the function was
+    // kUnknown, which the cache update above already guarded against.
     static_cast<void>(lamp_state_manager_.UpdateLampStatus(lamp_status));
 
+    // Notify the observer outside the lock to avoid a deadlock if the observer
+    // calls back into GetCachedLampStatus() on the same thread.
     if (status_observer_ != nullptr)
     {
         status_observer_->OnLampStatusReceived(lamp_status);
@@ -240,6 +253,9 @@ void CentralZoneController::RunHealthPollLoop()
 {
     while (health_poll_active_)
     {
+        // wait_for with a predicate: wakes immediately if health_poll_active_
+        // becomes false (Shutdown() path), otherwise sleeps one publish period.
+        // Using a predicate eliminates spurious wakeups without a busy-wait.
         {
             std::unique_lock<std::mutex> lock(health_poll_mutex_);
             health_poll_cv_.wait_for(
@@ -292,6 +308,8 @@ ControllerStatus CentralZoneController::ConvertServiceStatus(
 std::size_t CentralZoneController::LampFunctionToIndex(
     const domain::LampFunction lamp_function) noexcept
 {
+    // SIZE_MAX sentinel: always >= cached_lamp_statuses_.size(), so the caller's
+    // bounds check rejects any unmapped function without a separate flag.
     std::size_t index {static_cast<std::size_t>(-1)};
 
     switch (lamp_function)

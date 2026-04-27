@@ -19,6 +19,9 @@ void LampStateManager::Reset() noexcept
         lamp_status_cache_[index] = domain::LampStatus {};
     }
 
+    // Pre-seed each slot with the correct LampFunction so that a GetLampStatus()
+    // call before any status has been received returns a zero-initialised entry
+    // with the right function field rather than kUnknown.
     lamp_status_cache_[0U].function = domain::LampFunction::kLeftIndicator;
     lamp_status_cache_[1U].function = domain::LampFunction::kRightIndicator;
     lamp_status_cache_[2U].function = domain::LampFunction::kHazardLamp;
@@ -88,6 +91,8 @@ bool LampStateManager::TryGetIndex(
     const domain::LampFunction function,
     std::size_t& index) noexcept
 {
+    // Switch covers every named enumerator; kUnknown and any future undefined
+    // value fall through to default and return false.
     switch (function)
     {
     case domain::LampFunction::kLeftIndicator:
@@ -122,6 +127,8 @@ bool LampStateManager::TryGetIndex(
 bool LampStateManager::IsOutputStateActive(
     const domain::LampOutputState output_state) noexcept
 {
+    // kUnknown deliberately returns false — unknown state is treated as off
+    // for arbitration purposes to avoid false conflict detections on startup.
     return output_state == domain::LampOutputState::kOn;
 }
 

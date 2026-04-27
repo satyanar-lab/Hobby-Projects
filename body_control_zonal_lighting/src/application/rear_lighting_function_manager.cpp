@@ -10,19 +10,21 @@ namespace application
 RearLightingFunctionManager::RearLightingFunctionManager() noexcept
     : lamp_statuses_ {}
 {
-    lamp_statuses_[0U].function = domain::LampFunction::kLeftIndicator;
+    // Initialise to kOff (not kUnknown) because the GPIO driver starts with
+    // all outputs de-energised — kOff is the correct physical truth at power-on.
+    lamp_statuses_[0U].function     = domain::LampFunction::kLeftIndicator;
     lamp_statuses_[0U].output_state = domain::LampOutputState::kOff;
 
-    lamp_statuses_[1U].function = domain::LampFunction::kRightIndicator;
+    lamp_statuses_[1U].function     = domain::LampFunction::kRightIndicator;
     lamp_statuses_[1U].output_state = domain::LampOutputState::kOff;
 
-    lamp_statuses_[2U].function = domain::LampFunction::kHazardLamp;
+    lamp_statuses_[2U].function     = domain::LampFunction::kHazardLamp;
     lamp_statuses_[2U].output_state = domain::LampOutputState::kOff;
 
-    lamp_statuses_[3U].function = domain::LampFunction::kParkLamp;
+    lamp_statuses_[3U].function     = domain::LampFunction::kParkLamp;
     lamp_statuses_[3U].output_state = domain::LampOutputState::kOff;
 
-    lamp_statuses_[4U].function = domain::LampFunction::kHeadLamp;
+    lamp_statuses_[4U].function     = domain::LampFunction::kHeadLamp;
     lamp_statuses_[4U].output_state = domain::LampOutputState::kOff;
 }
 
@@ -36,8 +38,8 @@ bool RearLightingFunctionManager::ApplyCommand(
         return false;
     }
 
-    lamp_statuses_[index].function = lamp_command.function;
-    lamp_statuses_[index].command_applied = true;
+    lamp_statuses_[index].function             = lamp_command.function;
+    lamp_statuses_[index].command_applied      = true;
     lamp_statuses_[index].last_sequence_counter = lamp_command.sequence_counter;
 
     switch (lamp_command.action)
@@ -51,6 +53,7 @@ bool RearLightingFunctionManager::ApplyCommand(
         break;
 
     case domain::LampCommandAction::kToggle:
+        // Read-modify-write: flip the current output state.
         lamp_statuses_[index].output_state =
             (lamp_statuses_[index].output_state == domain::LampOutputState::kOn)
                 ? domain::LampOutputState::kOff
@@ -83,6 +86,9 @@ bool RearLightingFunctionManager::GetLampStatus(
 std::size_t RearLightingFunctionManager::LampFunctionToIndex(
     const domain::LampFunction lamp_function) noexcept
 {
+    // Sentinel value: SIZE_MAX (wraps from -1) is always >= lamp_statuses_.size(),
+    // so the caller's bounds check catches any unmapped function without a
+    // separate error path.
     std::size_t index {static_cast<std::size_t>(-1)};
 
     switch (lamp_function)
