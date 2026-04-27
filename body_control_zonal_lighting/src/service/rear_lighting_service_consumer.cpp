@@ -17,8 +17,10 @@ RearLightingServiceConsumer::RearLightingServiceConsumer(
     , event_listener_(nullptr)
     , is_initialized_(false)
     , is_service_available_(false)
+    // The Central Zone Controller owns this consumer; its application ID is used
+    // as the SOME/IP client ID so the rear node can identify the source of requests.
     , client_id_(domain::rear_lighting_service::kCentralZoneControllerApplicationId)
-    , next_session_id_(1U)
+    , next_session_id_(1U)  // Session IDs start at 1; 0 is reserved per SOME/IP spec.
 {
 }
 
@@ -32,15 +34,20 @@ ServiceStatus RearLightingServiceConsumer::Initialize()
         return ConvertTransportStatus(transport_status);
     }
 
+    // Register as message handler only after transport init succeeds so
+    // callbacks are never fired into a partially constructed state.
     transport_adapter_.SetMessageHandler(this);
 
     is_initialized_ = true;
+    // Notify the listener immediately so its initial service-available state
+    // matches the transport state at the moment Initialize() returns.
     SetServiceAvailability(true);
     return ServiceStatus::kSuccess;
 }
 
 ServiceStatus RearLightingServiceConsumer::Shutdown()
 {
+    // Clear the handler before shutting down so no callbacks arrive during teardown.
     transport_adapter_.SetMessageHandler(nullptr);
 
     const transport::TransportStatus transport_status =
@@ -65,6 +72,7 @@ ServiceStatus RearLightingServiceConsumer::SendLampCommand(
         return ServiceStatus::kNotAvailable;
     }
 
+    // Post-increment: the session ID used in this message, then advance for next.
     const transport::TransportMessage transport_message =
         transport::SomeipMessageBuilder::BuildSetLampCommandRequest(
             lamp_command,
@@ -139,6 +147,9 @@ bool RearLightingServiceConsumer::IsServiceAvailable() const noexcept
 void RearLightingServiceConsumer::OnTransportMessageReceived(
     const transport::TransportMessage& transport_message)
 {
+    // Both event pushes and request responses carry lamp/health data; the same
+    // payload handler works for both because the SOME/IP payload layout is
+    // identical regardless of whether it arrived as an event or a response.
     if (transport::SomeipMessageParser::IsLampStatusEvent(transport_message))
     {
         OnLampStatusPayloadReceived(transport_message);

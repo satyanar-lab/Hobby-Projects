@@ -21,6 +21,8 @@ OperatorServiceProvider::OperatorServiceProvider(
 
 OperatorServiceStatus OperatorServiceProvider::Initialize()
 {
+    // Register as the controller's status observer before starting the transport
+    // so no lamp or health events are missed during the transport bring-up window.
     controller_.SetStatusObserver(this);
     transport_.SetMessageHandler(this);
 
@@ -29,6 +31,8 @@ OperatorServiceStatus OperatorServiceProvider::Initialize()
 
     if (transport_status != transport::TransportStatus::kSuccess)
     {
+        // Roll back both registrations so the controller and transport are left
+        // in a clean state if the transport fails to start.
         controller_.SetStatusObserver(nullptr);
         transport_.SetMessageHandler(nullptr);
         return OperatorServiceStatus::kTransportError;
@@ -50,6 +54,7 @@ OperatorServiceStatus OperatorServiceProvider::Shutdown()
 void OperatorServiceProvider::OnLampStatusReceived(
     const domain::LampStatus& lamp_status)
 {
+    // The controller has already updated its cache; relay immediately to clients.
     PublishLampStatusEvent(lamp_status);
 }
 
@@ -62,8 +67,9 @@ void OperatorServiceProvider::OnNodeHealthStatusReceived(
 void OperatorServiceProvider::OnServiceAvailabilityChanged(
     const bool /*is_available*/)
 {
-    // Availability change is reflected via node health events; no separate
-    // operator-layer message defined for this phase.
+    // Availability change is reflected via node health events that already
+    // contain service_available and health_state fields.  No separate
+    // operator-layer message is defined for pure availability notifications.
 }
 
 void OperatorServiceProvider::OnTransportMessageReceived(
@@ -103,6 +109,8 @@ void OperatorServiceProvider::OnTransportMessageReceived(
 void OperatorServiceProvider::OnTransportAvailabilityChanged(
     const bool /*is_available*/)
 {
+    // Operator transport availability does not need to be forwarded to the
+    // controller; the controller monitors the rear-lighting transport independently.
 }
 
 void OperatorServiceProvider::HandleLampToggleRequest(
@@ -111,6 +119,9 @@ void OperatorServiceProvider::HandleLampToggleRequest(
     const domain::LampFunction func =
         transport::SomeipMessageParser::ParseLampFunction(transport_message);
 
+    // kRejected is a valid outcome (e.g. indicator while hazard is active);
+    // the return value is discarded because the rejection is surfaced to the HMI
+    // via the absence of a subsequent lamp-status event showing a state change.
     static_cast<void>(controller_.SendLampCommand(
         func,
         domain::LampCommandAction::kToggle,
@@ -143,6 +154,7 @@ void OperatorServiceProvider::HandleLampDeactivateRequest(
 
 void OperatorServiceProvider::HandleNodeHealthRequest()
 {
+    // No payload to decode; the request carries only a method ID.
     static_cast<void>(controller_.RequestNodeHealth());
 }
 
@@ -152,6 +164,8 @@ void OperatorServiceProvider::PublishLampStatusEvent(
     const transport::TransportMessage msg =
         transport::SomeipMessageBuilder::BuildOperatorLampStatusEvent(
             lamp_status);
+    // Fire-and-forget; send errors are tolerated because the next controller
+    // cache update will trigger another publish attempt.
     static_cast<void>(transport_.SendEvent(msg));
 }
 

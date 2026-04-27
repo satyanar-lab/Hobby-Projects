@@ -9,6 +9,7 @@
 namespace body_control::lighting::service
 {
 
+// No-source constructor: synthesised health snapshot will be used.
 RearLightingServiceProvider::RearLightingServiceProvider(
     application::RearLightingFunctionManager& rear_lighting_function_manager,
     transport::TransportAdapterInterface& transport_adapter) noexcept
@@ -20,6 +21,7 @@ RearLightingServiceProvider::RearLightingServiceProvider(
 {
 }
 
+// Health-source constructor: real node health will be read from source.
 RearLightingServiceProvider::RearLightingServiceProvider(
     application::RearLightingFunctionManager& rear_lighting_function_manager,
     transport::TransportAdapterInterface& transport_adapter,
@@ -42,6 +44,8 @@ ServiceStatus RearLightingServiceProvider::Initialize()
         return ConvertTransportStatus(transport_status);
     }
 
+    // Register as handler after successful transport init; any inbound message
+    // before this point would arrive on an uninitialised provider.
     transport_adapter_.SetMessageHandler(this);
 
     is_initialized_ = true;
@@ -65,6 +69,8 @@ ServiceStatus RearLightingServiceProvider::Shutdown()
 
 void RearLightingServiceProvider::BroadcastAllLampStatuses()
 {
+    // Iterate in a fixed order so subscribers receive statuses in a consistent
+    // sequence regardless of which functions have been commanded.
     constexpr std::array<domain::LampFunction,
                          domain::system_limits::kMaximumLampFunctionCount>
         kAllFunctions {domain::LampFunction::kLeftIndicator,
@@ -139,6 +145,9 @@ void RearLightingServiceProvider::HandleSetLampCommand(
         return;
     }
 
+    // Push the updated status immediately after applying the command (push-after-
+    // write) so the controller's cache reflects the new state without waiting for
+    // the next scheduled broadcast cycle.
     domain::LampStatus lamp_status {};
     const bool lamp_status_available =
         rear_lighting_function_manager_.GetLampStatus(
@@ -172,6 +181,8 @@ void RearLightingServiceProvider::HandleGetLampStatus(
 void RearLightingServiceProvider::HandleGetNodeHealth(
     const transport::TransportMessage& transport_message)
 {
+    // The request payload carries no data — only the method ID matters for
+    // routing. Suppress the unused-parameter warning explicitly.
     static_cast<void>(transport_message);
 
     PublishNodeHealthEvent(BuildCurrentNodeHealthStatus());
@@ -183,6 +194,8 @@ void RearLightingServiceProvider::PublishLampStatusEvent(
     const transport::TransportMessage transport_message =
         transport::SomeipMessageBuilder::BuildLampStatusEvent(lamp_status);
 
+    // Events are fire-and-forget; a send failure is logged by the transport
+    // but does not affect the provider's state — the next broadcast will retry.
     static_cast<void>(transport_adapter_.SendEvent(transport_message));
 }
 
@@ -205,19 +218,19 @@ RearLightingServiceProvider::BuildCurrentNodeHealthStatus() const noexcept
         return node_health_source_->GetNodeHealthSnapshot();
     }
 
-    // Fallback synthesised snapshot: honest about what this provider can
-    // observe on its own (transport reachability + init state). Fault
-    // fields stay clear because the provider has no direct visibility
-    // into the lamp driver hardware without a dedicated source.
+    // Synthesised fallback: reflects what the provider can observe on its own
+    // (transport reachability + init state).  Fault fields stay false because
+    // the provider has no direct access to the lamp driver hardware without a
+    // dedicated NodeHealthSource.
     domain::NodeHealthStatus synthesised {};
     synthesised.health_state =
         is_initialized_ && is_transport_available_
             ? domain::NodeHealthState::kOperational
             : domain::NodeHealthState::kDegraded;
-    synthesised.ethernet_link_available = is_transport_available_;
-    synthesised.service_available = is_initialized_;
+    synthesised.ethernet_link_available  = is_transport_available_;
+    synthesised.service_available        = is_initialized_;
     synthesised.lamp_driver_fault_present = false;
-    synthesised.active_fault_count = 0U;
+    synthesised.active_fault_count       = 0U;
     return synthesised;
 }
 

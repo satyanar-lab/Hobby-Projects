@@ -17,7 +17,7 @@ OperatorServiceConsumer::OperatorServiceConsumer(
     , listener_(nullptr)
     , is_initialized_(false)
     , client_id_(client_id)
-    , next_session_id_(1U)
+    , next_session_id_(1U)  // Session IDs start at 1; 0 is reserved per SOME/IP spec.
     , cached_lamp_statuses_ {}
     , cached_node_health_status_ {}
 {
@@ -25,6 +25,8 @@ OperatorServiceConsumer::OperatorServiceConsumer(
 
 OperatorServiceStatus OperatorServiceConsumer::Initialize()
 {
+    // Register the message handler before calling transport Initialize so that
+    // any availability callback fired during init is not lost.
     transport_.SetMessageHandler(this);
 
     const transport::TransportStatus transport_status =
@@ -128,6 +130,8 @@ void OperatorServiceConsumer::OnTransportMessageReceived(
         const domain::LampStatus lamp_status =
             transport::SomeipMessageParser::ParseLampStatus(transport_message);
 
+        // Update the local cache first so a GetLampStatus() call inside the
+        // listener callback already sees the new value.
         const std::size_t index = LampFunctionToIndex(lamp_status.function);
         if (index < kMaxLampFunctions)
         {
@@ -185,6 +189,10 @@ OperatorServiceStatus OperatorServiceConsumer::SendRequest(
 std::size_t OperatorServiceConsumer::LampFunctionToIndex(
     const domain::LampFunction lamp_function) noexcept
 {
+    // LampFunction enum values start at 1 (kUnknown = 0); subtract 1 to map
+    // to a zero-based array index.  kUnknown (raw == 0) and any value above
+    // kMaxLampFunctions return the sentinel kMaxLampFunctions, which is always
+    // >= kMaxLampFunctions so the caller's bounds check rejects it.
     const auto raw = static_cast<std::size_t>(lamp_function);
     if ((raw == 0U) || (raw > kMaxLampFunctions))
     {
