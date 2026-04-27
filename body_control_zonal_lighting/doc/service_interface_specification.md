@@ -1,10 +1,15 @@
 # Service Interface Specification
 
-**Service:** Rear Lighting Service
+This document covers both service paths in the system.
+
+---
+
+# Part A — Rear Lighting Service
+
 **Service ID:** `0x5100`
 **Instance ID:** `0x0001`
-**Document scope:** the public contract exposed by the rear lighting node
-— methods, events, parameters, and the state they report on.
+**Scope:** the contract between the Central Zone Controller (consumer) and
+the rear lighting node (provider — Linux simulator or STM32 target).
 
 IDs and layouts in this document are the authoritative contract. Any
 change here **must** be reflected in
@@ -14,20 +19,20 @@ the corresponding test in `test/unit/test_lighting_payload_codec.cpp`.
 
 ---
 
-## 1. Service participants
+## A.1 Service participants
 
 | Application | Application ID | Role |
 |---|---|---|
 | Central zone controller | `0x1001` | Service consumer |
-| HMI control panel | `0x1002` | Service consumer (via controller) |
 | Rear lighting node simulator / STM32 target | `0x2001` | Service provider |
 
-The diagnostic console currently connects as a consumer peer of the
-controller; it does not own its own application ID.
+The HMI and diagnostic console do not consume the rear lighting service
+directly. They connect through the operator service (Part B) and the
+Central Zone Controller acts as their proxy to this path.
 
-## 2. Methods (request / response)
+## A.2 Methods (request / response)
 
-### 2.1 `SetLampCommand`
+### A.2.1 `SetLampCommand`
 
 | Property | Value |
 |---|---|
@@ -35,7 +40,7 @@ controller; it does not own its own application ID.
 | Direction | Consumer → Provider |
 | Reliable | Yes |
 | Request payload | `LampCommand` (5 bytes) |
-| Response payload | None (status inferred from `LampStatusEvent`) |
+| Response payload | None (outcome reflected in the next `LampStatusEvent`) |
 
 Request payload layout (big-endian):
 
@@ -53,35 +58,30 @@ Semantics:
 - A command with `action == kNoAction` or `function == kUnknown` MUST be
   rejected without publishing an event.
 - The provider does not arbitrate priority; that is the consumer's
-  responsibility. Commands that reach the provider have already been
+  responsibility.  Commands that reach the provider have already been
   arbitrated by `CommandArbitrator` on the controller side.
 
-### 2.2 `GetLampStatus`
+### A.2.2 `GetLampStatus`
 
 | Property | Value |
 |---|---|
 | Method ID | `0x0002` |
 | Direction | Consumer → Provider |
-| Reliable | Yes |
 | Request payload | `LampFunction` (1 byte) |
-| Response payload | Delivered as `LampStatusEvent` |
+| Response payload | Delivered as `LampStatusEvent` for the requested function |
 
-The provider replies by publishing a `LampStatusEvent` for the requested
-function.
-
-### 2.3 `GetNodeHealth`
+### A.2.3 `GetNodeHealth`
 
 | Property | Value |
 |---|---|
 | Method ID | `0x0003` |
 | Direction | Consumer → Provider |
-| Reliable | Yes |
 | Request payload | Empty |
 | Response payload | Delivered as `NodeHealthStatusEvent` |
 
-## 3. Events (publish / subscribe)
+## A.3 Events (publish / subscribe)
 
-### 3.1 `LampStatusEvent`
+### A.3.1 `LampStatusEvent`
 
 | Property | Value |
 |---|---|
@@ -103,7 +103,7 @@ Payload layout (big-endian):
 `last_sequence_counter` mirrors the counter of the most recent command
 actually applied. The consumer uses this to correlate request → outcome.
 
-### 3.2 `NodeHealthStatusEvent`
+### A.3.2 `NodeHealthStatusEvent`
 
 | Property | Value |
 |---|---|
@@ -123,13 +123,56 @@ Payload layout (big-endian):
 | 3 | 1 | `lamp_driver_fault_present` | `bool` |
 | 4 | 2 | `active_fault_count` | `uint16_t` |
 
-Source-of-truth precedence on the provider side: if a
-`NodeHealthSourceInterface` is injected, its snapshot is authoritative.
-Otherwise the provider synthesises a minimal snapshot from its own
-initialize / transport state and reports `kDegraded` when either is
-false.
+Source-of-truth on the provider side: if a `NodeHealthSourceInterface`
+is injected, its snapshot is authoritative. Otherwise the provider
+synthesises a minimal snapshot and reports `kDegraded` when either
+transport state is unknown.
 
-## 4. Enum value ranges
+---
+
+# Part B — Operator Service
+
+**Service ID:** `0x5200`
+**Instance ID:** `0x0001`
+**Scope:** the contract between HMI / diagnostic-console operator clients
+(consumers) and the Central Zone Controller (provider).  Operator clients
+never see the rear lighting service directly.
+
+---
+
+## B.1 Service participants
+
+| Application | Application ID | UDP port (recv) | Role |
+|---|---|---|---|
+| Central zone controller | `0x1005` | 41002 | Service provider |
+| HMI control panel | `0x1003` | 41003 | Service consumer |
+| Diagnostic console | `0x1004` | 41003 | Service consumer |
+
+Multiple operator clients share port 41003; each is distinguished by its
+application ID in the SOME/IP header.
+
+## B.2 Methods (operator → controller)
+
+| Method | Method ID | Payload | Description |
+|---|---|---|---|
+| `RequestLampToggle` | `0x0001` | `LampFunction` (1 byte) | Toggle the specified lamp |
+| `RequestLampActivate` | `0x0002` | `LampFunction` (1 byte) | Explicitly activate |
+| `RequestLampDeactivate` | `0x0003` | `LampFunction` (1 byte) | Explicitly deactivate |
+| `RequestNodeHealth` | `0x0004` | Empty | Request a fresh health snapshot |
+
+## B.3 Events (controller → operators)
+
+| Event | Event ID | Payload | Description |
+|---|---|---|---|
+| `LampStatusEvent` | `0x8001` | `LampStatus` (5 bytes) | Forwarded from rear lighting service |
+| `NodeHealthEvent` | `0x8002` | `NodeHealthStatus` (6 bytes) | Forwarded from rear lighting service |
+
+The payload layouts are identical to the rear lighting service events
+(Part A.3) — the controller forwards them verbatim without re-encoding.
+
+---
+
+# Common — Enum value ranges
 
 | Enum | Valid values |
 |---|---|
@@ -139,21 +182,23 @@ false.
 | `LampOutputState` | 0 (`kUnknown`), 1 (`kOff`), 2 (`kOn`) |
 | `NodeHealthState` | 0 (`kUnknown`), 1 (`kOperational`), 2 (`kDegraded`), 3 (`kFaulted`), 4 (`kUnavailable`) |
 
-Value 0 (`kUnknown` / `kNoAction`) is reserved on every enum so a zeroed
-message is never mistaken for a valid one. Decoders structurally validate
-enum values before accepting a payload.
+Value 0 is reserved on every enum so a zeroed message is never mistaken
+for a valid one. Decoders structurally validate enum values before
+accepting a payload.
 
-## 5. Availability and liveness
+# Common — Availability and liveness
 
-- The consumer side (`RearLightingServiceConsumer`) treats the service as
-  **available** once the transport adapter has reported availability and
-  Initialize has succeeded.
-- The controller's `NodeHealthMonitor` considers the node
+- `RearLightingServiceConsumer` treats the service as **available** once
+  the transport adapter has reported availability and `Initialize` has
+  succeeded.
+- `OperatorServiceConsumer` treats the controller as **available** after
+  `OnControllerAvailabilityChanged(true)` fires via the transport.
+- The controller's `NodeHealthMonitor` considers the rear node
   **available** only when all of the following are true:
     - A `NodeHealthStatusEvent` has been received at least once.
     - Its `health_state` is not `kUnavailable`.
     - `ethernet_link_available` is true.
     - `service_available` is true.
-- If no health update is received for
-  `kNodeHeartbeatTimeout` (2000 ms), the monitor transitions the cached
-  state to `kUnavailable` and clears the link/service flags.
+- If no health update is received for `kNodeHeartbeatTimeout` (2000 ms),
+  the monitor transitions the cached state to `kUnavailable` and clears
+  the link/service flags.

@@ -42,40 +42,39 @@ A reviewer opens the repository and, within a few minutes, can:
    reused, while platform, transport, and service concerns are cleanly
    separated.
 4. Read the docs and understand exactly *why* the architecture is shaped
-   that way, *how* the service interface is defined, and *what* would need
-   to change to move from the Linux simulator to the STM32 target.
+   that way, *how* the service interface is defined, and *what* changes
+   between the Linux simulator and the STM32 hardware target.
 
 ## 4. Node responsibilities
 
 | Node / executable | Responsibility |
 |---|---|
-| **Central zone controller** | Receive upstream intent (from HMI or diagnostic console), arbitrate command priorities, issue rear-lighting service requests, track node availability and cached state, remain the authoritative decision point. |
+| **Central zone controller** | Receive upstream intent (from HMI or diagnostic console via the operator service), arbitrate command priorities, issue rear-lighting service requests, track node availability and cached state, fan status events back to all operator clients. |
 | **Rear lighting node** | Apply commands to outputs (simulated on Linux, GPIO on STM32), publish lamp status and node-health events, reflect failures honestly. Same logical behaviour regardless of platform. |
-| **HMI control panel** | Provide an operator-facing interface for lamp commands, surface the latest state, act as the central-zone-style UI during simulation. |
+| **HMI control panel** | Provide an operator-facing interface for lamp commands; surface the latest state via push events from the controller. Available as a Qt6 QML dashboard or a terminal menu. |
 | **Diagnostic console** | Engineering entry point for manual requests, health checks, and service-path validation. |
 
 ## 5. What the user will see
 
 A minimal but believable slice of an automotive platform:
 
-- A GUI / menu that sends user actions.
+- A Qt6 GUI (or terminal menu) that sends user actions.
 - A controller that never just forwards raw input but always arbitrates.
 - A rear node that responds authoritatively with lamp state and health.
 - A visible and meaningful node-unavailability signal when the rear node
   stops responding.
-- The same logical flow whether the rear node is a Linux process or an
-  STM32 board.
+- The same logical flow whether the rear node is a Linux process or a
+  NUCLEO-H753ZI board with real LEDs.
 
 ## 6. What success means
 
 - A stranger on GitHub can read the README and the `doc/` folder and
   understand the project in under five minutes.
-- The Linux build is green; CTest is green; the four executables run and
+- The Linux build is green; CTest is green; the five executables run and
   communicate.
-- The STM32 target compiles (even if the hardware is not wired) because
-  the platform abstraction is honest.
-- The code reads like automotive-style C++, not a student script
-  collection.
+- The STM32 target compiles and runs on a NUCLEO-H753ZI, driving five GPIO
+  outputs from lamp commands sent over Ethernet.
+- The code reads like automotive-style C++, not a student script collection.
 - The story answers the question clearly: *why is the market shifting,
   and how does that change the way this feature is designed?*
 
@@ -84,9 +83,10 @@ A minimal but believable slice of an automotive platform:
 - Not a full AUTOSAR stack. It borrows Adaptive AUTOSAR and SOME/IP
   concepts at the architectural level but does not attempt to reproduce
   them.
-- Not a bit-exact vsomeip integration. The transport layer is shaped so
-  vsomeip can be dropped in later; the current Linux build uses a simpler
-  UDP-backed transport.
+- Not a production vsomeip integration. The vsomeip transport is wired and
+  functional for the Linux simulation path; the hardware path uses a direct
+  UDP adapter for simplicity. A full SOME/IP SD deployment is tracked as
+  future work.
 - Not safety-certified. MISRA-oriented thinking is applied to style, but
   there is no formal static analysis or certification claim.
 - Not a general lighting platform. The scope is intentionally narrow

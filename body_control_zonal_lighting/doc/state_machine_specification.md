@@ -30,58 +30,67 @@ Owned by: `RearLightingFunctionManager` on the node side, cached by
 
 **Invariants:**
 
-- Initial construction sets every managed function to `kOff` on the node
-  side and `kUnknown` on the controller-side cache until an event arrives.
+- Initial construction: node side starts at `kOff`; controller-side
+  cache starts at `kUnknown` until the first event arrives.
 - `kNoAction` and `kUnknown` function never cause a transition.
-- `kToggle` inverts only between `kOn` and `kOff`; from `kUnknown` it is
-  treated as `kActivate`.
+- `kToggle` inverts only between `kOn` and `kOff`.
+
+---
 
 ## 2. Command arbitration (controller side)
 
 Owned by: `CommandArbitrator`. Executed synchronously on every incoming
-request before it becomes a service call.
+request before it becomes a service call.  A hazard command fans out to
+three output commands; an indicator command may fan out to two.
 
 ```
-                 ┌──────────────────────────────┐
-                 │          (new request)       │
-                 └────────────────┬─────────────┘
-                                  ▼
-                 ┌──────────────────────────────┐
-                 │ Structural validation        │
-                 │  • enum ranges valid         │
-                 │  • function != kUnknown      │
-                 │  • action   != kNoAction     │
-                 └────────┬───────────────┬─────┘
-                     pass │               │ fail
-                          ▼               ▼
-          ┌───────────────────────┐   ┌───────────┐
-          │ Function under test?  │   │ kRejected │
-          └───┬──────────┬────────┘   └───────────┘
-              │ hazard   │ indicator (L/R)
-              │ activate │ activate
-              ▼          ▼
-       ┌──────────┐   ┌────────────────────────────┐
-       │ kAccepted│   │ Context.hazard_lamp_active?│
-       └──────────┘   └──┬────────────┬────────────┘
-                        no            yes
-                         ▼             ▼
-                  ┌──────────┐   ┌───────────┐
-                  │ kAccepted│   │ kRejected │
-                  └──────────┘   └───────────┘
+               ┌──────────────────────────────┐
+               │          (new request)       │
+               └────────────────┬─────────────┘
+                                ▼
+               ┌──────────────────────────────┐
+               │ Structural validation        │
+               │  • enum ranges valid         │
+               │  • function != kUnknown      │
+               │  • action   != kNoAction     │
+               └────────┬───────────────┬─────┘
+                   pass │               │ fail
+                        ▼               ▼
+          ┌─────────────────────────┐  ┌───────────┐
+          │  Function branch        │  │ kRejected │
+          └──┬──────────┬───────────┘  └───────────┘
+             │ hazard   │ indicator L/R activate
+             │          ▼
+             │   context.hazard_lamp_active?
+             │          ├─ yes ──▶  kRejected
+             │          │
+             │          └─ no  ──▶  context.opposite_indicator_active?
+             │                         ├─ yes ──▶ kModified:
+             │                         │            [deactivate opposite,
+             │                         │             activate requested]
+             │                         └─ no  ──▶  kAccepted: [activate]
+             ▼
+         hazard activate/deactivate (resolves kToggle against context)
+             ──▶  kAccepted, 3 commands:
+                    [hazard cmd, left-indicator cmd, right-indicator cmd]
 
-           (park, head lamp, indicator-deactivate, hazard-deactivate
-            are accepted unconditionally once structurally valid)
+(park lamp, head lamp, indicator deactivate: kAccepted, 1 command)
 ```
 
 **Rule summary:**
 
-1. Hazard *activation* has absolute priority; it is always accepted once
-   structurally valid.
-2. Indicator *activation* (left or right) is rejected while hazard is
-   active.
-3. Indicator *deactivation* is accepted even while hazard is active, so
-   the controller can always clear a stuck indicator.
-4. Park lamp and head lamp commands are independent of hazard state.
+1. Hazard activate/deactivate always produces three commands: hazard +
+   left indicator + right indicator, all with the same resolved action.
+   This keeps all three physically in sync (important for blink phase on
+   the STM32).
+2. Indicator activation is rejected while hazard is active in context.
+3. Indicator deactivation is accepted even while hazard is active.
+4. Activating one indicator while the other is active produces
+   `kModified`: the opposite indicator is deactivated first, then the
+   requested one activated.
+5. Park and head lamp commands are independent of hazard state.
+
+---
 
 ## 3. Node health (controller side)
 
@@ -100,31 +109,29 @@ evolves like this:
    └──┬──────────┘    update: health_state == kOperational └─────┬───────┘
       │                                                          │
       │ update: health_state == kFaulted                         │
-      ▼                                                          │
-   ┌─────────────┐                                               │
-   │  kFaulted   │ ◀─────────────────────────────────────────────┘
+      ▼                                                          ▼
+   ┌─────────────┐ ◀──────────────────────────────────────────────┘
+   │  kFaulted   │
    └─────┬───────┘
          │
-         │  heartbeat timeout  OR  SetServiceAvailability(false)
+         │  heartbeat timeout (kNodeHeartbeatTimeout = 2000 ms)
+         │  OR  SetServiceAvailability(false)
          ▼
    ┌─────────────┐
-   │kUnavailable │
-   └─────────────┘
+   │kUnavailable │   exits only when a new event arrives with a
+   └─────────────┘   different health_state
 ```
 
 Transitions into `kUnavailable`:
 
 - No `NodeHealthStatusEvent` received for `kNodeHeartbeatTimeout` (2000 ms).
-- Transport reports service unavailable via
-  `SetServiceAvailability(false)` while any prior health was known.
+- Transport reports service unavailable via `SetServiceAvailability(false)`.
 
-Transitions out of `kUnavailable` happen only when a fresh event arrives
-with a different `health_state`.
+---
 
 ## 4. Service consumer availability (controller side)
 
-Owned by: `RearLightingServiceConsumer`. Reflects the underlying
-transport reachability.
+Owned by: `RearLightingServiceConsumer`. Reflects transport reachability.
 
 ```
          Initialize() success          transport up
@@ -137,28 +144,56 @@ transport reachability.
                                       │ transport up/down
                                       ▼
                                (fires OnServiceAvailabilityChanged
-                                to the registered listener)
+                                to the registered listener — today:
+                                CentralZoneController, which forwards
+                                to OperatorServiceProvider, which
+                                fans out to all operator clients)
 ```
 
-The consumer does not itself cache node data; it forwards events to
-whoever has registered via `SetEventListener` (today: the
-`CentralZoneController`, which updates its own `LampStateManager` and
-`NodeHealthMonitor`).
+---
 
 ## 5. Interaction diagram — "user toggles hazard"
 
 ```
-   User ──▶ HMI ──▶ Controller ──▶ Consumer ──▶ Transport ──▶ Provider
-                                                                  │
-                                                                  ▼
-                                                   FunctionManager: apply
-                                                                  │
-                                                                  ▼
-                                                     LampStatusEvent (1)
-                                                                  │
-                                                                  ▼
-   Transport ──▶ Consumer ──▶ Listener (Controller) ──▶ StateManager + HMI refresh
+   User
+     │
+     ▼ button press / menu entry
+   HMI (Qt or terminal)
+     │  MainWindow::ProcessAction(kToggleHazardLamp)
+     │  QmlHmiBridge marshals to Qt thread (Qt path only)
+     ▼
+   OperatorServiceConsumer::RequestLampToggle(kHazardLamp)
+     │  sends RequestLampToggle message → UDP :41002
+     ▼
+   OperatorServiceProvider::HandleLampToggleRequest()
+     │  calls CentralZoneController::SendLampCommand(kHazardLamp, kToggle)
+     ▼
+   CommandArbitrator::Arbitrate()
+     │  expands to 3 commands: kHazardLamp, kLeftIndicator, kRightIndicator
+     ▼
+   RearLightingServiceConsumer::SendLampCommand() × 3
+     │  sends SetLampCommand messages → UDP :41001
+     ▼
+   RearLightingFunctionManager::ApplyCommand() × 3
+     │  updates GPIO / output state
+     ▼
+   RearLightingServiceProvider publishes LampStatusEvent × 3
+     │  → UDP :41000
+     ▼
+   CentralZoneController::OnLampStatusReceived() × 3
+     │  updates LampStateManager
+     │  notifies OperatorServiceProvider (status observer)
+     ▼
+   OperatorServiceProvider::PublishLampStatusEvent() × 3
+     │  → UDP :41003
+     ▼
+   OperatorServiceConsumer::OnTransportMessageReceived() × 3
+     │  fires OnLampStatusUpdated() on the event listener
+     ▼
+   MainWindow::OnLampStatusUpdated() → HmiViewModel update
+   QmlHmiBridge emits lampStatusChanged signal → QML refreshes
 ```
 
-Ticks (1) and below continue at the `kLampStatusPublishPeriod` cadence so
-the controller's cache stays current even without explicit queries.
+The three status events arrive synchronously in the loopback test
+environment; on the real UDP path they arrive within one round-trip
+time of the command being issued.
