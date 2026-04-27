@@ -23,9 +23,53 @@ if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "linux")
     )
 
     body_control_lighting_add_application(
-        hmi_control_panel
+        hmi_control_panel_terminal
         hmi_control_panel/main.cpp
     )
+
+    # -------------------------------------------------------------------------
+    # Qt6 GUI HMI — optional, guarded by BODY_CONTROL_LIGHTING_BUILD_QT_HMI.
+    # Not linked to body_control_lighting::project_options because Qt MOC-
+    # generated code does not satisfy the project's strict warning set
+    # (-Wshadow, -Wold-style-cast, -Werror).
+    # -------------------------------------------------------------------------
+    option(BODY_CONTROL_LIGHTING_BUILD_QT_HMI "Build Qt6 GUI HMI" ON)
+
+    if(BODY_CONTROL_LIGHTING_BUILD_QT_HMI)
+
+        find_package(Qt6 COMPONENTS Core Quick Qml REQUIRED)
+
+        qt6_add_resources(QT_HMI_RESOURCES
+            "${CMAKE_CURRENT_SOURCE_DIR}/hmi_control_panel/resources.qrc"
+        )
+
+        add_executable(hmi_control_panel_qt
+            hmi_control_panel/qt_main.cpp
+            hmi_control_panel/qml_hmi_bridge.cpp
+            ${QT_HMI_RESOURCES}
+        )
+
+        set_target_properties(hmi_control_panel_qt PROPERTIES AUTOMOC ON)
+
+        target_include_directories(hmi_control_panel_qt PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}/hmi_control_panel"
+        )
+
+        target_link_libraries(hmi_control_panel_qt
+            PRIVATE
+                body_control_lighting::core
+                Qt6::Core
+                Qt6::Quick
+                Qt6::Qml
+        )
+
+        # Reasonable warnings without -Werror so MOC output compiles cleanly.
+        target_compile_options(hmi_control_panel_qt PRIVATE
+            $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:
+                -Wall -Wextra -Wno-shadow -Wno-old-style-cast>
+        )
+
+    endif() # BODY_CONTROL_LIGHTING_BUILD_QT_HMI
 
     body_control_lighting_add_application(
         diagnostic_console
