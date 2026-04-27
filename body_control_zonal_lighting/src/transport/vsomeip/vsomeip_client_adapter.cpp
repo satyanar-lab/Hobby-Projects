@@ -1,3 +1,7 @@
+// Named shim that exposes a stable public symbol for the CZC vsomeip client.
+// The implementation lives in vsomeip_runtime_manager.cpp; this thin wrapper
+// keeps the public API surface independent of that combined translation unit.
+
 #include <memory>
 
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"

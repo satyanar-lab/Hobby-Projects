@@ -9,6 +9,7 @@ namespace body_control::lighting::transport
 namespace
 {
 
+// Single-byte append; exists to keep all payload writes symmetric with AppendUint16.
 void AppendUint8(
     std::vector<std::uint8_t>& payload,
     const std::uint8_t value)
@@ -16,6 +17,7 @@ void AppendUint8(
     payload.push_back(value);
 }
 
+// Big-endian (SOME/IP wire order): high byte first, low byte second.
 void AppendUint16(
     std::vector<std::uint8_t>& payload,
     const std::uint16_t value)
@@ -26,6 +28,8 @@ void AppendUint16(
         static_cast<std::uint8_t>(value & 0xFFU));
 }
 
+// Stamps all fields that are the same for every rear-lighting message so each
+// Build* function only needs to set the parts that differ (method/event ID, payload).
 TransportMessage BuildBaseMessage(
     const std::uint16_t method_or_event_id,
     const std::uint16_t client_id,
@@ -110,6 +114,9 @@ TransportMessage SomeipMessageBuilder::BuildGetNodeHealthRequest(
 TransportMessage SomeipMessageBuilder::BuildLampStatusEvent(
     const domain::LampStatus& lamp_status)
 {
+    // Events carry no client or session context: client_id=0, session_id=0
+    // per SOME/IP notification semantics. The is_event flag distinguishes
+    // them from method responses at the receiver.
     TransportMessage transport_message {
         BuildBaseMessage(
             domain::rear_lighting_service::kLampStatusEventId,
@@ -168,6 +175,8 @@ TransportMessage SomeipMessageBuilder::BuildNodeHealthEvent(
 namespace
 {
 
+// Operator-service counterpart to BuildBaseMessage; same role but with the
+// operator service_id/instance_id instead of the rear-lighting IDs.
 TransportMessage BuildOperatorBaseMessage(
     const std::uint16_t method_or_event_id,
     const std::uint16_t client_id,

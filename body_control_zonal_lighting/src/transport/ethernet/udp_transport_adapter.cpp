@@ -38,10 +38,17 @@ bool DecodeTransportMessage(
 namespace
 {
 
+// message_kind values written into the EthernetFrameHeader to let the receiver
+// distinguish requests, responses, and events without inspecting the SOME/IP
+// is_event flag (which is redundant here but kept for cross-transport symmetry).
 constexpr std::uint16_t kRequestMessageKind {1U};
 constexpr std::uint16_t kResponseMessageKind {2U};
 constexpr std::uint16_t kEventMessageKind {3U};
 
+// Fixed loopback port assignments.  Each application endpoint has a dedicated
+// port so a single host can run all processes simultaneously without conflict.
+// Port layout:  41000 = CZC (consumer side), 41001 = rear node (provider side),
+//               41002 = controller operator server, 41003 = operator client.
 constexpr std::uint16_t kCentralZoneControllerPort {41000U};
 constexpr std::uint16_t kRearLightingNodePort {41001U};
 constexpr std::uint16_t kControllerOperatorPort {41002U};
@@ -85,6 +92,8 @@ public:
             return TransportStatus::kTransmissionFailed;
         }
 
+        // SO_REUSEADDR lets a restarted process reclaim its port immediately
+        // instead of waiting for TIME_WAIT to expire (important during dev).
         int reuse_address_flag {1};
         static_cast<void>(setsockopt(
             socket_fd_,
@@ -95,6 +104,8 @@ public:
 
         std::memset(&local_address_, 0, sizeof(local_address_));
         local_address_.sin_family = AF_INET;
+        // Bind to the loopback address; this adapter is for same-host simulation
+        // only.  Use DirectUdpTransportAdapter for cross-host (NUCLEO) links.
         local_address_.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
         local_address_.sin_port = htons(endpoint_config_.local_port);
 
@@ -132,6 +143,8 @@ public:
         }
 
         receiver_thread_running_ = false;
+        // Closing the socket unblocks the blocking recvfrom() in ReceiverLoop
+        // so the thread exits without waiting for a datagram to arrive.
         CloseSocket();
 
         if (receiver_thread_.joinable())
@@ -219,6 +232,9 @@ private:
                 continue;
             }
 
+            // message_kind (request/response/event) is not used by the handler;
+            // the SOME/IP is_event flag in the decoded TransportMessage carries
+            // the same information and is what the service layer inspects.
             static_cast<void>(message_kind);
             message_handler_->OnTransportMessageReceived(transport_message);
         }

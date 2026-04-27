@@ -1,3 +1,6 @@
+// Named shim that exposes a stable public symbol for the HMI operator-service
+// vsomeip client.  Implementation lives in vsomeip_runtime_manager.cpp.
+
 #include <memory>
 
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"

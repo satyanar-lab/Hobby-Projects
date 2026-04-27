@@ -10,6 +10,9 @@ namespace body_control::lighting::transport
 namespace
 {
 
+// Returns 0 on out-of-bounds rather than throwing; callers treat 0 as the
+// kUnknown sentinel for all enum fields, so a truncated frame degrades to a
+// safely-ignored unknown message rather than an exception or UB.
 [[nodiscard]] std::uint8_t ReadUint8(
     const std::vector<std::uint8_t>& payload,
     const std::size_t index) noexcept
@@ -22,6 +25,8 @@ namespace
     return payload[index];
 }
 
+// Big-endian: high byte at index, low byte at index+1 (SOME/IP wire order).
+// Returns 0 on out-of-bounds; same sentinel contract as ReadUint8.
 [[nodiscard]] std::uint16_t ReadUint16(
     const std::vector<std::uint8_t>& payload,
     const std::size_t index) noexcept
@@ -36,6 +41,8 @@ namespace
         static_cast<std::uint16_t>(payload[index + 1U]));
 }
 
+// Pre-check shared by all rear-lighting predicates; avoids repeating the
+// service_id/instance_id test in every Is* function.
 [[nodiscard]] bool IsRearLightingMessage(
     const TransportMessage& transport_message) noexcept
 {
@@ -156,6 +163,9 @@ domain::NodeHealthStatus SomeipMessageParser::ParseNodeHealthStatus(
 namespace
 {
 
+// Same shared guard as IsRearLightingMessage, but for the operator service
+// (HMI → CZC). Defined in a second anonymous namespace block so it is
+// textually close to the operator-service predicates it serves.
 [[nodiscard]] bool IsOperatorServiceMessage(
     const TransportMessage& transport_message) noexcept
 {

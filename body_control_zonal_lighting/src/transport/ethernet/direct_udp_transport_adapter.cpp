@@ -113,6 +113,9 @@ public:
         rx_thread_ = std::thread(&DirectUdpTransportAdapter::ReceiveLoop, this);
 
         is_initialized_ = true;
+        // Notify the handler after is_initialized_ is set so that any
+        // action triggered by OnTransportAvailabilityChanged(true) sees a
+        // fully initialised adapter.
         TransportMessageHandlerInterface* const h = handler_.load();
         if (h != nullptr) { h->OnTransportAvailabilityChanged(true); }
         return TransportStatus::kSuccess;
@@ -150,6 +153,8 @@ public:
         return Send(msg, kEventMessageKind);
     }
 
+    // Atomic store: SetMessageHandler may be called from the application thread
+    // while ReceiveLoop reads handler_ concurrently on the receiver thread.
     void SetMessageHandler(
         TransportMessageHandlerInterface* const handler) noexcept override
     {
@@ -179,6 +184,8 @@ private:
             const ssize_t received =
                 ::recv(socket_fd_, buf.data(), buf.size(), 0);
 
+            // recv() returns ≤0 when the socket is closed (Shutdown() path)
+            // or on an unrecoverable error; either way, exit the loop.
             if (received <= 0) { break; }
 
             TransportMessageHandlerInterface* const h = handler_.load();

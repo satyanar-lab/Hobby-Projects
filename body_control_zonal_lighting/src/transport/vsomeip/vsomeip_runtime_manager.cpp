@@ -29,6 +29,11 @@ namespace vsomeip
 namespace
 {
 
+// Maps a vsomeip message to the transport-layer neutral TransportMessage struct.
+// MT_NOTIFICATION is the vsomeip message type for pushed events; all other
+// message types (requests, responses) are treated as non-event messages.
+// is_reliable is always true because vsomeip routes over TCP by default for
+// this service configuration.
 TransportMessage BuildTransportMessage(
     const std::shared_ptr<::vsomeip::message>& msg)
 {
@@ -119,6 +124,8 @@ public:
 
         app_->offer_service(service_id_, instance_id_);
 
+        // app_->start() blocks indefinitely running the vsomeip event loop.
+        // It must run on a dedicated thread so Initialize() can return to the caller.
         dispatch_thread_ = std::thread([this]() { app_->start(); });
         return TransportStatus::kSuccess;
     }
@@ -137,6 +144,7 @@ public:
         return TransportStatus::kSuccess;
     }
 
+    // A server adapter never initiates requests; only clients send them.
     [[nodiscard]] TransportStatus SendRequest(
         const TransportMessage& /*transport_message*/) override
     {
@@ -151,6 +159,9 @@ public:
             return TransportStatus::kNotInitialized;
         }
 
+        // The original request is keyed by (client_id, session_id) so vsomeip
+        // can route the response back to the correct client process and correlate
+        // it to the originating request on the client side.
         std::shared_ptr<::vsomeip::message> original_request;
         {
             std::lock_guard<std::mutex> lock(pending_mutex_);
@@ -197,6 +208,9 @@ public:
 private:
     void OnRequestReceived(const std::shared_ptr<::vsomeip::message>& msg)
     {
+        // Store the original vsomeip message so SendResponse() can call
+        // runtime_->create_response() on it later.  The map entry is erased
+        // in SendResponse() once the response is sent.
         {
             std::lock_guard<std::mutex> lock(pending_mutex_);
             pending_requests_[{msg->get_client(), msg->get_session()}] = msg;
@@ -309,6 +323,8 @@ public:
             app_->subscribe(service_id_, instance_id_, ev.eventgroup_id);
         }
 
+        // Same blocking-start pattern as VsomeipServerAdapterImpl: the event
+        // loop must run on a separate thread so Initialize() returns promptly.
         dispatch_thread_ = std::thread([this]() { app_->start(); });
         return TransportStatus::kSuccess;
     }
@@ -345,12 +361,14 @@ public:
         return TransportStatus::kSuccess;
     }
 
+    // A client adapter never sends responses; only servers reply to requests.
     [[nodiscard]] TransportStatus SendResponse(
         const TransportMessage& /*transport_message*/) override
     {
         return TransportStatus::kInvalidArgument;
     }
 
+    // A client adapter never sends events; only servers publish notifications.
     [[nodiscard]] TransportStatus SendEvent(
         const TransportMessage& /*transport_message*/) override
     {

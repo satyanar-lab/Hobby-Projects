@@ -19,10 +19,26 @@ namespace ethernet
 namespace
 {
 
+// Version field value written on encode and validated on decode.  A mismatched
+// version causes decode to return false so stale frames from an old build are
+// rejected rather than misinterpreted.
 constexpr std::uint16_t kFrameVersion {1U};
+
+// Bit positions within the flags field.  Two bits are currently defined;
+// remaining bits are reserved and must be written as 0.
 constexpr std::uint16_t kFlagIsEventMask {0x0001U};
 constexpr std::uint16_t kFlagIsReliableMask {0x0002U};
 
+// Wire layout (all fields big-endian, total size = 20 bytes):
+//   [0-1]   version
+//   [2-3]   message_kind  (1=request, 2=response, 3=event)
+//   [4-5]   service_id
+//   [6-7]   instance_id
+//   [8-9]   method_or_event_id
+//   [10-11] client_id
+//   [12-13] session_id
+//   [14-15] flags         (bit0=is_event, bit1=is_reliable)
+//   [16-19] payload_length (bytes, not including header)
 struct EthernetFrameHeader
 {
     std::uint16_t version;
@@ -38,6 +54,8 @@ struct EthernetFrameHeader
 
 constexpr std::size_t kEthernetFrameHeaderSize = sizeof(EthernetFrameHeader);
 
+// Packs the boolean TransportMessage fields into a single flags word so the
+// wire format stays fixed-width regardless of how many boolean fields exist.
 std::uint16_t BuildFlags(
     const TransportMessage& transport_message) noexcept
 {
@@ -58,6 +76,8 @@ std::uint16_t BuildFlags(
     return flags;
 }
 
+// Converts every multi-byte header field to network byte order in-place.
+// Called immediately before memcpy-ing the header into the frame buffer.
 void EncodeHeaderToNetworkOrder(
     EthernetFrameHeader& frame_header) noexcept
 {
@@ -72,6 +92,8 @@ void EncodeHeaderToNetworkOrder(
     frame_header.payload_length = htonl(frame_header.payload_length);
 }
 
+// Converts every multi-byte header field from network byte order to host order.
+// Called immediately after memcpy-ing the raw received bytes into the struct.
 void DecodeHeaderFromNetworkOrder(
     EthernetFrameHeader& frame_header) noexcept
 {
@@ -146,11 +168,16 @@ bool DecodeTransportMessage(
 
     DecodeHeaderFromNetworkOrder(frame_header);
 
+    // Reject frames from a different wire-format version before reading any
+    // other fields whose layout may differ.
     if (frame_header.version != kFrameVersion)
     {
         return false;
     }
 
+    // Exact-length check: a frame shorter than expected means a truncated
+    // receive; longer means a trailing-garbage or framing error.  Both are
+    // rejected to prevent partial or over-read payloads.
     const std::size_t expected_frame_length =
         kEthernetFrameHeaderSize +
         static_cast<std::size_t>(frame_header.payload_length);

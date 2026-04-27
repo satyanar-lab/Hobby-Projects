@@ -16,9 +16,11 @@ namespace body_control::lighting::transport::lwip
 {
 
 // ---- Frame encode / decode -------------------------------------------------
-// Self-contained copy of the wire format from ethernet_frame_adapter.cpp,
-// using lwip_htons/lwip_htonl instead of <arpa/inet.h> so this TU is
-// portable to bare-metal targets that have no POSIX headers.
+// Self-contained copy of the wire format from ethernet_frame_adapter.cpp.
+// Uses lwip_htons/lwip_htonl instead of POSIX htons/htonl so this translation
+// unit compiles on bare-metal STM32 targets that have no <arpa/inet.h>.
+// Wire format is byte-for-byte identical to the POSIX version so Linux and
+// NUCLEO endpoints interoperate without any bridging conversion.
 
 namespace
 {
@@ -156,6 +158,9 @@ TransportStatus LwipUdpTransportAdapter::Initialize()
         return TransportStatus::kTransmissionFailed;
     }
 
+    // RecvCallback is a static member because LwIP's C API requires a plain
+    // function pointer; 'this' is passed as the arg parameter and cast back
+    // inside the callback.
     udp_recv(pcb_, &LwipUdpTransportAdapter::RecvCallback, this);
     is_initialized_ = true;
 
@@ -226,8 +231,9 @@ TransportStatus LwipUdpTransportAdapter::SendMessage(
 
     std::memcpy(p->payload, frame.data(), frame.size());
 
-    // Build IPv4 address without using IP4_ADDR() which expands C-style casts.
-    // With LWIP_IPV6=0, ip_addr_t is a typedef for ip4_addr_t so .addr is direct.
+    // IP4_ADDR() expands to C-style casts which trip -Wold-style-cast; manual
+    // assignment via lwip_htonl avoids that warning.  With LWIP_IPV6=0,
+    // ip_addr_t aliases ip4_addr_t so the .addr field is directly accessible.
     ip_addr_t dest {};
     dest.addr = lwip_htonl(config_.remote_ip_addr);
 
@@ -253,7 +259,9 @@ void LwipUdpTransportAdapter::RecvCallback(
         return;
     }
 
-    // Linearise potentially chained pbuf into a flat buffer.
+    // LwIP may deliver a datagram as a chain of pbufs (each up to one MTU
+    // fragment).  pbuf_copy_partial linearises the chain into a single
+    // contiguous buffer so DecodeFrame can use a plain pointer + length.
     const std::uint16_t total_len = p->tot_len;
     std::vector<std::uint8_t> buf(static_cast<std::size_t>(total_len));
     const std::uint16_t copied = pbuf_copy_partial(
