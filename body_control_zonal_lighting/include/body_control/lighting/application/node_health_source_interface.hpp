@@ -7,13 +7,16 @@ namespace body_control::lighting::application
 {
 
 /**
- * @brief Pluggable source of node-side health information.
+ * Abstract source of node-side health information for the rear-lighting service.
  *
- * The rear-node service provider queries an implementation of this
- * interface whenever it needs to answer a GetNodeHealth request or
- * build a node health event. Keeping the provider dependent only on
- * this abstract interface keeps the service layer decoupled from the
- * concrete monitor and its internal timing/fault-counting model.
+ * The RearLightingServiceProvider queries an implementation of this interface
+ * whenever it builds a GetNodeHealth response or fires a node-health event.
+ * Depending on the runtime context, the concrete implementation is either
+ * the live NodeHealthMonitor (on the controller) or a stub that generates
+ * synthetic data (on the simulator).
+ *
+ * Keeping the service provider dependent only on this abstract interface
+ * prevents the service layer from importing application-layer details.
  */
 class NodeHealthSourceInterface
 {
@@ -29,11 +32,12 @@ public:
         NodeHealthSourceInterface&&) = delete;
 
     /**
-     * @brief Returns the current node-health snapshot.
+     * Returns the current node health snapshot.
      *
-     * Implementations must always return a structurally valid
-     * NodeHealthStatus, even if no source data has been observed yet
-     * (a kUnknown/false/false/false/0 snapshot is acceptable in that case).
+     * Implementations must always return a structurally valid snapshot.
+     * If no real data has been observed yet, returning a default-initialised
+     * snapshot (kUnknown / false / false / false / 0) is acceptable — callers
+     * treat kUnknown health state as "not yet assessed".
      */
     [[nodiscard]] virtual domain::NodeHealthStatus GetNodeHealthSnapshot()
         const noexcept = 0;
