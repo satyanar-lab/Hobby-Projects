@@ -11,6 +11,9 @@ HmiViewModel::HmiViewModel() noexcept
     : lamp_statuses_ {}
     , node_health_status_ {}
 {
+    // Pre-seed each slot with the correct function label and a known-off output
+    // state so GetLampStatus() always returns a labelled entry, even before the
+    // first event arrives from the operator service.
     lamp_statuses_[0U].function = domain::LampFunction::kLeftIndicator;
     lamp_statuses_[0U].output_state = domain::LampOutputState::kOff;
 
@@ -80,6 +83,8 @@ domain::NodeHealthStatus HmiViewModel::GetNodeHealthStatus() const noexcept
 std::size_t HmiViewModel::LampFunctionToIndex(
     const domain::LampFunction lamp_function) noexcept
 {
+    // SIZE_MAX sentinel (−1 cast to size_t): always >= lamp_statuses_.size()
+    // so the caller's bounds check rejects kUnknown without a separate flag.
     std::size_t index {static_cast<std::size_t>(-1)};
 
     switch (lamp_function)

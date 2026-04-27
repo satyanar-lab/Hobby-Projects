@@ -98,6 +98,9 @@ MainWindowStatus MainWindow::ConvertOperatorStatus(
         main_window_status = MainWindowStatus::kInvalidAction;
         break;
 
+    // kRejected (arbitration block), kNotAvailable (rear node unreachable),
+    // kNotInitialized, and kTransportError are all surfaced as kControllerError;
+    // the HMI has no actionable response for any of these states.
     case service::OperatorServiceStatus::kNotInitialized:
     case service::OperatorServiceStatus::kNotAvailable:
     case service::OperatorServiceStatus::kRejected:

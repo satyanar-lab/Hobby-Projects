@@ -10,6 +10,9 @@ namespace hmi
 HmiAction HmiCommandMapper::MapInputToAction(
     const char input_key) noexcept
 {
+    // Key layout mirrors the operator console menu:
+    //   1=Left indicator, 2=Right indicator, 3=Hazard,
+    //   4=Park lamp, 5=Head lamp, 6=Node health query.
     HmiAction action {HmiAction::kUnknown};
 
     switch (input_key)
