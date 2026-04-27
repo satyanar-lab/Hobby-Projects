@@ -1,0 +1,11 @@
+Applicants with knowledge or experience in one or more of the following will be given a preference:
+
+Technologies enabling Advanced Driver Assistance Systems (ADAS)
+Future car electronics/software and its applications with Software Defined Vehicles
+Advanced data networking concepts leveraging ethernet communications
+Exposure to automotive standards like Autosar, Functional Safety, and Cybersecurit
+Knowledge of Embedded Systems/Microcontrollers/Communication protocols like CAN, Ethernet, and LIN
+Knowledge of Alternate Fuels
+Knowledge of internal combustion engines
+Knowledge of battery electric vehicles
+Programming languages C++

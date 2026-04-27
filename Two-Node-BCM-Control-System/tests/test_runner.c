@@ -3,17 +3,22 @@
  *
  * Provides HAL stubs and a main() that runs all test suites.
  * Compile with:
- *   gcc -I../bcm_master/Core/Inc \
+ *   gcc -I./stubs -I../bcm_master/Core/Inc -I../lighting_node/Core/Inc \
  *       test_runner.c test_heartbeat_timeout.c \
  *       test_checksum_validation.c test_lamp_arbitration.c \
  *       ../bcm_master/Core/Src/com_lighting_if.c \
  *       ../bcm_master/Core/Src/io_bcm_inputs.c \
+ *       ../lighting_node/Core/Src/io_lighting_outputs.c \
  *       -o run_tests && ./run_tests
  */
 
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+
+/* Pull in the HAL type definitions (GPIO_TypeDef, GPIO_PinState, etc.)
+ * from the stub header so all stubs below match the declared signatures. */
+#include "stm32l1xx_hal.h"
 
 /* ---- HAL stubs ----------------------------------------------------------- */
 
@@ -29,26 +34,28 @@ void HAL_SetTick(uint32_t ms)
     g_tick_ms = ms;
 }
 
-/* GPIO stub — all pins read as released (active-low → logical 0) */
-typedef void GPIO_TypeDef;
-typedef uint16_t uint16_t;
+void HAL_Delay(uint32_t ms)
+{
+    (void)ms;
+}
 
-#define GPIO_PIN_RESET 0
-#define GPIO_PIN_SET   1
-
-int HAL_GPIO_ReadPin(GPIO_TypeDef *port, uint16_t pin)
+/* All switch inputs read as released (active-low → GPIO_PIN_SET = not pressed) */
+GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *port, uint16_t pin)
 {
     (void)port;
     (void)pin;
     return GPIO_PIN_SET;
 }
 
-void HAL_GPIO_WritePin(GPIO_TypeDef *port, uint16_t pin, int state)
+void HAL_GPIO_WritePin(GPIO_TypeDef *port, uint16_t pin, GPIO_PinState state)
 {
     (void)port;
     (void)pin;
     (void)state;
 }
+
+void Error_Handler(void) {}
+void MX_GPIO_Init(void) {}
 
 /* ---- Assertion helper ---------------------------------------------------- */
 
