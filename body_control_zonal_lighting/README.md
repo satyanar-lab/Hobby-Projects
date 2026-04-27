@@ -26,16 +26,17 @@ program, so the architectural story is concrete instead of abstract:
 
 ## What you run
 
-Four executables, each a thin `main()` over the shared core library:
+Five executables, each a thin `main()` over the shared core library:
 
 | Executable | Role |
 |---|---|
-| `central_zone_controller_app` | Decision-making controller. Arbitrates commands, talks to the rear node, caches state and health. |
-| `rear_lighting_node_simulator` | Rear-node service provider. Applies lamp commands, publishes status + health events. Swapped for the STM32 target in the hardware phase. |
-| `hmi_control_panel` | Laptop-side operator UI. Sends user intents to the controller and reflects the latest state. |
+| `central_zone_controller_app` | Decision-making controller. Arbitrates commands, talks to the rear node, caches state and health, fans events to all connected operator clients. |
+| `rear_lighting_node_simulator` | Rear-node service provider (Linux). Applies lamp commands, publishes status + health events. Replaced by the STM32 firmware on hardware. |
+| `hmi_control_panel_qt` | Qt6 QML GUI operator panel. Sends user intents to the controller and reflects live lamp state with an automotive-style dark dashboard. Requires Qt6. |
+| `hmi_control_panel_terminal` | Terminal-menu HMI fallback. Same operator service path as the Qt HMI; used when Qt6 is not available. |
 | `diagnostic_console` | Engineering console. Lets you poke the service path and inspect node health directly. |
 
-All four share one static library, `body_control_lighting::core`, so the
+All five share one static library, `body_control_lighting::core`, so the
 feature logic lives in one place and executables are just wiring.
 
 ## Layering
@@ -45,13 +46,13 @@ include/body_control/lighting/
 ├── domain/        # value types, constants, on-wire codec, service IDs
 ├── application/   # arbitrator, state manager, health monitor, controller, function manager
 ├── hmi/           # view model, mapper, main window
-├── service/       # rear-lighting service provider + consumer (facades)
+├── service/       # rear-lighting + operator service provider + consumer facades
 ├── transport/     # SOME/IP-style message builder/parser + adapter interface
 └── platform/
     ├── linux/     # clock, logger, signal handler (POSIX)
     └── stm32/     # GPIO driver, link supervisor, UART-style logger (embedded)
 src/
-└── (mirrors the include tree, plus transport/ethernet and transport/vsomeip)
+└── (mirrors the include tree, plus transport/ethernet, transport/vsomeip, transport/lwip)
 ```
 
 See `doc/system_architecture.md` for the architectural rationale, and
@@ -71,8 +72,9 @@ CMake options:
 | Option | Default | Purpose |
 |---|---|---|
 | `BODY_CONTROL_LIGHTING_BUILD_TESTS` | `ON` | Build GoogleTest-based unit + integration tests |
-| `BODY_CONTROL_LIGHTING_BUILD_APPS` | `ON` | Build the four executables |
-| `BODY_CONTROL_LIGHTING_WARNINGS_AS_ERRORS` | `OFF` | Promote `-Wall -Wextra -Wpedantic` warnings to errors |
+| `BODY_CONTROL_LIGHTING_BUILD_APPS` | `ON` | Build the five executables |
+| `BODY_CONTROL_LIGHTING_BUILD_QT_HMI` | `ON` | Build the Qt6 QML HMI (requires Qt6 Core/Quick/Qml) |
+| `BODY_CONTROL_LIGHTING_WARNINGS_AS_ERRORS` | `ON` | Promote `-Wall -Wextra -Wpedantic` warnings to errors |
 | `BODY_CONTROL_LIGHTING_TARGET_PLATFORM` | auto (`linux` on a Linux host) | Selects platform-specific sources (`linux` or `stm32`) |
 
 GoogleTest is fetched automatically via CMake `FetchContent` — no system
@@ -93,19 +95,22 @@ In four terminals:
 # Terminal 2 — controller (must start before HMI / diagnostic console)
 ./build/app/central_zone_controller_app
 
-# Terminal 3 — HMI operator panel
-./build/app/hmi_control_panel
+# Terminal 3 — HMI operator panel (Qt6 GUI)
+./build/app/hmi_control_panel_qt
+
+# Terminal 3 — HMI operator panel (terminal fallback, same service path)
+./build/app/hmi_control_panel_terminal
 
 # Terminal 4 — engineering console (optional)
 ./build/app/diagnostic_console
 ```
 
 The HMI and diagnostic console are thin operator clients: they send lamp
-requests over the operator service path (UDP 41003 → 41002) and receive
+requests over the operator service path (UDP :41003 → :41002) and receive
 `LampStatus` / `NodeHealth` events back.  The controller arbitrates every
 request, talks to the rear node over the rear lighting service path
-(UDP 41001 → 41000), and fans status events out to all connected operator
-clients.  All four processes can be stopped with `Ctrl-C` / `ENTER`.
+(UDP :41001 → :41000), and fans status events out to all connected operator
+clients.  All four processes can be stopped with `Ctrl-C`.
 
 ## Engineering rules
 
@@ -127,17 +132,26 @@ standard is "would this look in place in a real automotive program":
 - **Honest failure:** functions that can fail return status codes, not
   exceptions. The service provider's fallback health snapshot reports
   `kDegraded` when it can't see the world, not `kOperational`.
+- **Engineering comments on every file:** every class, public function,
+  non-obvious code block, and domain struct field is annotated — not with
+  WHAT the code does, but WHY it is shaped the way it is.
 
 ## Roadmap
 
 | Phase | Status | What it delivers |
 |---|---|---|
 | 1 — Foundation | ✅ Complete | Layered tree, CMake, core domain/service/transport scaffolding |
-| 2 — Core logic + service path | ✅ In finalisation | Domain contracts locked, SOME/IP-style wire format aligned, tests green, CTest wired |
-| 3 — Simulation integration | 🔄 In progress | End-to-end command + status + health flow across the four executables |
-| 4 — Ethernet / vsomeip upgrade | ⏳ Planned | Replace loopback/UDP with real vsomeip behaviour and SD |
-| 5 — Hardware migration | ⏳ Planned | STM32 NUCLEO-H753ZI as the rear node (LwIP + GPIO driver) |
-| 6 — Demo + polish | ⏳ Planned | Screenshots, logs, test evidence, portfolio narrative |
+| 2 — Core logic + service path | ✅ Complete | Domain contracts locked, codec, arbitrator, state manager, health monitor, rear lighting service, unit + integration tests |
+| 3 — Simulation integration | ✅ Complete | Synchronous loopback, round-trip event assertions, periodic publish loop, smoke test |
+| 4 — Operator service layer | ✅ Complete | Dedicated HMI ↔ controller service path (ports 41002/41003); operator service consumer/provider |
+| 5 — Real vsomeip transport | ✅ Complete | Real vsomeip 3.4.10; hazard expansion to 3 commands; indicator exclusivity fix; run scripts |
+| 6 — STM32 hardware | ✅ Complete | NUCLEO-H753ZI bare-metal firmware; LwIP/UDP; GPIO lamp driver; blink manager; status events to CZC |
+| 7 — Demo polish | ✅ Complete | End-to-end status events from NUCLEO to HMI; hardware walkthrough documentation |
+| 8 — Qt6 GUI HMI | ✅ Complete | Qt6 QML dark dashboard; QmlHmiBridge; thread-safe callbacks; terminal HMI kept as fallback |
+| 9 — Zephyr RTOS | ⏳ Next | Port rear-zone firmware to Zephyr RTOS on the NUCLEO-H753ZI |
+| 10 — Fault injection | ⏳ Planned | Simulate per-lamp driver faults; verify health reporting and arbitration response |
+| 11 — UDS diagnostics | ⏳ Planned | ISO 14229 UDS over Ethernet; ReadDataByIdentifier, RoutineControl |
+| 12 — OTA firmware update | ⏳ Planned | Ethernet-based firmware update for the rear zone node |
 
 ## License
 
