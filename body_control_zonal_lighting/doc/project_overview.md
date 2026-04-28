@@ -83,6 +83,10 @@ A minimal but believable slice of an automotive platform:
 - Not a full AUTOSAR stack. It borrows Adaptive AUTOSAR and SOME/IP
   concepts at the architectural level but does not attempt to reproduce
   them.
+- Not an ara::com implementation. The service layer mirrors ara::com
+  proxy/skeleton concepts intentionally, but uses vsomeip directly rather
+  than a full Adaptive AUTOSAR middleware stack. See
+  `doc/system_architecture.md` for the mapping.
 - Not a production vsomeip integration. The vsomeip transport is wired and
   functional for the Linux simulation path; the hardware path uses a direct
   UDP adapter for simplicity. A full SOME/IP SD deployment is tracked as

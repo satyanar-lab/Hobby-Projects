@@ -176,6 +176,8 @@ echoes it:
 | Platform health | `NodeHealthSourceInterface` + `NodeHealthMonitor` + `EthernetLinkSupervisor` |
 | HMI layer | `QmlHmiBridge` marshals vsomeip callbacks to Qt main thread; `MainWindow` + `HmiViewModel` remain transport-agnostic |
 
+The service consumer/provider pattern in this project mirrors ara::com proxy/skeleton semantics from Adaptive AUTOSAR. `RearLightingServiceConsumer` maps to a proxy, `RearLightingServiceProvider` maps to a skeleton, and the `LampStatusEvent`/`NodeHealthStatusEvent` map to ara::com events. In a production Adaptive AUTOSAR system, these facades would be generated from ARXML service descriptions and the transport binding would be an ara::com-compliant middleware such as Vector MICROSAR or ETAS RTA-CAR. This project uses vsomeip directly as the SOME/IP transport, which is one of the allowed bindings under the Adaptive AUTOSAR specification.
+
 ## 6. Portability contract
 
 The Linux and STM32 builds share every file under
