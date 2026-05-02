@@ -148,7 +148,7 @@ standard is "would this look in place in a real automotive program":
 | 6 — STM32 hardware | ✅ Complete | NUCLEO-H753ZI bare-metal firmware; LwIP/UDP; GPIO lamp driver; blink manager; status events to CZC |
 | 7 — Demo polish | ✅ Complete | End-to-end status events from NUCLEO to HMI; hardware walkthrough documentation |
 | 8 — Qt6 GUI HMI | ✅ Complete | Qt6 QML dark dashboard; QmlHmiBridge; thread-safe callbacks; terminal HMI kept as fallback |
-| 9 — Zephyr RTOS | ⏳ Next | Port rear-zone firmware to Zephyr RTOS on the NUCLEO-H753ZI |
+| 9 — Zephyr RTOS + HMI fixes | ✅ Complete | Zephyr RTOS port (4-thread, devicetree GPIO, message queue); turn-signal retention; HMI persistent poll timer; leftArrowActive/rightArrowActive display state; automotive button styling |
 | 10 — Fault injection | ⏳ Planned | Simulate per-lamp driver faults; verify health reporting and arbitration response |
 | 11 — UDS diagnostics | ⏳ Planned | ISO 14229 UDS over Ethernet; ReadDataByIdentifier, RoutineControl |
 | 12 — OTA firmware update | ⏳ Planned | Ethernet-based firmware update for the rear zone node |
