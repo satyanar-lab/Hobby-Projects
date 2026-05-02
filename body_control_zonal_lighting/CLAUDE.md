@@ -14,6 +14,11 @@ This is an automotive-style portfolio project. Hold the line on:
 - Tests: GoogleTest via FetchContent, one executable per test source
 - Before committing: cmake --build build -j && ctest --test-dir build
   must both be green
+- Before every commit: run git status, confirm staged files match only
+  the current task. If unrelated files are staged (e.g. platform files
+  mixed with HMI files), unstage them with git restore --staged before
+  committing. Never mix changes from different layers or components in
+  one commit.
 
 Do not push to git without explicit confirmation in each session.
 
