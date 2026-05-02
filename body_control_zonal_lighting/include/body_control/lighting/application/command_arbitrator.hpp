@@ -28,6 +28,22 @@ struct ArbitrationContext
 };
 
 /**
+ * Tracks which indicator the operator most recently activated, so the BCM
+ * node can restore it when hazard deactivates.
+ *
+ * Owned and mutated by the BCM node's indicator/hazard handlers (a member of
+ * RearLightingNodeHandler on STM32, a file-scope variable on Zephyr).
+ * CommandArbitrator on the CZC side remains stateless and never touches this.
+ */
+struct IndicatorInputRegistry
+{
+    /// Indicator selected by the operator before hazard engaged; kUnknown if none.
+    domain::LampFunction active_indicator {domain::LampFunction::kUnknown};
+    /// True while a hazard command has been applied on the node.
+    bool hazard_active {false};
+};
+
+/**
  * Classification of the arbitration outcome.
  */
 enum class ArbitrationResult : std::uint8_t
