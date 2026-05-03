@@ -581,3 +581,28 @@ int main()
         link_supervisor.ProcessMainLoop(elapsed);
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OTA firmware update — integration point (Phase 12)
+//
+// Production path: add a DoIP server or a dedicated UDS-over-UDP receiver
+// thread; wire incoming UDS 0x34/0x36/0x37 frames to OtaSessionManager.
+//
+//   OtaSessionManager ota_mgr;
+//
+//   // On 0x34 RequestDownload:
+//   auto resp = ota_mgr.HandleRequestDownload(request);
+//   logger.Log("[OTA] entering update mode");
+//
+//   // On 0x36 TransferData:
+//   auto resp = ota_mgr.HandleTransferData(request);
+//   logger.Log("[OTA] received block N");
+//
+//   // On 0x37 RequestTransferExit:
+//   auto resp = ota_mgr.HandleRequestTransferExit(request);
+//   logger.Log("[OTA] transfer complete — flash write requires bootloader");
+//
+// Note: Actual flash programming requires STM32 bootloader integration
+// (e.g. UART/Ethernet bootloader or MCUboot via OpenAMP).  The UDS protocol
+// flow is fully implemented and validated on the Linux simulator.
+// ─────────────────────────────────────────────────────────────────────────────

@@ -151,7 +151,7 @@ standard is "would this look in place in a real automotive program":
 | 9 — Zephyr RTOS + HMI fixes | ✅ Complete | Zephyr RTOS port (4-thread, devicetree GPIO, message queue); turn-signal retention; HMI persistent poll timer; leftArrowActive/rightArrowActive display state; automotive button styling |
 | 10 — Fault injection | ✅ Complete | FaultManager (DTC storage, inject/clear/clear-all); fault commands on both service paths; NodeHealthStatus fault fields + Qt HMI fault panel; diagnostic console fault menu; 17 new unit tests |
 | 11 — UDS diagnostics | ✅ Complete | DoIP TCP server (ISO 13400-2) on rear node; UDS services 0x10/0x14/0x19/0x22/0x31; Python diagnostic client; 14 new unit tests |
-| 12 — OTA firmware update | ⏳ Planned | Ethernet-based firmware update for the rear zone node |
+| 12 — OTA firmware update | ✅ Complete | UDS 0x34/0x36/0x37 over DoIP; OtaSessionManager with CRC-32 validation; Python OTA client; kUpdating health state; 12 new unit tests |
 
 ## License
 

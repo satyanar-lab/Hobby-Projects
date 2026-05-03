@@ -81,6 +81,15 @@ std::vector<std::uint8_t> UdsRequestHandler::HandleRequest(
     case domain::uds::kSidReadDtcInformation:
         return HandleReadDtcInformation(uds_request);
 
+    case domain::uds::kSidRequestDownload:
+        return HandleRequestDownload(uds_request);
+
+    case domain::uds::kSidTransferData:
+        return HandleTransferData(uds_request);
+
+    case domain::uds::kSidRequestTransferExit:
+        return HandleRequestTransferExit(uds_request);
+
     default:
         return NegativeResponse(sid, domain::uds::kNrcServiceNotSupported);
     }
@@ -330,11 +339,13 @@ std::vector<std::uint8_t> UdsRequestHandler::EncodeNodeHealth() const noexcept
     const domain::LampFaultStatus fault_status =
         function_manager_.GetFaultStatus();
 
-    // Derive health state from fault count — if UDS is reachable the link is up.
+    // Derive health state — OTA update mode takes precedence over fault state.
     const std::uint8_t health_state =
-        (fault_status.active_fault_count > 0U)
-            ? 0x03U   // kFaulted
-            : 0x01U;  // kOperational
+        ota_session_manager_.IsOtaModeActive()
+            ? domain::uds::kHealthUpdating    // 0x04
+            : (fault_status.active_fault_count > 0U)
+                ? domain::uds::kHealthFaulted     // 0x03
+                : domain::uds::kHealthOperational; // 0x01
 
     // Flags: bit0=eth_link(assumed up), bit1=svc_avail(assumed up), bit2=fault_present
     const std::uint8_t fault_bit =
@@ -394,6 +405,26 @@ void UdsRequestHandler::AppendDtc3Bytes(
     out.push_back(0x00U);  // our fault codes fit in 16 bits; high byte = 0
     out.push_back(static_cast<std::uint8_t>(fault_code_value >> 8U));
     out.push_back(static_cast<std::uint8_t>(fault_code_value & 0xFFU));
+}
+
+// ── 0x34 / 0x36 / 0x37 OTA firmware transfer ─────────────────────────────────
+
+std::vector<std::uint8_t> UdsRequestHandler::HandleRequestDownload(
+    const std::vector<std::uint8_t>& req) noexcept
+{
+    return ota_session_manager_.HandleRequestDownload(req);
+}
+
+std::vector<std::uint8_t> UdsRequestHandler::HandleTransferData(
+    const std::vector<std::uint8_t>& req) noexcept
+{
+    return ota_session_manager_.HandleTransferData(req);
+}
+
+std::vector<std::uint8_t> UdsRequestHandler::HandleRequestTransferExit(
+    const std::vector<std::uint8_t>& req) noexcept
+{
+    return ota_session_manager_.HandleRequestTransferExit(req);
 }
 
 }  // namespace application

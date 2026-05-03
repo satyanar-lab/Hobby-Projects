@@ -15,6 +15,7 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_COMMON
     application/central_zone_controller.cpp
     application/rear_lighting_function_manager.cpp
     application/uds_request_handler.cpp
+    application/ota_session_manager.cpp
 
     domain/domain_type_validators.cpp
     domain/lighting_payload_codec.cpp

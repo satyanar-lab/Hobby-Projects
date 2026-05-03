@@ -1,0 +1,5 @@
+# BCL OTA client — no external dependencies required.
+# Uses Python standard library only:
+#   - socket     (TCP DoIP transport)
+#   - struct     (DoIP frame packing/unpacking)
+#   - zlib       (CRC-32/ISO-HDLC computation, matches the C++ implementation)

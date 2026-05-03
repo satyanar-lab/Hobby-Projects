@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "body_control/lighting/application/ota_session_manager.hpp"
 #include "body_control/lighting/application/rear_lighting_function_manager.hpp"
 
 // UDS request handler for the body control rear lighting node.
@@ -53,6 +54,15 @@ private:
     std::vector<std::uint8_t> HandleReadDtcInformation(
         const std::vector<std::uint8_t>& req) noexcept;
 
+    std::vector<std::uint8_t> HandleRequestDownload(
+        const std::vector<std::uint8_t>& req) noexcept;
+
+    std::vector<std::uint8_t> HandleTransferData(
+        const std::vector<std::uint8_t>& req) noexcept;
+
+    std::vector<std::uint8_t> HandleRequestTransferExit(
+        const std::vector<std::uint8_t>& req) noexcept;
+
     // DID encoders — return the DID payload bytes (without the 0x62 prefix
     // or DID bytes; caller prepends those).
     std::vector<std::uint8_t> EncodeLampStatus() const noexcept;
@@ -71,6 +81,7 @@ private:
         std::uint16_t fault_code_value) noexcept;
 
     RearLightingFunctionManager& function_manager_;
+    OtaSessionManager            ota_session_manager_ {};
 };
 
 }  // namespace application

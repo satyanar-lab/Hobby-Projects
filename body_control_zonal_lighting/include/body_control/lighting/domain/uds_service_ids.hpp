@@ -25,6 +25,9 @@ constexpr std::uint8_t kSidClearDiagnosticInformation  {0x14U};
 constexpr std::uint8_t kSidReadDtcInformation          {0x19U};
 constexpr std::uint8_t kSidReadDataByIdentifier        {0x22U};
 constexpr std::uint8_t kSidRoutineControl              {0x31U};
+constexpr std::uint8_t kSidRequestDownload             {0x34U};
+constexpr std::uint8_t kSidTransferData                {0x36U};
+constexpr std::uint8_t kSidRequestTransferExit         {0x37U};
 constexpr std::uint8_t kSidNegativeResponse            {0x7FU};
 
 // Positive response is RequestSID + 0x40.
@@ -73,10 +76,24 @@ constexpr std::uint16_t kRoutineIdFaultMax             {0xB005U};
 
 // ── Negative Response Codes (NRCs) ───────────────────────────────────────────
 
-constexpr std::uint8_t kNrcServiceNotSupported         {0x11U};
-constexpr std::uint8_t kNrcSubFunctionNotSupported     {0x12U};
-constexpr std::uint8_t kNrcConditionsNotCorrect        {0x22U};
-constexpr std::uint8_t kNrcRequestOutOfRange           {0x31U};
+constexpr std::uint8_t kNrcServiceNotSupported              {0x11U};
+constexpr std::uint8_t kNrcSubFunctionNotSupported          {0x12U};
+constexpr std::uint8_t kNrcConditionsNotCorrect             {0x22U};
+constexpr std::uint8_t kNrcRequestOutOfRange                {0x31U};
+constexpr std::uint8_t kNrcUploadDownloadNotAccepted        {0x70U};
+constexpr std::uint8_t kNrcTransferDataSuspended            {0x71U};
+constexpr std::uint8_t kNrcGeneralProgrammingFailure        {0x72U};
+constexpr std::uint8_t kNrcWrongBlockSequenceCounter        {0x73U};
+
+// ── Node health state bytes (F102 DID, byte 0) ────────────────────────────────
+// These mirror the NodeHealthState SOME/IP enum values used in the operational
+// path; adding kUpdating for the planned OTA reprogramming state.
+
+constexpr std::uint8_t kHealthUnknown                  {0x00U};
+constexpr std::uint8_t kHealthOperational              {0x01U};
+constexpr std::uint8_t kHealthDegraded                 {0x02U};
+constexpr std::uint8_t kHealthFaulted                  {0x03U};
+constexpr std::uint8_t kHealthUpdating                 {0x04U};
 
 // ── DoIP logical addresses ────────────────────────────────────────────────────
 

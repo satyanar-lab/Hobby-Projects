@@ -603,6 +603,26 @@ int main()
 
     LOG_INF("Rear lighting node started");
 
+    // OTA firmware update — integration point (Phase 12)
+    //
+    // Production path: spawn an ota_thread that opens a UDP socket on a
+    // dedicated port, receives UDS frames, and delegates to OtaSessionManager:
+    //
+    //   OtaSessionManager ota_mgr;
+    //
+    //   // On 0x34 RequestDownload:
+    //   LOG_INF("[OTA] entering update mode — %u bytes expected", size);
+    //
+    //   // On 0x36 TransferData:
+    //   LOG_INF("[OTA] received block %u", block_seq);
+    //
+    //   // On 0x37 RequestTransferExit:
+    //   LOG_INF("[OTA] transfer complete — flash write requires MCUboot");
+    //
+    // Note: Actual flash write requires MCUboot or a custom bootloader.
+    // The UDS OTA protocol flow is fully implemented and validated on the
+    // Linux simulator (tools/ota_client/ota_client.py).
+
     // main() returns; the Zephyr idle thread takes over.  All work is in the
     // four spawned threads which run indefinitely.
     return 0;
