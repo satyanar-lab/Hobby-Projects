@@ -223,7 +223,7 @@ def read_node_health(client: DoIPClient) -> List[str]:
         f'  state        {state}',
         f'  eth_link     {"UP" if flags & 0x01 else "DOWN"}',
         f'  svc_avail    {"YES" if flags & 0x02 else "NO"}',
-        f'  fault_present{"YES" if flags & 0x04 else "NO"}',
+        f'  fault_present {"YES" if flags & 0x04 else "NO"}',
         f'  fault_count  {fault_count}',
     ]
 

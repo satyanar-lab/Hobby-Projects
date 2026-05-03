@@ -28,6 +28,7 @@ target_sources(app PRIVATE
     # Shared domain sources — reused unchanged from the bare-metal build.
     # Only the rear-node subset is included; CentralZoneController (std::thread)
     # and HMI sources are excluded as they were for the bare-metal target.
+    ${DOMAIN_SRC_DIR}/application/fault_manager.cpp
     ${DOMAIN_SRC_DIR}/application/rear_lighting_function_manager.cpp
     ${DOMAIN_SRC_DIR}/domain/domain_type_validators.cpp
     ${DOMAIN_SRC_DIR}/domain/lighting_payload_codec.cpp

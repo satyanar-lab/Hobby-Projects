@@ -50,6 +50,12 @@
                     "is_field": "false",
                     "is_reliable": "true",
                     "update-cycle": "0"
+                },
+                {
+                    "event": "0x8003",
+                    "is_field": "false",
+                    "is_reliable": "true",
+                    "update-cycle": "0"
                 }
             ],
             "eventgroups": [
@@ -63,6 +69,12 @@
                     "eventgroup": "0x0002",
                     "events": [
                         "0x8002"
+                    ]
+                },
+                {
+                    "eventgroup": "0x0003",
+                    "events": [
+                        "0x8003"
                     ]
                 }
             ]
