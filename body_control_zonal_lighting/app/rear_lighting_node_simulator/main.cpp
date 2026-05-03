@@ -4,9 +4,11 @@
 #include <thread>
 
 #include "body_control/lighting/application/rear_lighting_function_manager.hpp"
+#include "body_control/lighting/application/uds_request_handler.hpp"
 #include "body_control/lighting/domain/lighting_constants.hpp"
 #include "body_control/lighting/platform/linux/process_signal_handler.hpp"
 #include "body_control/lighting/service/rear_lighting_service_provider.hpp"
+#include "body_control/lighting/transport/doip_server.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
 namespace body_control
@@ -29,6 +31,7 @@ CreateRearLightingNodeVsomeipServerAdapter();
 int main()
 {
     using body_control::lighting::application::RearLightingFunctionManager;
+    using body_control::lighting::application::UdsRequestHandler;
     using body_control::lighting::domain::timing::kLampStatusPublishPeriod;
     using body_control::lighting::domain::timing::kMainLoopPeriod;
     using body_control::lighting::domain::timing::kNodeHealthPublishPeriod;
@@ -36,6 +39,7 @@ int main()
     using body_control::lighting::platform::linux::SignalHandlerStatus;
     using body_control::lighting::service::RearLightingServiceProvider;
     using body_control::lighting::service::ServiceStatus;
+    using body_control::lighting::transport::DoipServer;
     using body_control::lighting::transport::TransportAdapterInterface;
 
     ProcessSignalHandler signal_handler {};
@@ -47,6 +51,10 @@ int main()
     }
 
     RearLightingFunctionManager rear_lighting_function_manager {};
+
+    // DoIP diagnostic server — runs on TCP :13400 parallel to the SOME/IP path.
+    UdsRequestHandler uds_handler {rear_lighting_function_manager};
+    DoipServer        doip_server  {uds_handler};
 
     std::unique_ptr<TransportAdapterInterface> transport_adapter =
         body_control::lighting::transport::vsomeip::
@@ -70,6 +78,8 @@ int main()
         std::cerr << "Failed to initialize rear lighting node simulator.\n";
         return 1;
     }
+
+    doip_server.Start();
 
     std::cout << "Rear lighting node simulator is running.\n";
     std::cout << "Send SIGINT or SIGTERM to shut down.\n";
@@ -99,6 +109,8 @@ int main()
             health_elapsed = std::chrono::milliseconds {0};
         }
     }
+
+    doip_server.Stop();
 
     const ServiceStatus shutdown_status =
         rear_lighting_service_provider.Shutdown();

@@ -1,0 +1,9 @@
+# BCL diagnostic client — no external dependencies required.
+# The client uses raw TCP sockets for DoIP (ISO 13400-2) to guarantee
+# compatibility with the project's custom DoIP server implementation.
+#
+# Optional — install these if you want to use doipclient / udsoncan for
+# extended tester integration:
+#
+#   doipclient>=1.0.0
+#   udsoncan>=2.0.0

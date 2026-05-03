@@ -14,6 +14,7 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_COMMON
     application/node_health_monitor.cpp
     application/central_zone_controller.cpp
     application/rear_lighting_function_manager.cpp
+    application/uds_request_handler.cpp
 
     domain/domain_type_validators.cpp
     domain/lighting_payload_codec.cpp
@@ -54,6 +55,8 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_LINUX
     transport/ethernet/direct_udp_transport_adapter.cpp
     transport/ethernet/ethernet_frame_adapter.cpp
     transport/ethernet/udp_transport_adapter.cpp
+
+    transport/doip_server.cpp
 )
 
 # STM32 source list is intentionally standalone — it excludes
