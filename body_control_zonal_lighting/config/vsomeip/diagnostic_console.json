@@ -7,13 +7,13 @@
     "dlt": "false",
     "file": {
       "enable": "true",
-      "path": "/tmp/hmi_control_panel_vsomeip.log"
+      "path": "/tmp/diagnostic_console_vsomeip.log"
     }
   },
   "applications": [
     {
-      "name": "hmi_control_panel",
-      "id": "0x1002"
+      "name": "diagnostic_console",
+      "id": "0x1004"
     }
   ],
   "routing": "central_zone_controller",
@@ -32,10 +32,10 @@
   },
   "clients": [
     {
-      "service": "0x1234",
+      "service": "0x1235",
       "instance": "0x0001",
-      "reliable": "30511",
-      "unreliable": "30512"
+      "reliable": "30521",
+      "unreliable": "30522"
     }
   ]
 }
