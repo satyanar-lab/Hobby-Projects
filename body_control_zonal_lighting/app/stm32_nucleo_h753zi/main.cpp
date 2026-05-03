@@ -21,6 +21,7 @@
 #include "lwip/timeouts.h"
 #include "netif/ethernet.h"
 
+#include "body_control/lighting/application/command_arbitrator.hpp"
 #include "body_control/lighting/application/rear_lighting_function_manager.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
@@ -357,8 +358,6 @@ private:
     // Using the NUCLEO's own fmgr state as truth is the correct fix.
     void HandleHazard(const LC& cmd) noexcept
     {
-        // Record sequence counter so companion indicator commands (sent by the
-        // CZC as part of the same hazard fanout) can be suppressed below.
         last_hazard_sequence_ = cmd.sequence_counter;
 
         const bool hazard_was_on = IsOn(LF::kHazardLamp);
@@ -369,9 +368,11 @@ private:
 
         if (hazard_was_on)
         {
-            // Clear indicator states so they do not resume blinking after hazard off.
-            LC off     = cmd;
-            off.action = LCA::kDeactivate;
+            indicator_registry_.hazard_active = false;
+
+            // Deactivate both indicators, then restore the pre-hazard one.
+            LC off      = cmd;
+            off.action  = LCA::kDeactivate;
             off.function = LF::kLeftIndicator;
             static_cast<void>(fmgr_.ApplyCommand(off));
             off.function = LF::kRightIndicator;
@@ -379,10 +380,27 @@ private:
             SendLampStatusEvent(LF::kHazardLamp);
             SendLampStatusEvent(LF::kLeftIndicator);
             SendLampStatusEvent(LF::kRightIndicator);
+
+            if (indicator_registry_.active_indicator != LF::kUnknown)
+            {
+                LC restore       = cmd;
+                restore.function = indicator_registry_.active_indicator;
+                restore.action   = LCA::kActivate;
+                static_cast<void>(fmgr_.ApplyCommand(restore));
+                SendLampStatusEvent(indicator_registry_.active_indicator);
+                indicator_registry_.active_indicator = LF::kUnknown;
+            }
+
             logger_.LogInfo("Hazard: OFF");
         }
         else
         {
+            // Capture which indicator was active before hazard overrides it.
+            if      (IsOn(LF::kLeftIndicator))  { indicator_registry_.active_indicator = LF::kLeftIndicator;  }
+            else if (IsOn(LF::kRightIndicator)) { indicator_registry_.active_indicator = LF::kRightIndicator; }
+            else                                { indicator_registry_.active_indicator = LF::kUnknown;         }
+            indicator_registry_.hazard_active = true;
+
             SendLampStatusEvent(LF::kHazardLamp);
             logger_.LogInfo("Hazard: ON");
         }
@@ -390,23 +408,18 @@ private:
 
     void HandleIndicator(const LC& cmd) noexcept
     {
-        // The CZC hazard fanout sends [kHazard, kLeft, kRight] with the same
-        // sequence_counter for both hazard-on and hazard-off.  After HandleHazard
-        // toggles hazard state, these companion indicator commands must be dropped
-        // — otherwise they activate indicators immediately after hazard turns off.
+        // Suppress companion indicator commands sent as part of a hazard fanout.
         if (cmd.sequence_counter == last_hazard_sequence_)
         {
             return;
         }
 
-        // Block while hazard is active.
         if (IsOn(LF::kHazardLamp))
         {
             logger_.LogWarning("Indicator blocked: hazard active");
             return;
         }
 
-        // Resolve kToggle from fmgr state so the action is always explicit.
         LC resolved = cmd;
         if (cmd.action == LCA::kToggle)
         {
@@ -414,19 +427,29 @@ private:
                                                   : LCA::kActivate;
         }
 
-        // Exclusivity: activating one indicator deactivates the opposite.
         if (resolved.action == LCA::kActivate)
         {
+            // Record operator intent so hazard-off can restore this indicator.
+            indicator_registry_.active_indicator = cmd.function;
+
             const LF opposite = (cmd.function == LF::kLeftIndicator)
                                     ? LF::kRightIndicator
                                     : LF::kLeftIndicator;
             if (IsOn(opposite))
             {
-                LC deactivate    = resolved;
+                LC deactivate       = resolved;
                 deactivate.function = opposite;
                 deactivate.action   = LCA::kDeactivate;
                 static_cast<void>(fmgr_.ApplyCommand(deactivate));
                 SendLampStatusEvent(opposite);
+            }
+        }
+        else if (resolved.action == LCA::kDeactivate)
+        {
+            // Stalk to centre: clear registry so hazard-off won't restore.
+            if (indicator_registry_.active_indicator == cmd.function)
+            {
+                indicator_registry_.active_indicator = LF::kUnknown;
             }
         }
 
@@ -467,9 +490,8 @@ private:
     body_control::lighting::application::RearLightingFunctionManager& fmgr_;
     body_control::lighting::platform::stm32::Stm32DiagnosticLogger&   logger_;
     body_control::lighting::transport::TransportAdapterInterface&      transport_;
-    // Sequence counter of the last hazard command; indicator commands sharing
-    // this counter are companion fanout commands and must be suppressed.
     std::uint16_t last_hazard_sequence_ {0U};
+    body_control::lighting::application::IndicatorInputRegistry indicator_registry_ {};
 };
 
 }  // namespace
