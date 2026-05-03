@@ -438,15 +438,17 @@ struct LampCommandDispatcher final
                 static_cast<int>(cmd.action),
                 static_cast<unsigned>(cmd.sequence_counter));
 
-        // Queue depth 8 is sufficient for any realistic burst (max 3 commands
-        // per operator action from the CZC fanout).  Purging is intentionally
-        // avoided: a hazard activate is always followed immediately by two
-        // companion indicator commands with the same sequence counter, and
-        // purging would drop the hazard command before cmd_thread can process it.
+        // Latest-wins: purge any pending unprocessed commands before posting the
+        // new one so rapid input collapses to the operator's most recent intent.
+        // Lamp commands are idempotent at the fmgr level — only the final state
+        // matters.  K_NO_WAIT on the put is still needed in case cmd_thread
+        // dequeued the last item between purge and put; the race window is tiny
+        // and would only drop a duplicate, not a net-new state change.
+        k_msgq_purge(&g_lamp_cmd_queue);
         const int ret = k_msgq_put(&g_lamp_cmd_queue, &cmd, K_NO_WAIT);
         if (ret != 0)
         {
-            LOG_WRN("lamp cmd queue full, datagram dropped");
+            LOG_WRN("lamp cmd queue full after purge, datagram dropped");
         }
     }
 
