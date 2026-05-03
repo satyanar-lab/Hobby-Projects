@@ -22,4 +22,4 @@ else
     echo "WARNING: no interface on 192.168.0.0/24 — board unreachable. Did you run 'wsl --shutdown' after enabling mirrored networking?" >&2
 fi
 
-"${EXECUTABLE_PATH}"
+"${EXECUTABLE_PATH}" 2>>/tmp/central_zone_controller_stderr.log
