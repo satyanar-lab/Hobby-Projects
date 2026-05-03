@@ -579,6 +579,24 @@ ApplicationWindow {
                         Behavior on color { ColorAnimation { duration: 300 } }
                     }
 
+                    // FAULT row — shows count in red when any fault is active.
+                    Row {
+                        spacing: 6
+                        Rectangle {
+                            width: 9; height: 9; radius: 5
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: hmi.faultPresent ? root.clRed : root.clDim
+                            Behavior on color { ColorAnimation { duration: 250 } }
+                        }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "FAULT: " + hmi.activeFaultCount
+                            color: hmi.faultPresent ? root.clRed : root.clDimText
+                            font.pixelSize: 11; font.weight: Font.Medium; font.letterSpacing: 0.5
+                            Behavior on color { ColorAnimation { duration: 250 } }
+                        }
+                    }
+
                     Item { height: 4 }
 
                     Rectangle {

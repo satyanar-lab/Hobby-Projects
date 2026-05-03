@@ -12,6 +12,7 @@
  *   2. In the managers (before caching) to reject structurally invalid inputs.
  */
 
+#include "body_control/lighting/domain/fault_types.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
 
@@ -85,6 +86,50 @@ bool IsValidNodeHealthStatus(
     // Only the NodeHealthState enum field is range-checked; the boolean flags
     // and fault count are inherently valid for all bit patterns they can hold.
     return IsInClosedRange(health_state_value, kNodeHealthStateMaxValue);
+}
+
+FaultCode LampFunctionToFaultCode(const LampFunction function) noexcept
+{
+    switch (function)
+    {
+    case LampFunction::kLeftIndicator:  return FaultCode::kLeftIndicator;
+    case LampFunction::kRightIndicator: return FaultCode::kRightIndicator;
+    case LampFunction::kHazardLamp:     return FaultCode::kHazardLamp;
+    case LampFunction::kParkLamp:       return FaultCode::kParkLamp;
+    case LampFunction::kHeadLamp:       return FaultCode::kHeadLamp;
+    default:                            return FaultCode::kNoFault;
+    }
+}
+
+std::string_view FaultCodeToString(const FaultCode code) noexcept
+{
+    switch (code)
+    {
+    case FaultCode::kNoFault:        return "kNoFault";
+    case FaultCode::kLeftIndicator:  return "B001:LeftIndicator";
+    case FaultCode::kRightIndicator: return "B002:RightIndicator";
+    case FaultCode::kHazardLamp:     return "B003:HazardLamp";
+    case FaultCode::kParkLamp:       return "B004:ParkLamp";
+    case FaultCode::kHeadLamp:       return "B005:HeadLamp";
+    default:                         return "Unknown";
+    }
+}
+
+bool IsValidFaultCommand(const FaultCommand& fault_command) noexcept
+{
+    constexpr std::uint8_t kFaultActionMaxValue {
+        static_cast<std::uint8_t>(FaultAction::kClear)};
+
+    const std::uint8_t function_value =
+        static_cast<std::uint8_t>(fault_command.function);
+    const std::uint8_t action_value =
+        static_cast<std::uint8_t>(fault_command.action);
+    const std::uint8_t source_value =
+        static_cast<std::uint8_t>(fault_command.source);
+
+    return IsInClosedRange(function_value, kLampFunctionMaxValue) &&
+           IsInClosedRange(action_value, kFaultActionMaxValue) &&
+           IsInClosedRange(source_value, kCommandSourceMaxValue);
 }
 
 }  // namespace body_control::lighting::domain

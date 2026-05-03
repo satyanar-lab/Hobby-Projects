@@ -108,6 +108,17 @@ private:
     /** Forwards a NodeHealth request to the controller without decoding a payload. */
     void HandleNodeHealthRequest();
 
+    /** Decodes the payload LampFunction and calls controller_.SendInjectFault(). */
+    void HandleInjectFaultRequest(
+        const transport::TransportMessage& transport_message);
+
+    /** Decodes the payload LampFunction and calls controller_.SendClearFault(). */
+    void HandleClearFaultRequest(
+        const transport::TransportMessage& transport_message);
+
+    /** Calls controller_.SendGetFaultStatus() without decoding a payload. */
+    void HandleGetFaultStatusRequest();
+
     /** Encodes lamp_status and sends it as a SOME/IP event on the operator transport. */
     void PublishLampStatusEvent(const domain::LampStatus& lamp_status);
 

@@ -119,6 +119,21 @@ void RearLightingServiceProvider::OnTransportMessageReceived(
     {
         HandleGetNodeHealth(transport_message);
     }
+    else if (
+        transport::SomeipMessageParser::IsInjectFaultRequest(transport_message))
+    {
+        HandleInjectFault(transport_message);
+    }
+    else if (
+        transport::SomeipMessageParser::IsClearFaultRequest(transport_message))
+    {
+        HandleClearFault(transport_message);
+    }
+    else if (
+        transport::SomeipMessageParser::IsGetFaultStatusRequest(transport_message))
+    {
+        HandleGetFaultStatus(transport_message);
+    }
     else
     {
         /* Intentionally ignored: unsupported provider payload. */
@@ -188,6 +203,59 @@ void RearLightingServiceProvider::HandleGetNodeHealth(
     PublishNodeHealthEvent(BuildCurrentNodeHealthStatus());
 }
 
+void RearLightingServiceProvider::HandleInjectFault(
+    const transport::TransportMessage& transport_message)
+{
+    const domain::FaultCommand cmd =
+        transport::SomeipMessageParser::ParseFaultCommand(transport_message);
+
+    if (!domain::IsValidFaultCommand(cmd))
+    {
+        return;
+    }
+
+    const bool applied = rear_lighting_function_manager_.HandleFaultInjection(cmd.function);
+
+    if (applied)
+    {
+        // Push updated lamp status (now forced off) and updated health.
+        domain::LampStatus lamp_status {};
+        if (rear_lighting_function_manager_.GetLampStatus(cmd.function, lamp_status))
+        {
+            PublishLampStatusEvent(lamp_status);
+        }
+        PublishFaultStatusEvent(rear_lighting_function_manager_.GetFaultStatus());
+        PublishNodeHealthEvent(BuildCurrentNodeHealthStatus());
+    }
+}
+
+void RearLightingServiceProvider::HandleClearFault(
+    const transport::TransportMessage& transport_message)
+{
+    const domain::FaultCommand cmd =
+        transport::SomeipMessageParser::ParseFaultCommand(transport_message);
+
+    if (!domain::IsValidFaultCommand(cmd))
+    {
+        return;
+    }
+
+    const bool applied = rear_lighting_function_manager_.HandleFaultClear(cmd.function);
+
+    if (applied)
+    {
+        PublishFaultStatusEvent(rear_lighting_function_manager_.GetFaultStatus());
+        PublishNodeHealthEvent(BuildCurrentNodeHealthStatus());
+    }
+}
+
+void RearLightingServiceProvider::HandleGetFaultStatus(
+    const transport::TransportMessage& transport_message)
+{
+    static_cast<void>(transport_message);
+    PublishFaultStatusEvent(rear_lighting_function_manager_.GetFaultStatus());
+}
+
 void RearLightingServiceProvider::PublishLampStatusEvent(
     const domain::LampStatus& lamp_status)
 {
@@ -209,28 +277,55 @@ void RearLightingServiceProvider::PublishNodeHealthEvent(
     static_cast<void>(transport_adapter_.SendEvent(transport_message));
 }
 
+void RearLightingServiceProvider::PublishFaultStatusEvent(
+    const domain::LampFaultStatus& fault_status)
+{
+    const transport::TransportMessage transport_message =
+        transport::SomeipMessageBuilder::BuildFaultStatusEvent(fault_status);
+    static_cast<void>(transport_adapter_.SendEvent(transport_message));
+}
+
 domain::NodeHealthStatus
 RearLightingServiceProvider::BuildCurrentNodeHealthStatus() const noexcept
 {
     // Authoritative source: the injected NodeHealthSource if any.
     if (node_health_source_ != nullptr)
     {
-        return node_health_source_->GetNodeHealthSnapshot();
+        domain::NodeHealthStatus health = node_health_source_->GetNodeHealthSnapshot();
+        // Overlay fault data from FaultManager (which the health source cannot see).
+        rear_lighting_function_manager_.GetFaultStatus().fault_present
+            ? (health.lamp_driver_fault_present = true)
+            : (health.lamp_driver_fault_present =
+                   rear_lighting_function_manager_.GetFaultStatus().fault_present);
+        health.active_fault_count =
+            rear_lighting_function_manager_.GetFaultStatus().active_fault_count;
+        return health;
     }
 
-    // Synthesised fallback: reflects what the provider can observe on its own
-    // (transport reachability + init state).  Fault fields stay false because
-    // the provider has no direct access to the lamp driver hardware without a
-    // dedicated NodeHealthSource.
+    // Synthesised fallback for the Linux simulator.
     domain::NodeHealthStatus synthesised {};
-    synthesised.health_state =
-        is_initialized_ && is_transport_available_
-            ? domain::NodeHealthState::kOperational
-            : domain::NodeHealthState::kDegraded;
-    synthesised.ethernet_link_available  = is_transport_available_;
-    synthesised.service_available        = is_initialized_;
-    synthesised.lamp_driver_fault_present = false;
-    synthesised.active_fault_count       = 0U;
+    const domain::LampFaultStatus fault_status =
+        rear_lighting_function_manager_.GetFaultStatus();
+
+    synthesised.ethernet_link_available   = is_transport_available_;
+    synthesised.service_available         = is_initialized_;
+    synthesised.lamp_driver_fault_present = fault_status.fault_present;
+    synthesised.active_fault_count        =
+        static_cast<std::uint16_t>(fault_status.active_fault_count);
+
+    if (fault_status.fault_present)
+    {
+        synthesised.health_state = domain::NodeHealthState::kFaulted;
+    }
+    else if (is_initialized_ && is_transport_available_)
+    {
+        synthesised.health_state = domain::NodeHealthState::kOperational;
+    }
+    else
+    {
+        synthesised.health_state = domain::NodeHealthState::kDegraded;
+    }
+
     return synthesised;
 }
 

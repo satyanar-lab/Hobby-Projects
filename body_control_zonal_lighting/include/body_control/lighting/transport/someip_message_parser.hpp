@@ -1,6 +1,7 @@
 #ifndef BODY_CONTROL_LIGHTING_TRANSPORT_SOMEIP_MESSAGE_PARSER_HPP
 #define BODY_CONTROL_LIGHTING_TRANSPORT_SOMEIP_MESSAGE_PARSER_HPP
 
+#include "body_control/lighting/domain/fault_types.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
@@ -117,6 +118,54 @@ public:
     // Operator service parsers reuse ParseLampFunction / ParseLampStatus /
     // ParseNodeHealthStatus — the payload layout is identical to the rear
     // lighting service; only the service_id and method/event IDs differ.
+
+    // ── Rear lighting service — fault predicates ─────────────────────────────
+
+    /** Returns true if the message is an InjectFault method call on the rear lighting service. */
+    [[nodiscard]] static bool IsInjectFaultRequest(
+        const TransportMessage& transport_message) noexcept;
+
+    /** Returns true if the message is a ClearFault method call on the rear lighting service. */
+    [[nodiscard]] static bool IsClearFaultRequest(
+        const TransportMessage& transport_message) noexcept;
+
+    /** Returns true if the message is a GetFaultStatus method call on the rear lighting service. */
+    [[nodiscard]] static bool IsGetFaultStatusRequest(
+        const TransportMessage& transport_message) noexcept;
+
+    /** Returns true if the message is a FaultStatus event from the rear node. */
+    [[nodiscard]] static bool IsFaultStatusEvent(
+        const TransportMessage& transport_message) noexcept;
+
+    /**
+     * Decodes the payload of an InjectFault or ClearFault request into a FaultCommand.
+     *
+     * @throws std::runtime_error if the payload is invalid.
+     */
+    static domain::FaultCommand ParseFaultCommand(
+        const TransportMessage& transport_message);
+
+    /**
+     * Decodes the payload of a FaultStatus event into a LampFaultStatus.
+     *
+     * @throws std::runtime_error if the payload is invalid.
+     */
+    static domain::LampFaultStatus ParseLampFaultStatus(
+        const TransportMessage& transport_message);
+
+    // ── Operator service — fault predicates ──────────────────────────────────
+
+    /** Returns true if the message is an operator InjectFault request. */
+    [[nodiscard]] static bool IsOperatorInjectFaultRequest(
+        const TransportMessage& transport_message) noexcept;
+
+    /** Returns true if the message is an operator ClearFault request. */
+    [[nodiscard]] static bool IsOperatorClearFaultRequest(
+        const TransportMessage& transport_message) noexcept;
+
+    /** Returns true if the message is an operator GetFaultStatus request. */
+    [[nodiscard]] static bool IsOperatorGetFaultStatusRequest(
+        const TransportMessage& transport_message) noexcept;
 };
 
 }  // namespace transport

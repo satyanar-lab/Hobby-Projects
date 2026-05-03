@@ -44,6 +44,19 @@ constexpr std::uint16_t kGetLampStatusMethodId {0x0002U};
 /// Method call: controller requests a full NodeHealthStatus snapshot.
 constexpr std::uint16_t kGetNodeHealthMethodId {0x0003U};
 
+/// Method call: controller sends a FaultCommand (kInject) to inject a lamp driver fault.
+constexpr std::uint16_t kInjectLampFaultMethodId {0x0004U};
+
+/// Method call: controller sends a FaultCommand (kClear) to clear a lamp driver fault.
+constexpr std::uint16_t kClearLampFaultMethodId {0x0005U};
+
+/// Method call: controller requests a full LampFaultStatus snapshot from the rear node.
+constexpr std::uint16_t kGetFaultStatusMethodId {0x0006U};
+
+/// Event: rear node pushes LampFaultStatus at kNodeHealthPublishPeriod when faults change.
+/// MSB set (0x8xxx) per SOME/IP spec.
+constexpr std::uint16_t kFaultStatusEventId {0x8003U};
+
 /// Event: rear node pushes LampStatus at kLampStatusPublishPeriod (100 ms).
 /// MSB set (0x8xxx) per SOME/IP spec to distinguish events from methods.
 constexpr std::uint16_t kLampStatusEventId {0x8001U};
@@ -106,6 +119,15 @@ constexpr std::uint16_t kRequestLampDeactivateMethodId {0x0003U};
 
 /// Method: request a fresh NodeHealthStatus snapshot from the controller.
 constexpr std::uint16_t kRequestNodeHealthMethodId {0x0004U};
+
+/// Method: request the controller to inject a lamp driver fault on the rear node.
+constexpr std::uint16_t kRequestInjectFaultMethodId {0x0005U};
+
+/// Method: request the controller to clear a lamp driver fault on the rear node.
+constexpr std::uint16_t kRequestClearFaultMethodId {0x0006U};
+
+/// Method: request a full LampFaultStatus snapshot from the controller.
+constexpr std::uint16_t kRequestGetFaultStatusMethodId {0x0007U};
 
 /// Event: controller pushes LampStatus updates to all operator subscribers.
 constexpr std::uint16_t kLampStatusEventId {0x8001U};

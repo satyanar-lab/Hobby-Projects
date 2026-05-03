@@ -205,4 +205,103 @@ PayloadCodecStatus DecodeNodeHealthStatus(
     return PayloadCodecStatus::kSuccess;
 }
 
+PayloadCodecStatus EncodeFaultCommand(
+    const FaultCommand& command,
+    FaultCommandPayloadBuffer& payload_buffer) noexcept
+{
+    if (!IsValidFaultCommand(command))
+    {
+        return PayloadCodecStatus::kInvalidArgument;
+    }
+
+    payload_buffer.fill(0U);
+
+    payload_buffer[0] = static_cast<std::uint8_t>(command.function);
+    payload_buffer[1] = static_cast<std::uint8_t>(command.action);
+    payload_buffer[2] = static_cast<std::uint8_t>(command.source);
+    WriteUint16BigEndian(
+        command.sequence_counter,
+        payload_buffer[4],
+        payload_buffer[5]);
+
+    return PayloadCodecStatus::kSuccess;
+}
+
+PayloadCodecStatus DecodeFaultCommand(
+    const std::uint8_t* payload_data,
+    const std::size_t payload_length,
+    FaultCommand& command) noexcept
+{
+    if ((payload_data == nullptr) || (payload_length != kFaultCommandPayloadLength))
+    {
+        return PayloadCodecStatus::kInvalidPayloadLength;
+    }
+
+    const FaultCommand decoded {
+        static_cast<LampFunction>(payload_data[0]),
+        static_cast<FaultAction>(payload_data[1]),
+        static_cast<CommandSource>(payload_data[2]),
+        ReadUint16BigEndian(payload_data[4], payload_data[5])};
+
+    if (!IsValidFaultCommand(decoded))
+    {
+        return PayloadCodecStatus::kInvalidPayloadValue;
+    }
+
+    command = decoded;
+    return PayloadCodecStatus::kSuccess;
+}
+
+PayloadCodecStatus EncodeLampFaultStatus(
+    const LampFaultStatus& fault_status,
+    LampFaultStatusPayloadBuffer& payload_buffer) noexcept
+{
+    payload_buffer.fill(0U);
+
+    payload_buffer[0] = fault_status.fault_present ? kBooleanTrueValue : kBooleanFalseValue;
+    payload_buffer[1] = fault_status.active_fault_count;
+
+    for (std::size_t i = 0U; i < LampFaultStatus::kMaxActiveDtcs; ++i)
+    {
+        const std::uint16_t code = static_cast<std::uint16_t>(fault_status.active_faults[i]);
+        WriteUint16BigEndian(
+            code,
+            payload_buffer[2U + (i * 2U)],
+            payload_buffer[3U + (i * 2U)]);
+    }
+
+    return PayloadCodecStatus::kSuccess;
+}
+
+PayloadCodecStatus DecodeLampFaultStatus(
+    const std::uint8_t* payload_data,
+    const std::size_t payload_length,
+    LampFaultStatus& fault_status) noexcept
+{
+    if ((payload_data == nullptr) || (payload_length != kLampFaultStatusPayloadLength))
+    {
+        return PayloadCodecStatus::kInvalidPayloadLength;
+    }
+
+    if (!IsValidBooleanByte(payload_data[0]))
+    {
+        return PayloadCodecStatus::kInvalidPayloadValue;
+    }
+
+    LampFaultStatus decoded {};
+    decoded.fault_present      = DecodeBooleanByte(payload_data[0]);
+    decoded.active_fault_count = payload_data[1];
+
+    for (std::size_t i = 0U; i < LampFaultStatus::kMaxActiveDtcs; ++i)
+    {
+        decoded.active_faults[i] = static_cast<FaultCode>(
+            ReadUint16BigEndian(
+                payload_data[2U + (i * 2U)],
+                payload_data[3U + (i * 2U)]));
+    }
+
+    fault_status = decoded;
+    return PayloadCodecStatus::kSuccess;
+}
+
 }  // namespace body_control::lighting::domain

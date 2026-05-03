@@ -231,4 +231,96 @@ bool SomeipMessageParser::IsOperatorNodeHealthEvent(
             domain::operator_service::kNodeHealthEventId);
 }
 
+bool SomeipMessageParser::IsInjectFaultRequest(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsRearLightingMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::rear_lighting_service::kInjectLampFaultMethodId);
+}
+
+bool SomeipMessageParser::IsClearFaultRequest(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsRearLightingMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::rear_lighting_service::kClearLampFaultMethodId);
+}
+
+bool SomeipMessageParser::IsGetFaultStatusRequest(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsRearLightingMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::rear_lighting_service::kGetFaultStatusMethodId);
+}
+
+bool SomeipMessageParser::IsFaultStatusEvent(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsRearLightingMessage(transport_message) &&
+           transport_message.is_event &&
+           (transport_message.method_or_event_id ==
+            domain::rear_lighting_service::kFaultStatusEventId);
+}
+
+domain::FaultCommand SomeipMessageParser::ParseFaultCommand(
+    const TransportMessage& transport_message)
+{
+    domain::FaultCommand cmd {};
+    cmd.function         = static_cast<domain::LampFunction>(
+        ReadUint8(transport_message.payload, 0U));
+    cmd.action           = static_cast<domain::FaultAction>(
+        ReadUint8(transport_message.payload, 1U));
+    cmd.source           = static_cast<domain::CommandSource>(
+        ReadUint8(transport_message.payload, 2U));
+    cmd.sequence_counter = ReadUint16(transport_message.payload, 3U);
+    return cmd;
+}
+
+domain::LampFaultStatus SomeipMessageParser::ParseLampFaultStatus(
+    const TransportMessage& transport_message)
+{
+    domain::LampFaultStatus status {};
+    status.fault_present      = (ReadUint8(transport_message.payload, 0U) != 0U);
+    status.active_fault_count = ReadUint8(transport_message.payload, 1U);
+
+    for (std::size_t i = 0U; i < domain::LampFaultStatus::kMaxActiveDtcs; ++i)
+    {
+        status.active_faults[i] = static_cast<domain::FaultCode>(
+            ReadUint16(transport_message.payload, 2U + (i * 2U)));
+    }
+    return status;
+}
+
+bool SomeipMessageParser::IsOperatorInjectFaultRequest(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsOperatorServiceMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::operator_service::kRequestInjectFaultMethodId);
+}
+
+bool SomeipMessageParser::IsOperatorClearFaultRequest(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsOperatorServiceMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::operator_service::kRequestClearFaultMethodId);
+}
+
+bool SomeipMessageParser::IsOperatorGetFaultStatusRequest(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsOperatorServiceMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::operator_service::kRequestGetFaultStatusMethodId);
+}
+
 }  // namespace body_control::lighting::transport

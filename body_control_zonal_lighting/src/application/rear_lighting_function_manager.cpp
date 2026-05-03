@@ -38,6 +38,21 @@ bool RearLightingFunctionManager::ApplyCommand(
         return false;
     }
 
+    // Fault guard: a faulted lamp refuses activation.  Deactivate commands still
+    // go through so a lamp already on when fault is injected gets forced off.
+    if (fault_manager_.IsFaulted(lamp_command.function))
+    {
+        if (lamp_command.action == domain::LampCommandAction::kActivate)
+        {
+            return false;
+        }
+        if (lamp_command.action == domain::LampCommandAction::kToggle &&
+            lamp_statuses_[index].output_state == domain::LampOutputState::kOff)
+        {
+            return false;
+        }
+    }
+
     lamp_statuses_[index].function             = lamp_command.function;
     lamp_statuses_[index].command_applied      = true;
     lamp_statuses_[index].last_sequence_counter = lamp_command.sequence_counter;
@@ -81,6 +96,53 @@ bool RearLightingFunctionManager::GetLampStatus(
 
     lamp_status = lamp_statuses_[index];
     return true;
+}
+
+bool RearLightingFunctionManager::HandleFaultInjection(
+    const domain::LampFunction function) noexcept
+{
+    const std::size_t index = LampFunctionToIndex(function);
+
+    if (index >= lamp_statuses_.size())
+    {
+        return false;
+    }
+
+    // Record the fault — IsFaulted will now return true for this function.
+    static_cast<void>(fault_manager_.InjectFault(function));
+
+    // Immediately de-energise the lamp output if it is currently on.
+    if (lamp_statuses_[index].output_state == domain::LampOutputState::kOn)
+    {
+        lamp_statuses_[index].output_state = domain::LampOutputState::kOff;
+        lamp_statuses_[index].command_applied = true;
+    }
+
+    return true;
+}
+
+bool RearLightingFunctionManager::HandleFaultClear(
+    const domain::LampFunction function) noexcept
+{
+    const std::size_t index = LampFunctionToIndex(function);
+
+    if (index >= lamp_statuses_.size())
+    {
+        return false;
+    }
+
+    static_cast<void>(fault_manager_.ClearFault(function));
+    return true;
+}
+
+void RearLightingFunctionManager::HandleClearAllFaults() noexcept
+{
+    fault_manager_.ClearAllFaults();
+}
+
+domain::LampFaultStatus RearLightingFunctionManager::GetFaultStatus() const noexcept
+{
+    return fault_manager_.GetFaultStatus();
 }
 
 std::size_t RearLightingFunctionManager::LampFunctionToIndex(

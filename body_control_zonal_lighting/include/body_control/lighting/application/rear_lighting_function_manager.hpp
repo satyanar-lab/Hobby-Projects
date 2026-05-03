@@ -4,6 +4,8 @@
 #include <array>
 #include <cstddef>
 
+#include "body_control/lighting/application/fault_manager.hpp"
+#include "body_control/lighting/domain/fault_types.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
 
@@ -57,6 +59,32 @@ public:
         domain::LampFunction lamp_function,
         domain::LampStatus& lamp_status) const noexcept;
 
+    /**
+     * Injects a simulated driver fault for the named lamp function.
+     *
+     * Records the fault in the internal FaultManager and immediately
+     * de-energises the lamp output.  Subsequent ApplyCommand(kActivate) calls
+     * for this function will be silently blocked until ClearFault() is called.
+     *
+     * @return false if function is kUnknown.
+     */
+    bool HandleFaultInjection(domain::LampFunction function) noexcept;
+
+    /**
+     * Clears the simulated driver fault for the named lamp function.
+     *
+     * Re-enables future ApplyCommand calls for this function.
+     *
+     * @return false if function is kUnknown.
+     */
+    bool HandleFaultClear(domain::LampFunction function) noexcept;
+
+    /** Clears all active faults simultaneously. */
+    void HandleClearAllFaults() noexcept;
+
+    /** Returns the current LampFaultStatus snapshot from the internal FaultManager. */
+    [[nodiscard]] domain::LampFaultStatus GetFaultStatus() const noexcept;
+
 private:
     /** Maps a LampFunction enum value to a zero-based array index (0–4). */
     static std::size_t LampFunctionToIndex(
@@ -64,6 +92,9 @@ private:
 
     /// One entry per lamp function; indexed by LampFunctionToIndex().
     std::array<domain::LampStatus, 5U> lamp_statuses_;
+
+    /// Owns the active fault table for this node.
+    FaultManager fault_manager_;
 };
 
 }  // namespace application

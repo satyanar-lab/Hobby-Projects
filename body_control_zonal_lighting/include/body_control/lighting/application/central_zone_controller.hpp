@@ -119,6 +119,33 @@ public:
     ControllerStatus RequestNodeHealth();
 
     /**
+     * Forwards a fault-injection command to the rear node via the rear
+     * lighting service consumer.
+     *
+     * @param lamp_function  Which lamp function to fault; kUnknown → kInvalidArgument.
+     * @return kSuccess, kNotAvailable, kInvalidArgument, or kServiceError.
+     */
+    ControllerStatus SendInjectFault(domain::LampFunction lamp_function);
+
+    /**
+     * Forwards a fault-clear command to the rear node via the rear lighting
+     * service consumer.
+     *
+     * @param lamp_function  Which lamp function's fault to clear.
+     * @return kSuccess, kNotAvailable, kInvalidArgument, or kServiceError.
+     */
+    ControllerStatus SendClearFault(domain::LampFunction lamp_function);
+
+    /**
+     * Forwards a GetFaultStatus request to the rear node.
+     *
+     * The rear node responds by publishing a FaultStatus event.
+     *
+     * @return kSuccess or kServiceError.
+     */
+    ControllerStatus SendGetFaultStatus();
+
+    /**
      * Reads the last-known LampStatus for the given function from the cache.
      *
      * Non-blocking; never queries the network.  Returns false if no status

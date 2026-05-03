@@ -96,6 +96,32 @@ OperatorServiceStatus OperatorServiceConsumer::RequestNodeHealth()
     return SendRequest(msg);
 }
 
+OperatorServiceStatus OperatorServiceConsumer::RequestInjectFault(
+    const domain::LampFunction lamp_function)
+{
+    const transport::TransportMessage msg =
+        transport::SomeipMessageBuilder::BuildOperatorInjectFaultRequest(
+            lamp_function, client_id_, next_session_id_++);
+    return SendRequest(msg);
+}
+
+OperatorServiceStatus OperatorServiceConsumer::RequestClearFault(
+    const domain::LampFunction lamp_function)
+{
+    const transport::TransportMessage msg =
+        transport::SomeipMessageBuilder::BuildOperatorClearFaultRequest(
+            lamp_function, client_id_, next_session_id_++);
+    return SendRequest(msg);
+}
+
+OperatorServiceStatus OperatorServiceConsumer::RequestGetFaultStatus()
+{
+    const transport::TransportMessage msg =
+        transport::SomeipMessageBuilder::BuildOperatorGetFaultStatusRequest(
+            client_id_, next_session_id_++);
+    return SendRequest(msg);
+}
+
 bool OperatorServiceConsumer::GetLampStatus(
     const domain::LampFunction lamp_function,
     domain::LampStatus& lamp_status) const noexcept

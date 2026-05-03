@@ -34,6 +34,8 @@ class QmlHmiBridge final
     Q_PROPERTY(bool ethUp            READ ethUp            NOTIFY ethUpChanged)
     Q_PROPERTY(bool svcUp            READ svcUp            NOTIFY svcUpChanged)
     Q_PROPERTY(bool controllerOnline READ controllerOnline NOTIFY controllerOnlineChanged)
+    Q_PROPERTY(bool faultPresent     READ faultPresent     NOTIFY faultStatusChanged)
+    Q_PROPERTY(int  activeFaultCount READ activeFaultCount NOTIFY faultStatusChanged)
 
 public:
     explicit QmlHmiBridge(
@@ -63,6 +65,8 @@ public:
     bool ethUp()            const noexcept { return eth_up_; }
     bool svcUp()            const noexcept { return svc_up_; }
     bool controllerOnline() const noexcept { return controller_online_; }
+    bool faultPresent()     const noexcept { return fault_present_; }
+    int  activeFaultCount() const noexcept { return static_cast<int>(active_fault_count_); }
 
 signals:
     void leftOnChanged();
@@ -74,6 +78,7 @@ signals:
     void ethUpChanged();
     void svcUpChanged();
     void controllerOnlineChanged();
+    void faultStatusChanged();
 
 private slots:
     void pollAndUpdate();
@@ -92,7 +97,9 @@ private:
         std::optional<bool> head_on;
         std::optional<bool> eth_up;
         std::optional<bool> svc_up;
-        std::optional<bool> controller_online;
+        std::optional<bool>          controller_online;
+        std::optional<bool>          fault_present;
+        std::optional<std::uint16_t> active_fault_count;
         // Latest full status for MainWindow terminal forwarding
         std::optional<body_control::lighting::domain::LampStatus> lamp_left;
         std::optional<body_control::lighting::domain::LampStatus> lamp_right;
@@ -113,7 +120,9 @@ private:
     bool hazard_on_        {false};
     bool park_on_          {false};
     bool head_on_          {false};
-    bool eth_up_           {false};
-    bool svc_up_           {false};
-    bool controller_online_{false};
+    bool          eth_up_            {false};
+    bool          svc_up_            {false};
+    bool          controller_online_ {false};
+    bool          fault_present_     {false};
+    std::uint16_t active_fault_count_{0U};
 };

@@ -62,9 +62,11 @@ void QmlHmiBridge::OnNodeHealthUpdated(const NodeHealthStatus& node_health_statu
 {
     const NodeHealthStatus snapshot = node_health_status;
     QMutexLocker lock(&pending_mtx_);
-    pending_.eth_up      = snapshot.ethernet_link_available;
-    pending_.svc_up      = snapshot.service_available;
-    pending_.node_health = snapshot;
+    pending_.eth_up             = snapshot.ethernet_link_available;
+    pending_.svc_up             = snapshot.service_available;
+    pending_.fault_present      = snapshot.lamp_driver_fault_present;
+    pending_.active_fault_count = snapshot.active_fault_count;
+    pending_.node_health        = snapshot;
 }
 
 // vsomeip thread — write pending_ under mutex and return. No Qt calls.
@@ -135,6 +137,16 @@ void QmlHmiBridge::pollAndUpdate()
         controller_online_ = *snap.controller_online;
         emit controllerOnlineChanged();
     }
+    bool fault_changed = false;
+    if (snap.fault_present.has_value() && fault_present_ != *snap.fault_present) {
+        fault_present_ = *snap.fault_present;
+        fault_changed  = true;
+    }
+    if (snap.active_fault_count.has_value() && active_fault_count_ != *snap.active_fault_count) {
+        active_fault_count_ = *snap.active_fault_count;
+        fault_changed       = true;
+    }
+    if (fault_changed) { emit faultStatusChanged(); }
 }
 
 // Q_INVOKABLE methods — ProcessAction is a non-blocking UDP send (microseconds),

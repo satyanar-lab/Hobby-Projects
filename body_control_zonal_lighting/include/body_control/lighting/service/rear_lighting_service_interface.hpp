@@ -1,6 +1,7 @@
 #ifndef BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_INTERFACE_HPP
 #define BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_INTERFACE_HPP
 
+#include "body_control/lighting/domain/fault_types.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
 
@@ -107,6 +108,36 @@ public:
      * The response arrives asynchronously via OnNodeHealthStatusReceived().
      */
     virtual ServiceStatus RequestNodeHealth() = 0;
+
+    /**
+     * Sends an InjectFault command to the rear node for the given function.
+     *
+     * The rear node immediately de-energises the lamp and publishes an updated
+     * NodeHealthStatus event with fault_present=true.
+     *
+     * @param lamp_function  Which lamp to fault; kUnknown returns kInvalidArgument.
+     */
+    virtual ServiceStatus SendInjectFault(
+        domain::LampFunction lamp_function) = 0;
+
+    /**
+     * Sends a ClearFault command to the rear node for the given function.
+     *
+     * The rear node removes the fault from its DTC table and publishes an updated
+     * NodeHealthStatus event.
+     *
+     * @param lamp_function  Which lamp fault to clear; kUnknown returns kInvalidArgument.
+     */
+    virtual ServiceStatus SendClearFault(
+        domain::LampFunction lamp_function) = 0;
+
+    /**
+     * Sends a GetFaultStatus request to the rear node.
+     *
+     * The rear node responds by publishing a FaultStatus event carrying the
+     * full LampFaultStatus (fault_present, count, and DTC array).
+     */
+    virtual ServiceStatus SendGetFaultStatus() = 0;
 
     /**
      * Registers the callback object that receives event notifications.

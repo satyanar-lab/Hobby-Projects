@@ -100,6 +100,21 @@ void OperatorServiceProvider::OnTransportMessageReceived(
     {
         HandleNodeHealthRequest();
     }
+    else if (transport::SomeipMessageParser::IsOperatorInjectFaultRequest(
+                 transport_message))
+    {
+        HandleInjectFaultRequest(transport_message);
+    }
+    else if (transport::SomeipMessageParser::IsOperatorClearFaultRequest(
+                 transport_message))
+    {
+        HandleClearFaultRequest(transport_message);
+    }
+    else if (transport::SomeipMessageParser::IsOperatorGetFaultStatusRequest(
+                 transport_message))
+    {
+        HandleGetFaultStatusRequest();
+    }
     else
     {
         /* Intentionally ignored: unsupported operator service payload. */
@@ -156,6 +171,27 @@ void OperatorServiceProvider::HandleNodeHealthRequest()
 {
     // No payload to decode; the request carries only a method ID.
     static_cast<void>(controller_.RequestNodeHealth());
+}
+
+void OperatorServiceProvider::HandleInjectFaultRequest(
+    const transport::TransportMessage& transport_message)
+{
+    const domain::LampFunction func =
+        transport::SomeipMessageParser::ParseLampFunction(transport_message);
+    static_cast<void>(controller_.SendInjectFault(func));
+}
+
+void OperatorServiceProvider::HandleClearFaultRequest(
+    const transport::TransportMessage& transport_message)
+{
+    const domain::LampFunction func =
+        transport::SomeipMessageParser::ParseLampFunction(transport_message);
+    static_cast<void>(controller_.SendClearFault(func));
+}
+
+void OperatorServiceProvider::HandleGetFaultStatusRequest()
+{
+    static_cast<void>(controller_.SendGetFaultStatus());
 }
 
 void OperatorServiceProvider::PublishLampStatusEvent(

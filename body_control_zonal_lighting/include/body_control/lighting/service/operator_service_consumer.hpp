@@ -65,6 +65,17 @@ public:
     /** Sends a RequestNodeHealth datagram to the controller. */
     [[nodiscard]] OperatorServiceStatus RequestNodeHealth() override;
 
+    /** Sends a RequestInjectFault datagram to the controller. */
+    [[nodiscard]] OperatorServiceStatus RequestInjectFault(
+        domain::LampFunction lamp_function) override;
+
+    /** Sends a RequestClearFault datagram to the controller. */
+    [[nodiscard]] OperatorServiceStatus RequestClearFault(
+        domain::LampFunction lamp_function) override;
+
+    /** Sends a RequestGetFaultStatus datagram to the controller. */
+    [[nodiscard]] OperatorServiceStatus RequestGetFaultStatus() override;
+
     /** Reads the cached LampStatus for the given function. */
     [[nodiscard]] bool GetLampStatus(
         domain::LampFunction lamp_function,

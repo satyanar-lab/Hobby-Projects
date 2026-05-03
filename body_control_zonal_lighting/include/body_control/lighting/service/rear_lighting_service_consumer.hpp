@@ -55,6 +55,17 @@ public:
     /** Sends a GetNodeHealth request. */
     ServiceStatus RequestNodeHealth() override;
 
+    /** Sends an InjectFault method call to the rear node for the given function. */
+    ServiceStatus SendInjectFault(
+        domain::LampFunction lamp_function) override;
+
+    /** Sends a ClearFault method call to the rear node for the given function. */
+    ServiceStatus SendClearFault(
+        domain::LampFunction lamp_function) override;
+
+    /** Sends a GetFaultStatus request to the rear node. */
+    ServiceStatus SendGetFaultStatus() override;
+
     /** Registers the listener that receives decoded event callbacks. */
     void SetEventListener(
         RearLightingServiceEventListenerInterface* event_listener) noexcept override;

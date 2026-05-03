@@ -1,4 +1,5 @@
 body_control_lighting_add_test(test_command_arbitrator.cpp)
+body_control_lighting_add_test(test_fault_manager.cpp)
 body_control_lighting_add_test(test_lamp_state_manager.cpp)
 body_control_lighting_add_test(test_lighting_payload_codec.cpp)
 body_control_lighting_add_test(test_rear_lighting_function_manager.cpp)

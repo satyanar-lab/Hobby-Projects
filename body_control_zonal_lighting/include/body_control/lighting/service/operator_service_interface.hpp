@@ -122,6 +122,32 @@ public:
     [[nodiscard]] virtual OperatorServiceStatus RequestNodeHealth() = 0;
 
     /**
+     * Requests the controller to inject a simulated driver fault on the named
+     * lamp function at the rear node.
+     *
+     * @param lamp_function  Target lamp; kUnknown returns kInvalidArgument.
+     */
+    [[nodiscard]] virtual OperatorServiceStatus RequestInjectFault(
+        domain::LampFunction lamp_function) = 0;
+
+    /**
+     * Requests the controller to clear the simulated driver fault on the
+     * named lamp function at the rear node.
+     *
+     * @param lamp_function  Target lamp; kUnknown returns kInvalidArgument.
+     */
+    [[nodiscard]] virtual OperatorServiceStatus RequestClearFault(
+        domain::LampFunction lamp_function) = 0;
+
+    /**
+     * Requests a full LampFaultStatus snapshot from the controller.
+     *
+     * The rear node publishes an updated NodeHealth event in response, which
+     * propagates back to the operator client via OnNodeHealthUpdated().
+     */
+    [[nodiscard]] virtual OperatorServiceStatus RequestGetFaultStatus() = 0;
+
+    /**
      * Reads the most recent cached LampStatus for the given function.
      *
      * Non-blocking; never queries the controller.

@@ -162,6 +162,47 @@ ControllerStatus CentralZoneController::RequestNodeHealth()
     return ConvertServiceStatus(service_status);
 }
 
+ControllerStatus CentralZoneController::SendInjectFault(
+    const domain::LampFunction lamp_function)
+{
+    if (!is_initialized_)
+    {
+        return ControllerStatus::kNotInitialized;
+    }
+
+    const service::ServiceStatus service_status =
+        rear_lighting_service_consumer_.SendInjectFault(lamp_function);
+
+    return ConvertServiceStatus(service_status);
+}
+
+ControllerStatus CentralZoneController::SendClearFault(
+    const domain::LampFunction lamp_function)
+{
+    if (!is_initialized_)
+    {
+        return ControllerStatus::kNotInitialized;
+    }
+
+    const service::ServiceStatus service_status =
+        rear_lighting_service_consumer_.SendClearFault(lamp_function);
+
+    return ConvertServiceStatus(service_status);
+}
+
+ControllerStatus CentralZoneController::SendGetFaultStatus()
+{
+    if (!is_initialized_)
+    {
+        return ControllerStatus::kNotInitialized;
+    }
+
+    const service::ServiceStatus service_status =
+        rear_lighting_service_consumer_.SendGetFaultStatus();
+
+    return ConvertServiceStatus(service_status);
+}
+
 bool CentralZoneController::GetCachedLampStatus(
     const domain::LampFunction lamp_function,
     domain::LampStatus& lamp_status) const noexcept

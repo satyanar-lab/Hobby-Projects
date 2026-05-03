@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "body_control/lighting/domain/fault_types.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
 
@@ -35,11 +36,19 @@ constexpr std::size_t kLampCommandPayloadLength {8U};
 constexpr std::size_t kLampStatusPayloadLength {8U};
 constexpr std::size_t kNodeHealthStatusPayloadLength {8U};
 
+/// Fault command (inject/clear) uses the same 8-byte layout rule.
+constexpr std::size_t kFaultCommandPayloadLength {8U};
+
+/// LampFaultStatus carries 5 × uint16 fault codes; 16 bytes total (12 used + 4 reserved).
+constexpr std::size_t kLampFaultStatusPayloadLength {16U};
+
 /// Stack-allocated buffer types — no heap allocation needed for any codec operation.
 using LampCommandPayloadBuffer    = std::array<std::uint8_t, kLampCommandPayloadLength>;
 using LampStatusPayloadBuffer     = std::array<std::uint8_t, kLampStatusPayloadLength>;
 using NodeHealthStatusPayloadBuffer =
     std::array<std::uint8_t, kNodeHealthStatusPayloadLength>;
+using FaultCommandPayloadBuffer    = std::array<std::uint8_t, kFaultCommandPayloadLength>;
+using LampFaultStatusPayloadBuffer = std::array<std::uint8_t, kLampFaultStatusPayloadLength>;
 
 /**
  * Serialise a LampCommand into a fixed 8-byte network payload (big-endian).
@@ -143,6 +152,64 @@ using NodeHealthStatusPayloadBuffer =
     const std::uint8_t* payload_data,
     std::size_t payload_length,
     NodeHealthStatus& status) noexcept;
+
+/**
+ * Serialise a FaultCommand into a fixed 8-byte network payload (big-endian).
+ *
+ * Payload layout:
+ *   Byte 0 : LampFunction  (uint8)
+ *   Byte 1 : FaultAction   (uint8)
+ *   Byte 2 : CommandSource (uint8)
+ *   Byte 3 : Reserved
+ *   Byte 4 : sequence_counter MSB
+ *   Byte 5 : sequence_counter LSB
+ *   Byte 6 : Reserved
+ *   Byte 7 : Reserved
+ *
+ * @return kSuccess, or kInvalidArgument if any field is out of range.
+ */
+[[nodiscard]] PayloadCodecStatus EncodeFaultCommand(
+    const FaultCommand& command,
+    FaultCommandPayloadBuffer& payload_buffer) noexcept;
+
+/**
+ * Deserialise a FaultCommand from a raw byte buffer.
+ *
+ * @return kSuccess, kInvalidPayloadLength, or kInvalidPayloadValue.
+ */
+[[nodiscard]] PayloadCodecStatus DecodeFaultCommand(
+    const std::uint8_t* payload_data,
+    std::size_t payload_length,
+    FaultCommand& command) noexcept;
+
+/**
+ * Serialise a LampFaultStatus into a fixed 16-byte network payload (big-endian).
+ *
+ * Payload layout:
+ *   Byte  0 : fault_present       (0x00 or 0x01)
+ *   Byte  1 : active_fault_count  (uint8)
+ *   Byte  2-3  : active_faults[0] (uint16, FaultCode)
+ *   Byte  4-5  : active_faults[1]
+ *   Byte  6-7  : active_faults[2]
+ *   Byte  8-9  : active_faults[3]
+ *   Byte 10-11 : active_faults[4]
+ *   Bytes 12-15: Reserved
+ *
+ * @return kSuccess or kInvalidArgument.
+ */
+[[nodiscard]] PayloadCodecStatus EncodeLampFaultStatus(
+    const LampFaultStatus& fault_status,
+    LampFaultStatusPayloadBuffer& payload_buffer) noexcept;
+
+/**
+ * Deserialise a LampFaultStatus from a raw byte buffer.
+ *
+ * @return kSuccess, kInvalidPayloadLength, or kInvalidPayloadValue.
+ */
+[[nodiscard]] PayloadCodecStatus DecodeLampFaultStatus(
+    const std::uint8_t* payload_data,
+    std::size_t payload_length,
+    LampFaultStatus& fault_status) noexcept;
 
 }  // namespace body_control::lighting::domain
 

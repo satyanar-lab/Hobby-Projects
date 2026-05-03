@@ -295,4 +295,105 @@ TransportMessage SomeipMessageBuilder::BuildOperatorNodeHealthEvent(
     return msg;
 }
 
+TransportMessage SomeipMessageBuilder::BuildInjectFaultRequest(
+    const domain::FaultCommand& fault_command,
+    const std::uint16_t client_id,
+    const std::uint16_t session_id)
+{
+    TransportMessage msg {BuildBaseMessage(
+        domain::rear_lighting_service::kInjectLampFaultMethodId,
+        client_id,
+        session_id,
+        false)};
+    AppendUint8(msg.payload, static_cast<std::uint8_t>(fault_command.function));
+    AppendUint8(msg.payload, static_cast<std::uint8_t>(fault_command.action));
+    AppendUint8(msg.payload, static_cast<std::uint8_t>(fault_command.source));
+    AppendUint16(msg.payload, fault_command.sequence_counter);
+    return msg;
+}
+
+TransportMessage SomeipMessageBuilder::BuildClearFaultRequest(
+    const domain::FaultCommand& fault_command,
+    const std::uint16_t client_id,
+    const std::uint16_t session_id)
+{
+    TransportMessage msg {BuildBaseMessage(
+        domain::rear_lighting_service::kClearLampFaultMethodId,
+        client_id,
+        session_id,
+        false)};
+    AppendUint8(msg.payload, static_cast<std::uint8_t>(fault_command.function));
+    AppendUint8(msg.payload, static_cast<std::uint8_t>(fault_command.action));
+    AppendUint8(msg.payload, static_cast<std::uint8_t>(fault_command.source));
+    AppendUint16(msg.payload, fault_command.sequence_counter);
+    return msg;
+}
+
+TransportMessage SomeipMessageBuilder::BuildGetFaultStatusRequest(
+    const std::uint16_t client_id,
+    const std::uint16_t session_id)
+{
+    return BuildBaseMessage(
+        domain::rear_lighting_service::kGetFaultStatusMethodId,
+        client_id,
+        session_id,
+        false);
+}
+
+TransportMessage SomeipMessageBuilder::BuildFaultStatusEvent(
+    const domain::LampFaultStatus& fault_status)
+{
+    TransportMessage msg {BuildBaseMessage(
+        domain::rear_lighting_service::kFaultStatusEventId,
+        0U,
+        0U,
+        true)};
+    AppendUint8(msg.payload, static_cast<std::uint8_t>(fault_status.fault_present ? 1U : 0U));
+    AppendUint8(msg.payload, fault_status.active_fault_count);
+    for (const auto& code : fault_status.active_faults)
+    {
+        AppendUint16(msg.payload, static_cast<std::uint16_t>(code));
+    }
+    return msg;
+}
+
+TransportMessage SomeipMessageBuilder::BuildOperatorInjectFaultRequest(
+    const domain::LampFunction lamp_function,
+    const std::uint16_t client_id,
+    const std::uint16_t session_id)
+{
+    TransportMessage msg {BuildOperatorBaseMessage(
+        domain::operator_service::kRequestInjectFaultMethodId,
+        client_id,
+        session_id,
+        false)};
+    AppendUint8(msg.payload, static_cast<std::uint8_t>(lamp_function));
+    return msg;
+}
+
+TransportMessage SomeipMessageBuilder::BuildOperatorClearFaultRequest(
+    const domain::LampFunction lamp_function,
+    const std::uint16_t client_id,
+    const std::uint16_t session_id)
+{
+    TransportMessage msg {BuildOperatorBaseMessage(
+        domain::operator_service::kRequestClearFaultMethodId,
+        client_id,
+        session_id,
+        false)};
+    AppendUint8(msg.payload, static_cast<std::uint8_t>(lamp_function));
+    return msg;
+}
+
+TransportMessage SomeipMessageBuilder::BuildOperatorGetFaultStatusRequest(
+    const std::uint16_t client_id,
+    const std::uint16_t session_id)
+{
+    return BuildOperatorBaseMessage(
+        domain::operator_service::kRequestGetFaultStatusMethodId,
+        client_id,
+        session_id,
+        false);
+}
+
 }  // namespace body_control::lighting::transport

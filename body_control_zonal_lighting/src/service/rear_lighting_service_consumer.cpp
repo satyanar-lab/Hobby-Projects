@@ -133,6 +133,64 @@ ServiceStatus RearLightingServiceConsumer::RequestNodeHealth()
     return ConvertTransportStatus(transport_status);
 }
 
+ServiceStatus RearLightingServiceConsumer::SendInjectFault(
+    const domain::LampFunction lamp_function)
+{
+    if (!is_initialized_) { return ServiceStatus::kNotInitialized; }
+    if (!is_service_available_) { return ServiceStatus::kNotAvailable; }
+    if (lamp_function == domain::LampFunction::kUnknown)
+    {
+        return ServiceStatus::kInvalidArgument;
+    }
+
+    const domain::FaultCommand cmd {
+        lamp_function,
+        domain::FaultAction::kInject,
+        domain::CommandSource::kCentralZoneController,
+        next_session_id_};
+
+    const transport::TransportMessage transport_message =
+        transport::SomeipMessageBuilder::BuildInjectFaultRequest(
+            cmd, client_id_, next_session_id_++);
+
+    return ConvertTransportStatus(transport_adapter_.SendRequest(transport_message));
+}
+
+ServiceStatus RearLightingServiceConsumer::SendClearFault(
+    const domain::LampFunction lamp_function)
+{
+    if (!is_initialized_) { return ServiceStatus::kNotInitialized; }
+    if (!is_service_available_) { return ServiceStatus::kNotAvailable; }
+    if (lamp_function == domain::LampFunction::kUnknown)
+    {
+        return ServiceStatus::kInvalidArgument;
+    }
+
+    const domain::FaultCommand cmd {
+        lamp_function,
+        domain::FaultAction::kClear,
+        domain::CommandSource::kCentralZoneController,
+        next_session_id_};
+
+    const transport::TransportMessage transport_message =
+        transport::SomeipMessageBuilder::BuildClearFaultRequest(
+            cmd, client_id_, next_session_id_++);
+
+    return ConvertTransportStatus(transport_adapter_.SendRequest(transport_message));
+}
+
+ServiceStatus RearLightingServiceConsumer::SendGetFaultStatus()
+{
+    if (!is_initialized_) { return ServiceStatus::kNotInitialized; }
+    if (!is_service_available_) { return ServiceStatus::kNotAvailable; }
+
+    const transport::TransportMessage transport_message =
+        transport::SomeipMessageBuilder::BuildGetFaultStatusRequest(
+            client_id_, next_session_id_++);
+
+    return ConvertTransportStatus(transport_adapter_.SendRequest(transport_message));
+}
+
 void RearLightingServiceConsumer::SetEventListener(
     RearLightingServiceEventListenerInterface* const event_listener) noexcept
 {

@@ -3,6 +3,7 @@
 
 #include "body_control/lighting/application/node_health_source_interface.hpp"
 #include "body_control/lighting/application/rear_lighting_function_manager.hpp"
+#include "body_control/lighting/domain/fault_types.hpp"
 #include "body_control/lighting/service/rear_lighting_service_interface.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
@@ -116,6 +117,18 @@ private:
     void HandleGetNodeHealth(
         const transport::TransportMessage& transport_message);
 
+    /** Decodes a FaultCommand and injects the fault via the function manager. */
+    void HandleInjectFault(
+        const transport::TransportMessage& transport_message);
+
+    /** Decodes a FaultCommand and clears the fault via the function manager. */
+    void HandleClearFault(
+        const transport::TransportMessage& transport_message);
+
+    /** Returns the current LampFaultStatus snapshot to the requester. */
+    void HandleGetFaultStatus(
+        const transport::TransportMessage& transport_message);
+
     /** Encodes a LampStatus and fires it as a SOME/IP event on the transport. */
     void PublishLampStatusEvent(
         const domain::LampStatus& lamp_status);
@@ -123,6 +136,10 @@ private:
     /** Encodes a NodeHealthStatus and fires it as a SOME/IP event on the transport. */
     void PublishNodeHealthEvent(
         const domain::NodeHealthStatus& node_health_status);
+
+    /** Encodes a LampFaultStatus and fires it as a SOME/IP event on the transport. */
+    void PublishFaultStatusEvent(
+        const domain::LampFaultStatus& fault_status);
 
     /**
      * Assembles the current NodeHealthStatus from either the external source

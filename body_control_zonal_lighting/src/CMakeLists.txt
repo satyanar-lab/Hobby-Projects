@@ -9,6 +9,7 @@
 
 set(BODY_CONTROL_LIGHTING_CORE_SOURCES_COMMON
     application/command_arbitrator.cpp
+    application/fault_manager.cpp
     application/lamp_state_manager.cpp
     application/node_health_monitor.cpp
     application/central_zone_controller.cpp
@@ -61,6 +62,7 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_LINUX
 # the platform/transport drivers.
 set(BODY_CONTROL_LIGHTING_CORE_SOURCES_STM32
     application/command_arbitrator.cpp
+    application/fault_manager.cpp
     application/lamp_state_manager.cpp
     application/rear_lighting_function_manager.cpp
 
