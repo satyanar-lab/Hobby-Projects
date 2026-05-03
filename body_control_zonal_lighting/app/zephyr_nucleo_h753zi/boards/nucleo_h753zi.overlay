@@ -1,19 +1,20 @@
 /*
  * GPIO devicetree overlay for the body-control zonal lighting demo.
  *
- * Maps the five lamp output functions to GPIOB pins, matching the wiring
- * documented in nucleo_h753zi_pin_map.hpp and demo_walkthrough_hardware.md.
+ * Maps the five lamp output functions to GPIO pins for the Zephyr build.
+ * PB0 is reserved by the board DTS as green_led (User LD1) and must not be
+ * claimed here.  Left Indicator is routed to PB5 which is uncontested.
  *
  * Each node label is resolved at compile time by ZephyrGpioDriver via
  * GPIO_DT_SPEC_GET(DT_NODELABEL(<label>), gpios).
  *
  * Wiring: connect LED anode to the listed NUCLEO Morpho pin, cathode to
  * any GND pin, with a 330 Ω resistor in series.
- *   PB5 → Left Indicator
- *   PB1 → Right Indicator
- *   PB2 → Hazard Lamp
- *   PB3 → Park Lamp
- *   PB4 → Head Lamp
+ *   PB5 → Left Indicator  (CN10 pin 29)
+ *   PB1 → Right Indicator (CN10 pin 24)
+ *   PB2 → Hazard Lamp     (CN10 pin 22)
+ *   PB3 → Park Lamp       (CN10 pin 26)
+ *   PB4 → Head Lamp       (CN10 pin 27)
  */
 
 / {
