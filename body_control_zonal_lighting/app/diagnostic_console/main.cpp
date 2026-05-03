@@ -1,6 +1,12 @@
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
 #include <iostream>
+#include <limits>
 #include <memory>
+#include <mutex>
 
+#include "body_control/lighting/domain/fault_types.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
 #include "body_control/lighting/domain/lighting_service_ids.hpp"
@@ -43,6 +49,10 @@ void PrintMenu()
     std::cout << "9  -> Activate head lamp\n";
     std::cout << "10 -> Deactivate head lamp\n";
     std::cout << "11 -> Request node health\n";
+    std::cout << "12 -> Inject fault (select lamp)\n";
+    std::cout << "13 -> Clear fault (select lamp)\n";
+    std::cout << "14 -> Clear all faults\n";
+    std::cout << "15 -> Get fault status\n";
     std::cout << "0  -> Exit\n";
     std::cout << "Selection: ";
 }
@@ -71,12 +81,53 @@ void PrintCachedLampStatus(
     }
 }
 
+// Prompts the user to select a LampFunction for fault inject/clear operations.
+body_control::lighting::domain::LampFunction SelectLampFunction()
+{
+    using body_control::lighting::domain::LampFunction;
+
+    std::cout << "  1 -> Left indicator\n";
+    std::cout << "  2 -> Right indicator\n";
+    std::cout << "  3 -> Hazard lamp\n";
+    std::cout << "  4 -> Park lamp\n";
+    std::cout << "  5 -> Head lamp\n";
+    std::cout << "  Selection: ";
+
+    int sel {0};
+    if (!(std::cin >> sel) && !std::cin.eof())
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+
+    switch (sel)
+    {
+    case 1: return LampFunction::kLeftIndicator;
+    case 2: return LampFunction::kRightIndicator;
+    case 3: return LampFunction::kHazardLamp;
+    case 4: return LampFunction::kParkLamp;
+    case 5: return LampFunction::kHeadLamp;
+    default: return LampFunction::kUnknown;
+    }
+}
+
 // Prints events as they arrive from the operator service on the vsomeip
 // dispatch thread, concurrent with the main input loop.
+// Also provides a blocking WaitForController() used at startup so the menu
+// is not shown until the controller is reachable.
 class DiagnosticEventListener final
     : public body_control::lighting::service::OperatorServiceEventListenerInterface
 {
 public:
+    // Blocks until OnControllerAvailabilityChanged(true) fires or timeout_s
+    // elapses.  Returns true if the controller became available in time.
+    bool WaitForController(const std::chrono::seconds timeout_s)
+    {
+        std::unique_lock<std::mutex> lock {mutex_};
+        return cv_.wait_for(lock, timeout_s,
+                            [this]() { return controller_available_.load(); });
+    }
+
     void OnLampStatusUpdated(
         const body_control::lighting::domain::LampStatus& lamp_status) override
     {
@@ -106,7 +157,17 @@ public:
         std::cout << "[event] controller "
                   << (is_available ? "available" : "unavailable")
                   << '\n';
+        {
+            std::lock_guard<std::mutex> lock {mutex_};
+            controller_available_.store(is_available);
+        }
+        if (is_available) { cv_.notify_all(); }
     }
+
+private:
+    std::mutex              mutex_ {};
+    std::condition_variable cv_ {};
+    std::atomic<bool>       controller_available_ {false};
 };
 
 }  // namespace
@@ -146,6 +207,14 @@ int main()
         return 1;
     }
 
+    std::cout << "Waiting for controller (up to 10 s)...\n";
+    if (!event_listener.WaitForController(std::chrono::seconds{10}))
+    {
+        std::cerr << "Controller not found. Is it running?\n";
+        static_cast<void>(operator_service.Shutdown());
+        return 1;
+    }
+
     bool keep_running {true};
 
     while (keep_running)
@@ -153,7 +222,14 @@ int main()
         PrintMenu();
 
         int selection {0};
-        std::cin >> selection;
+        if (!(std::cin >> selection))
+        {
+            if (std::cin.eof()) { break; }
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            continue;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         OperatorServiceStatus operator_status {OperatorServiceStatus::kSuccess};
         LampFunction status_function_to_print {LampFunction::kUnknown};
@@ -252,6 +328,64 @@ int main()
                       << ", fault_count="
                       << node_health_status.active_fault_count
                       << '\n';
+            break;
+        }
+
+        case 12:
+        {
+            std::cout << "Select lamp to inject fault:\n";
+            const LampFunction fn = SelectLampFunction();
+            if (fn == LampFunction::kUnknown)
+            {
+                std::cout << "Invalid lamp.\n";
+                continue;
+            }
+            operator_status = operator_service.RequestInjectFault(fn);
+            break;
+        }
+
+        case 13:
+        {
+            std::cout << "Select lamp to clear fault:\n";
+            const LampFunction fn = SelectLampFunction();
+            if (fn == LampFunction::kUnknown)
+            {
+                std::cout << "Invalid lamp.\n";
+                continue;
+            }
+            operator_status = operator_service.RequestClearFault(fn);
+            break;
+        }
+
+        case 14:
+        {
+            // Clear all faults by sending clear for each function.
+            using body_control::lighting::domain::LampFunction;
+            const LampFunction kAllFunctions[] {
+                LampFunction::kLeftIndicator,
+                LampFunction::kRightIndicator,
+                LampFunction::kHazardLamp,
+                LampFunction::kParkLamp,
+                LampFunction::kHeadLamp};
+            for (const LampFunction f : kAllFunctions)
+            {
+                static_cast<void>(operator_service.RequestClearFault(f));
+            }
+            std::cout << "Clear-all-faults sent.\n";
+            continue;
+        }
+
+        case 15:
+        {
+            operator_status = operator_service.RequestGetFaultStatus();
+
+            // Print the fault summary from the locally cached NodeHealthStatus.
+            body_control::lighting::domain::NodeHealthStatus nh {};
+            operator_service.GetNodeHealthStatus(nh);
+
+            std::cout << "Fault status: "
+                      << (nh.lamp_driver_fault_present ? "FAULT PRESENT" : "no fault")
+                      << ", count=" << nh.active_fault_count << '\n';
             break;
         }
 
