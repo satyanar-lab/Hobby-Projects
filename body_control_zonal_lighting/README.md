@@ -1,5 +1,7 @@
 # Body Control Zonal Lighting
 
+[![Build](https://github.com/satyanar-lab/Hobby-Projects/actions/workflows/build.yml/badge.svg)](https://github.com/satyanar-lab/Hobby-Projects/actions/workflows/build.yml)
+
 An automotive-style software demonstration built around a familiar body-control
 problem — indicators, hazard, park lamps, headlamps — redesigned around the
 ideas the industry is actually moving toward: **zonal architecture**,
