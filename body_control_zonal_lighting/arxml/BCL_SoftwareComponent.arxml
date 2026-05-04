@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AUTOSAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://autosar.org/schema/r4.0"
+         xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_00050.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>body_control</SHORT-NAME>
+      <AR-PACKAGES>
+        <AR-PACKAGE>
+          <SHORT-NAME>lighting</SHORT-NAME>
+          <AR-PACKAGES>
+            <AR-PACKAGE>
+              <SHORT-NAME>swc</SHORT-NAME>
+              <CATEGORY>SW_COMPONENT</CATEGORY>
+              <ELEMENTS>
+
+                <!-- ============================================================ -->
+                <!-- CentralZoneController                                         -->
+                <!--   Provides : OperatorService  (PPort)                         -->
+                <!--   Requires: RearLightingService (RPort)                       -->
+                <!-- ============================================================ -->
+                <APPLICATION-SW-COMPONENT-TYPE>
+                  <SHORT-NAME>CentralZoneController</SHORT-NAME>
+                  <PORTS>
+
+                    <P-PORT-PROTOTYPE>
+                      <SHORT-NAME>OperatorServicePort</SHORT-NAME>
+                      <PROVIDED-INTERFACE-TREF DEST="SERVICE-INTERFACE">/body_control/lighting/si/OperatorService</PROVIDED-INTERFACE-TREF>
+                    </P-PORT-PROTOTYPE>
+
+                    <R-PORT-PROTOTYPE>
+                      <SHORT-NAME>RearLightingServicePort</SHORT-NAME>
+                      <REQUIRED-INTERFACE-TREF DEST="SERVICE-INTERFACE">/body_control/lighting/si/RearLightingService</REQUIRED-INTERFACE-TREF>
+                    </R-PORT-PROTOTYPE>
+
+                  </PORTS>
+                </APPLICATION-SW-COMPONENT-TYPE>
+
+                <!-- ============================================================ -->
+                <!-- RearLightingNode                                              -->
+                <!--   Provides : RearLightingService (PPort)                      -->
+                <!-- ============================================================ -->
+                <APPLICATION-SW-COMPONENT-TYPE>
+                  <SHORT-NAME>RearLightingNode</SHORT-NAME>
+                  <PORTS>
+
+                    <P-PORT-PROTOTYPE>
+                      <SHORT-NAME>RearLightingServicePort</SHORT-NAME>
+                      <PROVIDED-INTERFACE-TREF DEST="SERVICE-INTERFACE">/body_control/lighting/si/RearLightingService</PROVIDED-INTERFACE-TREF>
+                    </P-PORT-PROTOTYPE>
+
+                  </PORTS>
+                </APPLICATION-SW-COMPONENT-TYPE>
+
+                <!-- ============================================================ -->
+                <!-- HmiClient                                                     -->
+                <!--   Requires: OperatorService (RPort)                           -->
+                <!-- ============================================================ -->
+                <APPLICATION-SW-COMPONENT-TYPE>
+                  <SHORT-NAME>HmiClient</SHORT-NAME>
+                  <PORTS>
+
+                    <R-PORT-PROTOTYPE>
+                      <SHORT-NAME>OperatorServicePort</SHORT-NAME>
+                      <REQUIRED-INTERFACE-TREF DEST="SERVICE-INTERFACE">/body_control/lighting/si/OperatorService</REQUIRED-INTERFACE-TREF>
+                    </R-PORT-PROTOTYPE>
+
+                  </PORTS>
+                </APPLICATION-SW-COMPONENT-TYPE>
+
+                <!-- ============================================================ -->
+                <!-- BCL_Composition                                               -->
+                <!--   Container for all three application SWCs and the assembly  -->
+                <!--   connectors that wire their PPorts to RPorts.               -->
+                <!-- ============================================================ -->
+                <COMPOSITION-SW-COMPONENT-TYPE>
+                  <SHORT-NAME>BCL_Composition</SHORT-NAME>
+
+                  <COMPONENTS>
+                    <SW-COMPONENT-PROTOTYPE>
+                      <SHORT-NAME>CentralZoneController</SHORT-NAME>
+                      <TYPE-TREF DEST="APPLICATION-SW-COMPONENT-TYPE">/body_control/lighting/swc/CentralZoneController</TYPE-TREF>
+                    </SW-COMPONENT-PROTOTYPE>
+                    <SW-COMPONENT-PROTOTYPE>
+                      <SHORT-NAME>RearLightingNode</SHORT-NAME>
+                      <TYPE-TREF DEST="APPLICATION-SW-COMPONENT-TYPE">/body_control/lighting/swc/RearLightingNode</TYPE-TREF>
+                    </SW-COMPONENT-PROTOTYPE>
+                    <SW-COMPONENT-PROTOTYPE>
+                      <SHORT-NAME>HmiClient</SHORT-NAME>
+                      <TYPE-TREF DEST="APPLICATION-SW-COMPONENT-TYPE">/body_control/lighting/swc/HmiClient</TYPE-TREF>
+                    </SW-COMPONENT-PROTOTYPE>
+                  </COMPONENTS>
+
+                  <CONNECTORS>
+
+                    <!-- HmiClient.OperatorServicePort (R) -> CentralZoneController.OperatorServicePort (P) -->
+                    <ASSEMBLY-SW-CONNECTOR>
+                      <SHORT-NAME>AssemblyConnector_OperatorService</SHORT-NAME>
+                      <PROVIDER-IREF>
+                        <CONTEXT-COMPONENT-REF DEST="SW-COMPONENT-PROTOTYPE">/body_control/lighting/swc/BCL_Composition/CentralZoneController</CONTEXT-COMPONENT-REF>
+                        <TARGET-P-PORT-REF DEST="P-PORT-PROTOTYPE">/body_control/lighting/swc/CentralZoneController/OperatorServicePort</TARGET-P-PORT-REF>
+                      </PROVIDER-IREF>
+                      <REQUESTER-IREF>
+                        <CONTEXT-COMPONENT-REF DEST="SW-COMPONENT-PROTOTYPE">/body_control/lighting/swc/BCL_Composition/HmiClient</CONTEXT-COMPONENT-REF>
+                        <TARGET-R-PORT-REF DEST="R-PORT-PROTOTYPE">/body_control/lighting/swc/HmiClient/OperatorServicePort</TARGET-R-PORT-REF>
+                      </REQUESTER-IREF>
+                    </ASSEMBLY-SW-CONNECTOR>
+
+                    <!-- CentralZoneController.RearLightingServicePort (R) -> RearLightingNode.RearLightingServicePort (P) -->
+                    <ASSEMBLY-SW-CONNECTOR>
+                      <SHORT-NAME>AssemblyConnector_RearLighting</SHORT-NAME>
+                      <PROVIDER-IREF>
+                        <CONTEXT-COMPONENT-REF DEST="SW-COMPONENT-PROTOTYPE">/body_control/lighting/swc/BCL_Composition/RearLightingNode</CONTEXT-COMPONENT-REF>
+                        <TARGET-P-PORT-REF DEST="P-PORT-PROTOTYPE">/body_control/lighting/swc/RearLightingNode/RearLightingServicePort</TARGET-P-PORT-REF>
+                      </PROVIDER-IREF>
+                      <REQUESTER-IREF>
+                        <CONTEXT-COMPONENT-REF DEST="SW-COMPONENT-PROTOTYPE">/body_control/lighting/swc/BCL_Composition/CentralZoneController</CONTEXT-COMPONENT-REF>
+                        <TARGET-R-PORT-REF DEST="R-PORT-PROTOTYPE">/body_control/lighting/swc/CentralZoneController/RearLightingServicePort</TARGET-R-PORT-REF>
+                      </REQUESTER-IREF>
+                    </ASSEMBLY-SW-CONNECTOR>
+
+                  </CONNECTORS>
+
+                </COMPOSITION-SW-COMPONENT-TYPE>
+
+              </ELEMENTS>
+            </AR-PACKAGE>
+          </AR-PACKAGES>
+        </AR-PACKAGE>
+      </AR-PACKAGES>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

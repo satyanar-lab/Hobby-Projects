@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AUTOSAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://autosar.org/schema/r4.0"
+         xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_00050.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>body_control</SHORT-NAME>
+      <AR-PACKAGES>
+        <AR-PACKAGE>
+          <SHORT-NAME>lighting</SHORT-NAME>
+          <AR-PACKAGES>
+            <AR-PACKAGE>
+              <SHORT-NAME>si</SHORT-NAME>
+              <CATEGORY>SERVICE_INTERFACE</CATEGORY>
+              <ELEMENTS>
+
+                <!-- ============================================================== -->
+                <!-- OperatorService                                                 -->
+                <!--   SOME/IP Service ID : 0x5200                                   -->
+                <!--   Provider          : Central Zone Controller                  -->
+                <!--   Consumer          : HMI Control Panel, Diagnostic Console    -->
+                <!--                                                                 -->
+                <!-- Method IDs (0x0001..0x0007) match the C++ constants in         -->
+                <!-- lighting_service_ids.hpp / namespace operator_service.         -->
+                <!-- ============================================================== -->
+                <SERVICE-INTERFACE>
+                  <SHORT-NAME>OperatorService</SHORT-NAME>
+                  <CATEGORY>0x5200</CATEGORY>
+
+                  <METHODS>
+
+                    <!-- 0x0001 RequestLampToggle -->
+                    <CLIENT-SERVER-OPERATION>
+                      <SHORT-NAME>RequestLampToggle</SHORT-NAME>
+                      <CATEGORY>0x0001</CATEGORY>
+                      <ARGUMENTS>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>lamp_function</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampFunction</TYPE-TREF>
+                          <DIRECTION>IN</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                      </ARGUMENTS>
+                    </CLIENT-SERVER-OPERATION>
+
+                    <!-- 0x0002 RequestLampActivate (present in C++; missing in spec list) -->
+                    <CLIENT-SERVER-OPERATION>
+                      <SHORT-NAME>RequestLampActivate</SHORT-NAME>
+                      <CATEGORY>0x0002</CATEGORY>
+                      <ARGUMENTS>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>lamp_function</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampFunction</TYPE-TREF>
+                          <DIRECTION>IN</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                      </ARGUMENTS>
+                    </CLIENT-SERVER-OPERATION>
+
+                    <!-- 0x0003 RequestLampDeactivate (present in C++; missing in spec list) -->
+                    <CLIENT-SERVER-OPERATION>
+                      <SHORT-NAME>RequestLampDeactivate</SHORT-NAME>
+                      <CATEGORY>0x0003</CATEGORY>
+                      <ARGUMENTS>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>lamp_function</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampFunction</TYPE-TREF>
+                          <DIRECTION>IN</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                      </ARGUMENTS>
+                    </CLIENT-SERVER-OPERATION>
+
+                    <!-- 0x0004 RequestNodeHealth (was 0x0002 in spec; actual C++ ID is 0x0004) -->
+                    <CLIENT-SERVER-OPERATION>
+                      <SHORT-NAME>RequestNodeHealth</SHORT-NAME>
+                      <CATEGORY>0x0004</CATEGORY>
+                      <ARGUMENTS>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>node_health</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/NodeHealthStatus</TYPE-TREF>
+                          <DIRECTION>OUT</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                      </ARGUMENTS>
+                    </CLIENT-SERVER-OPERATION>
+
+                    <!-- 0x0005 RequestInjectFault (was 0x0003 in spec; actual C++ ID is 0x0005) -->
+                    <CLIENT-SERVER-OPERATION>
+                      <SHORT-NAME>RequestInjectFault</SHORT-NAME>
+                      <CATEGORY>0x0005</CATEGORY>
+                      <ARGUMENTS>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>lamp_function</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampFunction</TYPE-TREF>
+                          <DIRECTION>IN</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                      </ARGUMENTS>
+                    </CLIENT-SERVER-OPERATION>
+
+                    <!-- 0x0006 RequestClearFault (was 0x0004 in spec; actual C++ ID is 0x0006) -->
+                    <CLIENT-SERVER-OPERATION>
+                      <SHORT-NAME>RequestClearFault</SHORT-NAME>
+                      <CATEGORY>0x0006</CATEGORY>
+                      <ARGUMENTS>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>lamp_function</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampFunction</TYPE-TREF>
+                          <DIRECTION>IN</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                      </ARGUMENTS>
+                    </CLIENT-SERVER-OPERATION>
+
+                    <!-- 0x0007 RequestGetFaultStatus (present in C++; missing in spec list) -->
+                    <CLIENT-SERVER-OPERATION>
+                      <SHORT-NAME>RequestGetFaultStatus</SHORT-NAME>
+                      <CATEGORY>0x0007</CATEGORY>
+                      <ARGUMENTS>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>lamp_fault_status</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampFaultStatus</TYPE-TREF>
+                          <DIRECTION>OUT</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                      </ARGUMENTS>
+                    </CLIENT-SERVER-OPERATION>
+
+                  </METHODS>
+
+                  <EVENTS>
+
+                    <!-- 0x8001 LampStatusUpdated -->
+                    <VARIABLE-DATA-PROTOTYPE>
+                      <SHORT-NAME>LampStatusUpdated</SHORT-NAME>
+                      <CATEGORY>0x8001</CATEGORY>
+                      <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampStatus</TYPE-TREF>
+                    </VARIABLE-DATA-PROTOTYPE>
+
+                    <!-- 0x8002 NodeHealthUpdated -->
+                    <VARIABLE-DATA-PROTOTYPE>
+                      <SHORT-NAME>NodeHealthUpdated</SHORT-NAME>
+                      <CATEGORY>0x8002</CATEGORY>
+                      <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/NodeHealthStatus</TYPE-TREF>
+                    </VARIABLE-DATA-PROTOTYPE>
+
+                  </EVENTS>
+
+                </SERVICE-INTERFACE>
+
+              </ELEMENTS>
+            </AR-PACKAGE>
+          </AR-PACKAGES>
+        </AR-PACKAGE>
+      </AR-PACKAGES>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

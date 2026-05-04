@@ -62,6 +62,9 @@ Real Wireshark packet captures from the running system (SOME/IP-shaped UDP
 and UDS over DoIP) are in `doc/captures/` — see
 `doc/captures/README.md` for details.
 
+AUTOSAR R20-11 service interface descriptions (ARXML) are in `arxml/` —
+see `arxml/README.md` for the mapping between ARXML elements and C++ classes.
+
 ## Build — Linux
 
 ```bash

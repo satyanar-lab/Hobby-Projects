@@ -1,0 +1,567 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AUTOSAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://autosar.org/schema/r4.0"
+         xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_00050.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>body_control</SHORT-NAME>
+      <AR-PACKAGES>
+        <AR-PACKAGE>
+          <SHORT-NAME>lighting</SHORT-NAME>
+          <AR-PACKAGES>
+            <AR-PACKAGE>
+              <SHORT-NAME>dt</SHORT-NAME>
+              <CATEGORY>DATATYPE</CATEGORY>
+              <ELEMENTS>
+
+                <!-- ============================================================ -->
+                <!-- Enumerations (modeled as IMPLEMENTATION-DATA-TYPE / TYPE_REFERENCE -->
+                <!-- onto a base unsigned integer, with COMPU-METHOD providing the   -->
+                <!-- enumeration mapping. This is how Vector ISOLAR / EB tresos     -->
+                <!-- typically render scoped C++ enums in AUTOSAR Adaptive.)         -->
+                <!-- ============================================================ -->
+
+                <!-- LampFunction : uint8 -->
+                <COMPU-METHOD>
+                  <SHORT-NAME>LampFunction</SHORT-NAME>
+                  <CATEGORY>TEXTTABLE</CATEGORY>
+                  <COMPU-INTERNAL-TO-PHYS>
+                    <COMPU-SCALES>
+                      <COMPU-SCALE><SHORT-LABEL>kUnknown</SHORT-LABEL>
+                        <LOWER-LIMIT>0</LOWER-LIMIT><UPPER-LIMIT>0</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kUnknown</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kLeftIndicator</SHORT-LABEL>
+                        <LOWER-LIMIT>1</LOWER-LIMIT><UPPER-LIMIT>1</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kLeftIndicator</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kRightIndicator</SHORT-LABEL>
+                        <LOWER-LIMIT>2</LOWER-LIMIT><UPPER-LIMIT>2</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kRightIndicator</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kHazardLamp</SHORT-LABEL>
+                        <LOWER-LIMIT>3</LOWER-LIMIT><UPPER-LIMIT>3</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kHazardLamp</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kParkLamp</SHORT-LABEL>
+                        <LOWER-LIMIT>4</LOWER-LIMIT><UPPER-LIMIT>4</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kParkLamp</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kHeadLamp</SHORT-LABEL>
+                        <LOWER-LIMIT>5</LOWER-LIMIT><UPPER-LIMIT>5</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kHeadLamp</VT></COMPU-CONST></COMPU-SCALE>
+                    </COMPU-SCALES>
+                  </COMPU-INTERNAL-TO-PHYS>
+                </COMPU-METHOD>
+                <IMPLEMENTATION-DATA-TYPE>
+                  <SHORT-NAME>LampFunction</SHORT-NAME>
+                  <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint8</BASE-TYPE-REF>
+                        <COMPU-METHOD-REF DEST="COMPU-METHOD">/body_control/lighting/dt/LampFunction</COMPU-METHOD-REF>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+
+                <!-- LampCommandAction : uint8                                  -->
+                <!-- NOTE: C++ source uses kNoAction=0 (not kUnknown) for this  -->
+                <!-- enum specifically; kept faithful to the implementation.    -->
+                <COMPU-METHOD>
+                  <SHORT-NAME>LampCommandAction</SHORT-NAME>
+                  <CATEGORY>TEXTTABLE</CATEGORY>
+                  <COMPU-INTERNAL-TO-PHYS>
+                    <COMPU-SCALES>
+                      <COMPU-SCALE><SHORT-LABEL>kNoAction</SHORT-LABEL>
+                        <LOWER-LIMIT>0</LOWER-LIMIT><UPPER-LIMIT>0</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kNoAction</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kActivate</SHORT-LABEL>
+                        <LOWER-LIMIT>1</LOWER-LIMIT><UPPER-LIMIT>1</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kActivate</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kDeactivate</SHORT-LABEL>
+                        <LOWER-LIMIT>2</LOWER-LIMIT><UPPER-LIMIT>2</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kDeactivate</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kToggle</SHORT-LABEL>
+                        <LOWER-LIMIT>3</LOWER-LIMIT><UPPER-LIMIT>3</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kToggle</VT></COMPU-CONST></COMPU-SCALE>
+                    </COMPU-SCALES>
+                  </COMPU-INTERNAL-TO-PHYS>
+                </COMPU-METHOD>
+                <IMPLEMENTATION-DATA-TYPE>
+                  <SHORT-NAME>LampCommandAction</SHORT-NAME>
+                  <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint8</BASE-TYPE-REF>
+                        <COMPU-METHOD-REF DEST="COMPU-METHOD">/body_control/lighting/dt/LampCommandAction</COMPU-METHOD-REF>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+
+                <!-- CommandSource : uint8 (present in C++; included for completeness) -->
+                <COMPU-METHOD>
+                  <SHORT-NAME>CommandSource</SHORT-NAME>
+                  <CATEGORY>TEXTTABLE</CATEGORY>
+                  <COMPU-INTERNAL-TO-PHYS>
+                    <COMPU-SCALES>
+                      <COMPU-SCALE><SHORT-LABEL>kUnknown</SHORT-LABEL>
+                        <LOWER-LIMIT>0</LOWER-LIMIT><UPPER-LIMIT>0</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kUnknown</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kHmiControlPanel</SHORT-LABEL>
+                        <LOWER-LIMIT>1</LOWER-LIMIT><UPPER-LIMIT>1</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kHmiControlPanel</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kDiagnosticConsole</SHORT-LABEL>
+                        <LOWER-LIMIT>2</LOWER-LIMIT><UPPER-LIMIT>2</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kDiagnosticConsole</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kCentralZoneController</SHORT-LABEL>
+                        <LOWER-LIMIT>3</LOWER-LIMIT><UPPER-LIMIT>3</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kCentralZoneController</VT></COMPU-CONST></COMPU-SCALE>
+                    </COMPU-SCALES>
+                  </COMPU-INTERNAL-TO-PHYS>
+                </COMPU-METHOD>
+                <IMPLEMENTATION-DATA-TYPE>
+                  <SHORT-NAME>CommandSource</SHORT-NAME>
+                  <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint8</BASE-TYPE-REF>
+                        <COMPU-METHOD-REF DEST="COMPU-METHOD">/body_control/lighting/dt/CommandSource</COMPU-METHOD-REF>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+
+                <!-- LampOutputState : uint8 -->
+                <COMPU-METHOD>
+                  <SHORT-NAME>LampOutputState</SHORT-NAME>
+                  <CATEGORY>TEXTTABLE</CATEGORY>
+                  <COMPU-INTERNAL-TO-PHYS>
+                    <COMPU-SCALES>
+                      <COMPU-SCALE><SHORT-LABEL>kUnknown</SHORT-LABEL>
+                        <LOWER-LIMIT>0</LOWER-LIMIT><UPPER-LIMIT>0</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kUnknown</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kOff</SHORT-LABEL>
+                        <LOWER-LIMIT>1</LOWER-LIMIT><UPPER-LIMIT>1</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kOff</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kOn</SHORT-LABEL>
+                        <LOWER-LIMIT>2</LOWER-LIMIT><UPPER-LIMIT>2</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kOn</VT></COMPU-CONST></COMPU-SCALE>
+                    </COMPU-SCALES>
+                  </COMPU-INTERNAL-TO-PHYS>
+                </COMPU-METHOD>
+                <IMPLEMENTATION-DATA-TYPE>
+                  <SHORT-NAME>LampOutputState</SHORT-NAME>
+                  <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint8</BASE-TYPE-REF>
+                        <COMPU-METHOD-REF DEST="COMPU-METHOD">/body_control/lighting/dt/LampOutputState</COMPU-METHOD-REF>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+
+                <!-- NodeHealthState : uint8                                      -->
+                <!-- NOTE: C++ source uses kOperational/kFaulted/kUnavailable     -->
+                <!-- (5 values), not the kHealthy/kFailed (4 values) named in the -->
+                <!-- spec. Kept faithful to the implementation.                   -->
+                <COMPU-METHOD>
+                  <SHORT-NAME>NodeHealthState</SHORT-NAME>
+                  <CATEGORY>TEXTTABLE</CATEGORY>
+                  <COMPU-INTERNAL-TO-PHYS>
+                    <COMPU-SCALES>
+                      <COMPU-SCALE><SHORT-LABEL>kUnknown</SHORT-LABEL>
+                        <LOWER-LIMIT>0</LOWER-LIMIT><UPPER-LIMIT>0</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kUnknown</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kOperational</SHORT-LABEL>
+                        <LOWER-LIMIT>1</LOWER-LIMIT><UPPER-LIMIT>1</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kOperational</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kDegraded</SHORT-LABEL>
+                        <LOWER-LIMIT>2</LOWER-LIMIT><UPPER-LIMIT>2</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kDegraded</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kFaulted</SHORT-LABEL>
+                        <LOWER-LIMIT>3</LOWER-LIMIT><UPPER-LIMIT>3</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kFaulted</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kUnavailable</SHORT-LABEL>
+                        <LOWER-LIMIT>4</LOWER-LIMIT><UPPER-LIMIT>4</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kUnavailable</VT></COMPU-CONST></COMPU-SCALE>
+                    </COMPU-SCALES>
+                  </COMPU-INTERNAL-TO-PHYS>
+                </COMPU-METHOD>
+                <IMPLEMENTATION-DATA-TYPE>
+                  <SHORT-NAME>NodeHealthState</SHORT-NAME>
+                  <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint8</BASE-TYPE-REF>
+                        <COMPU-METHOD-REF DEST="COMPU-METHOD">/body_control/lighting/dt/NodeHealthState</COMPU-METHOD-REF>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+
+                <!-- FaultCode : uint16                                                -->
+                <!-- Range 0xB0xx (SAE J2012 body-electrical DTC class). Sentinel 0.   -->
+                <COMPU-METHOD>
+                  <SHORT-NAME>FaultCode</SHORT-NAME>
+                  <CATEGORY>TEXTTABLE</CATEGORY>
+                  <COMPU-INTERNAL-TO-PHYS>
+                    <COMPU-SCALES>
+                      <COMPU-SCALE><SHORT-LABEL>kNoFault</SHORT-LABEL>
+                        <LOWER-LIMIT>0</LOWER-LIMIT><UPPER-LIMIT>0</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kNoFault</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kLeftIndicator</SHORT-LABEL>
+                        <LOWER-LIMIT>45057</LOWER-LIMIT><UPPER-LIMIT>45057</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kLeftIndicator</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kRightIndicator</SHORT-LABEL>
+                        <LOWER-LIMIT>45058</LOWER-LIMIT><UPPER-LIMIT>45058</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kRightIndicator</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kHazardLamp</SHORT-LABEL>
+                        <LOWER-LIMIT>45059</LOWER-LIMIT><UPPER-LIMIT>45059</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kHazardLamp</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kParkLamp</SHORT-LABEL>
+                        <LOWER-LIMIT>45060</LOWER-LIMIT><UPPER-LIMIT>45060</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kParkLamp</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kHeadLamp</SHORT-LABEL>
+                        <LOWER-LIMIT>45061</LOWER-LIMIT><UPPER-LIMIT>45061</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kHeadLamp</VT></COMPU-CONST></COMPU-SCALE>
+                    </COMPU-SCALES>
+                  </COMPU-INTERNAL-TO-PHYS>
+                </COMPU-METHOD>
+                <IMPLEMENTATION-DATA-TYPE>
+                  <SHORT-NAME>FaultCode</SHORT-NAME>
+                  <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint16</BASE-TYPE-REF>
+                        <COMPU-METHOD-REF DEST="COMPU-METHOD">/body_control/lighting/dt/FaultCode</COMPU-METHOD-REF>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+
+                <!-- FaultAction : uint8 -->
+                <COMPU-METHOD>
+                  <SHORT-NAME>FaultAction</SHORT-NAME>
+                  <CATEGORY>TEXTTABLE</CATEGORY>
+                  <COMPU-INTERNAL-TO-PHYS>
+                    <COMPU-SCALES>
+                      <COMPU-SCALE><SHORT-LABEL>kUnknown</SHORT-LABEL>
+                        <LOWER-LIMIT>0</LOWER-LIMIT><UPPER-LIMIT>0</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kUnknown</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kInject</SHORT-LABEL>
+                        <LOWER-LIMIT>1</LOWER-LIMIT><UPPER-LIMIT>1</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kInject</VT></COMPU-CONST></COMPU-SCALE>
+                      <COMPU-SCALE><SHORT-LABEL>kClear</SHORT-LABEL>
+                        <LOWER-LIMIT>2</LOWER-LIMIT><UPPER-LIMIT>2</UPPER-LIMIT>
+                        <COMPU-CONST><VT>kClear</VT></COMPU-CONST></COMPU-SCALE>
+                    </COMPU-SCALES>
+                  </COMPU-INTERNAL-TO-PHYS>
+                </COMPU-METHOD>
+                <IMPLEMENTATION-DATA-TYPE>
+                  <SHORT-NAME>FaultAction</SHORT-NAME>
+                  <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                  <SW-DATA-DEF-PROPS>
+                    <SW-DATA-DEF-PROPS-VARIANTS>
+                      <SW-DATA-DEF-PROPS-CONDITIONAL>
+                        <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint8</BASE-TYPE-REF>
+                        <COMPU-METHOD-REF DEST="COMPU-METHOD">/body_control/lighting/dt/FaultAction</COMPU-METHOD-REF>
+                      </SW-DATA-DEF-PROPS-CONDITIONAL>
+                    </SW-DATA-DEF-PROPS-VARIANTS>
+                  </SW-DATA-DEF-PROPS>
+                </IMPLEMENTATION-DATA-TYPE>
+
+                <!-- ============================================================ -->
+                <!-- Structures (composite IMPLEMENTATION-DATA-TYPE / STRUCTURE)  -->
+                <!-- Field names mirror the C++ struct member names exactly.     -->
+                <!-- ============================================================ -->
+
+                <!-- LampCommand : { function, action, source, sequence_counter } -->
+                <IMPLEMENTATION-DATA-TYPE>
+                  <SHORT-NAME>LampCommand</SHORT-NAME>
+                  <CATEGORY>STRUCTURE</CATEGORY>
+                  <SUB-ELEMENTS>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>function</SHORT-NAME>
+                      <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampFunction</IMPLEMENTATION-DATA-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>action</SHORT-NAME>
+                      <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampCommandAction</IMPLEMENTATION-DATA-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>source</SHORT-NAME>
+                      <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/CommandSource</IMPLEMENTATION-DATA-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>sequence_counter</SHORT-NAME>
+                      <CATEGORY>VALUE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint16</BASE-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                  </SUB-ELEMENTS>
+                </IMPLEMENTATION-DATA-TYPE>
+
+                <!-- LampStatus : { function, output_state, command_applied,        -->
+                <!--                last_sequence_counter }                          -->
+                <!-- NOTE: spec listed timestamp_ms; the C++ struct does not carry  -->
+                <!-- a timestamp. ARXML follows the C++ contract.                   -->
+                <IMPLEMENTATION-DATA-TYPE>
+                  <SHORT-NAME>LampStatus</SHORT-NAME>
+                  <CATEGORY>STRUCTURE</CATEGORY>
+                  <SUB-ELEMENTS>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>function</SHORT-NAME>
+                      <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampFunction</IMPLEMENTATION-DATA-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>output_state</SHORT-NAME>
+                      <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampOutputState</IMPLEMENTATION-DATA-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>command_applied</SHORT-NAME>
+                      <CATEGORY>VALUE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/boolean</BASE-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>last_sequence_counter</SHORT-NAME>
+                      <CATEGORY>VALUE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint16</BASE-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                  </SUB-ELEMENTS>
+                </IMPLEMENTATION-DATA-TYPE>
+
+                <!-- NodeHealthStatus : { health_state, ethernet_link_available,    -->
+                <!--   service_available, lamp_driver_fault_present, active_fault_count } -->
+                <!-- NOTE: spec listed node_id/uptime_ms/sequence_counter; the C++  -->
+                <!-- struct does not have those fields. ARXML follows the C++.     -->
+                <IMPLEMENTATION-DATA-TYPE>
+                  <SHORT-NAME>NodeHealthStatus</SHORT-NAME>
+                  <CATEGORY>STRUCTURE</CATEGORY>
+                  <SUB-ELEMENTS>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>health_state</SHORT-NAME>
+                      <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/NodeHealthState</IMPLEMENTATION-DATA-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>ethernet_link_available</SHORT-NAME>
+                      <CATEGORY>VALUE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/boolean</BASE-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>service_available</SHORT-NAME>
+                      <CATEGORY>VALUE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/boolean</BASE-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>lamp_driver_fault_present</SHORT-NAME>
+                      <CATEGORY>VALUE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/boolean</BASE-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>active_fault_count</SHORT-NAME>
+                      <CATEGORY>VALUE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint16</BASE-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                  </SUB-ELEMENTS>
+                </IMPLEMENTATION-DATA-TYPE>
+
+                <!-- LampFaultStatus : { fault_present, active_fault_count,         -->
+                <!--                     active_faults[5] }                          -->
+                <!-- NOTE: spec listed (lamp_function, fault_code, is_active,        -->
+                <!-- fault_count); the C++ struct is the table snapshot above.       -->
+                <IMPLEMENTATION-DATA-TYPE>
+                  <SHORT-NAME>LampFaultStatus</SHORT-NAME>
+                  <CATEGORY>STRUCTURE</CATEGORY>
+                  <SUB-ELEMENTS>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>fault_present</SHORT-NAME>
+                      <CATEGORY>VALUE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/boolean</BASE-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>active_fault_count</SHORT-NAME>
+                      <CATEGORY>VALUE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint8</BASE-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>active_faults</SHORT-NAME>
+                      <CATEGORY>ARRAY</CATEGORY>
+                      <ARRAY-SIZE>5</ARRAY-SIZE>
+                      <ARRAY-SIZE-SEMANTICS>FIXED-SIZE</ARRAY-SIZE-SEMANTICS>
+                      <SUB-ELEMENTS>
+                        <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                          <SHORT-NAME>element</SHORT-NAME>
+                          <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                          <SW-DATA-DEF-PROPS>
+                            <SW-DATA-DEF-PROPS-VARIANTS>
+                              <SW-DATA-DEF-PROPS-CONDITIONAL>
+                                <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/FaultCode</IMPLEMENTATION-DATA-TYPE-REF>
+                              </SW-DATA-DEF-PROPS-CONDITIONAL>
+                            </SW-DATA-DEF-PROPS-VARIANTS>
+                          </SW-DATA-DEF-PROPS>
+                        </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      </SUB-ELEMENTS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                  </SUB-ELEMENTS>
+                </IMPLEMENTATION-DATA-TYPE>
+
+                <!-- FaultCommand : { function, action, source, sequence_counter }   -->
+                <!-- The on-wire struct used by InjectFault / ClearFault methods.   -->
+                <IMPLEMENTATION-DATA-TYPE>
+                  <SHORT-NAME>FaultCommand</SHORT-NAME>
+                  <CATEGORY>STRUCTURE</CATEGORY>
+                  <SUB-ELEMENTS>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>function</SHORT-NAME>
+                      <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampFunction</IMPLEMENTATION-DATA-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>action</SHORT-NAME>
+                      <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/FaultAction</IMPLEMENTATION-DATA-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>source</SHORT-NAME>
+                      <CATEGORY>TYPE_REFERENCE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/CommandSource</IMPLEMENTATION-DATA-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                    <IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                      <SHORT-NAME>sequence_counter</SHORT-NAME>
+                      <CATEGORY>VALUE</CATEGORY>
+                      <SW-DATA-DEF-PROPS>
+                        <SW-DATA-DEF-PROPS-VARIANTS>
+                          <SW-DATA-DEF-PROPS-CONDITIONAL>
+                            <BASE-TYPE-REF DEST="SW-BASE-TYPE">/AUTOSAR_Platform/BaseTypes/uint16</BASE-TYPE-REF>
+                          </SW-DATA-DEF-PROPS-CONDITIONAL>
+                        </SW-DATA-DEF-PROPS-VARIANTS>
+                      </SW-DATA-DEF-PROPS>
+                    </IMPLEMENTATION-DATA-TYPE-ELEMENT>
+                  </SUB-ELEMENTS>
+                </IMPLEMENTATION-DATA-TYPE>
+
+              </ELEMENTS>
+            </AR-PACKAGE>
+          </AR-PACKAGES>
+        </AR-PACKAGE>
+      </AR-PACKAGES>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

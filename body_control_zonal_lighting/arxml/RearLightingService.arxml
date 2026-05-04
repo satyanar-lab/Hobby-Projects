@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AUTOSAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://autosar.org/schema/r4.0"
+         xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_00050.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>body_control</SHORT-NAME>
+      <AR-PACKAGES>
+        <AR-PACKAGE>
+          <SHORT-NAME>lighting</SHORT-NAME>
+          <AR-PACKAGES>
+            <AR-PACKAGE>
+              <SHORT-NAME>si</SHORT-NAME>
+              <CATEGORY>SERVICE_INTERFACE</CATEGORY>
+              <ELEMENTS>
+
+                <!-- ============================================================== -->
+                <!-- RearLightingService                                             -->
+                <!--   SOME/IP Service ID : 0x5100                                   -->
+                <!--   Provider          : Rear Lighting Node (STM32 / Linux sim)   -->
+                <!--   Consumer          : Central Zone Controller                  -->
+                <!--                                                                 -->
+                <!-- The C++ method calls are fire-and-forget at the wire level;    -->
+                <!-- responses arrive asynchronously as events. Modeled as METHODS  -->
+                <!-- here because that is how Vector ISOLAR / EB tresos render the  -->
+                <!-- service-interface signature; the absence of dedicated response -->
+                <!-- semantics on the wire is a binding choice, not a model choice. -->
+                <!-- ============================================================== -->
+                <SERVICE-INTERFACE>
+                  <SHORT-NAME>RearLightingService</SHORT-NAME>
+                  <CATEGORY>0x5100</CATEGORY>
+
+                  <METHODS>
+
+                    <!-- 0x0001 SetLampCommand -->
+                    <CLIENT-SERVER-OPERATION>
+                      <SHORT-NAME>SetLampCommand</SHORT-NAME>
+                      <CATEGORY>0x0001</CATEGORY>
+                      <ARGUMENTS>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>lamp_command</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampCommand</TYPE-TREF>
+                          <DIRECTION>IN</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                      </ARGUMENTS>
+                    </CLIENT-SERVER-OPERATION>
+
+                    <!-- 0x0002 GetLampStatus : IN LampFunction, response delivered via LampStatusEvent -->
+                    <CLIENT-SERVER-OPERATION>
+                      <SHORT-NAME>GetLampStatus</SHORT-NAME>
+                      <CATEGORY>0x0002</CATEGORY>
+                      <ARGUMENTS>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>lamp_function</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampFunction</TYPE-TREF>
+                          <DIRECTION>IN</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>lamp_status</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampStatus</TYPE-TREF>
+                          <DIRECTION>OUT</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                      </ARGUMENTS>
+                    </CLIENT-SERVER-OPERATION>
+
+                    <!-- 0x0003 GetNodeHealth : no IN, response delivered via NodeHealthStatusEvent -->
+                    <CLIENT-SERVER-OPERATION>
+                      <SHORT-NAME>GetNodeHealth</SHORT-NAME>
+                      <CATEGORY>0x0003</CATEGORY>
+                      <ARGUMENTS>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>node_health</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/NodeHealthStatus</TYPE-TREF>
+                          <DIRECTION>OUT</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                      </ARGUMENTS>
+                    </CLIENT-SERVER-OPERATION>
+
+                    <!-- 0x0004 InjectFault : C++ wire-level uses a FaultCommand struct.   -->
+                    <!-- Spec said IN LampFunction; the actual codec packs FaultCommand. -->
+                    <CLIENT-SERVER-OPERATION>
+                      <SHORT-NAME>InjectFault</SHORT-NAME>
+                      <CATEGORY>0x0004</CATEGORY>
+                      <ARGUMENTS>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>fault_command</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/FaultCommand</TYPE-TREF>
+                          <DIRECTION>IN</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                      </ARGUMENTS>
+                    </CLIENT-SERVER-OPERATION>
+
+                    <!-- 0x0005 ClearFault -->
+                    <CLIENT-SERVER-OPERATION>
+                      <SHORT-NAME>ClearFault</SHORT-NAME>
+                      <CATEGORY>0x0005</CATEGORY>
+                      <ARGUMENTS>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>fault_command</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/FaultCommand</TYPE-TREF>
+                          <DIRECTION>IN</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                      </ARGUMENTS>
+                    </CLIENT-SERVER-OPERATION>
+
+                    <!-- 0x0006 GetFaultStatus : no IN, response via FaultStatusEvent -->
+                    <CLIENT-SERVER-OPERATION>
+                      <SHORT-NAME>GetFaultStatus</SHORT-NAME>
+                      <CATEGORY>0x0006</CATEGORY>
+                      <ARGUMENTS>
+                        <ARGUMENT-DATA-PROTOTYPE>
+                          <SHORT-NAME>lamp_fault_status</SHORT-NAME>
+                          <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampFaultStatus</TYPE-TREF>
+                          <DIRECTION>OUT</DIRECTION>
+                        </ARGUMENT-DATA-PROTOTYPE>
+                      </ARGUMENTS>
+                    </CLIENT-SERVER-OPERATION>
+
+                  </METHODS>
+
+                  <EVENTS>
+
+                    <!-- 0x8001 LampStatusEvent -->
+                    <VARIABLE-DATA-PROTOTYPE>
+                      <SHORT-NAME>LampStatusEvent</SHORT-NAME>
+                      <CATEGORY>0x8001</CATEGORY>
+                      <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampStatus</TYPE-TREF>
+                    </VARIABLE-DATA-PROTOTYPE>
+
+                    <!-- 0x8002 NodeHealthStatusEvent -->
+                    <VARIABLE-DATA-PROTOTYPE>
+                      <SHORT-NAME>NodeHealthStatusEvent</SHORT-NAME>
+                      <CATEGORY>0x8002</CATEGORY>
+                      <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/NodeHealthStatus</TYPE-TREF>
+                    </VARIABLE-DATA-PROTOTYPE>
+
+                    <!-- 0x8003 FaultStatusEvent -->
+                    <VARIABLE-DATA-PROTOTYPE>
+                      <SHORT-NAME>FaultStatusEvent</SHORT-NAME>
+                      <CATEGORY>0x8003</CATEGORY>
+                      <TYPE-TREF DEST="IMPLEMENTATION-DATA-TYPE">/body_control/lighting/dt/LampFaultStatus</TYPE-TREF>
+                    </VARIABLE-DATA-PROTOTYPE>
+
+                  </EVENTS>
+
+                </SERVICE-INTERFACE>
+
+              </ELEMENTS>
+            </AR-PACKAGE>
+          </AR-PACKAGES>
+        </AR-PACKAGE>
+      </AR-PACKAGES>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>
