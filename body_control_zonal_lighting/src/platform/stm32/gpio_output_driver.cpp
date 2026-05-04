@@ -61,20 +61,28 @@ PinAssignment LampFunctionToPinAssignment(
 GpioDriverStatus GpioOutputDriver::Initialize()
 {
 #ifdef USE_HAL_DRIVER
-    // All five lamp pins are on GPIOB; a single clock enable covers them all.
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-
     GPIO_InitTypeDef gpio_init {};
-    gpio_init.Pin  = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5;
-    gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
-    gpio_init.Pull = GPIO_NOPULL;
-    gpio_init.Speed= GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOB, &gpio_init);
+    gpio_init.Mode  = GPIO_MODE_OUTPUT_PP;
+    gpio_init.Pull  = GPIO_NOPULL;
+    gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
 
-    HAL_GPIO_WritePin(
-        GPIOB,
-        GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5,
-        GPIO_PIN_RESET);
+    // GPIOA — PA3 (park), PA5 (left indicator), PA9 (right indicator)
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    gpio_init.Pin = GPIO_PIN_3 | GPIO_PIN_5 | GPIO_PIN_9;
+    HAL_GPIO_Init(GPIOA, &gpio_init);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3 | GPIO_PIN_5 | GPIO_PIN_9, GPIO_PIN_RESET);
+
+    // GPIOB — PB5 (hazard lamp)
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    gpio_init.Pin = GPIO_PIN_5;
+    HAL_GPIO_Init(GPIOB, &gpio_init);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+
+    // GPIOE — PE14 (head lamp)
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+    gpio_init.Pin = GPIO_PIN_14;
+    HAL_GPIO_Init(GPIOE, &gpio_init);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_14, GPIO_PIN_RESET);
 #endif
 
     is_initialized_ = true;
@@ -89,10 +97,9 @@ GpioDriverStatus GpioOutputDriver::ResetAllOutputs()
     }
 
 #ifdef USE_HAL_DRIVER
-    HAL_GPIO_WritePin(
-        GPIOB,
-        GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5,
-        GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3 | GPIO_PIN_5 | GPIO_PIN_9, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_14, GPIO_PIN_RESET);
 #endif
 
     return GpioDriverStatus::kSuccess;

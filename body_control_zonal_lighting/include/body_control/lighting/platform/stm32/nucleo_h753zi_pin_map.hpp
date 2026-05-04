@@ -44,11 +44,11 @@ struct PinAssignment
 namespace pin_map
 {
 
-constexpr PinAssignment kLeftIndicatorOutput  {GpioPortId::kPortB, 5U}; ///< PB5
-constexpr PinAssignment kRightIndicatorOutput {GpioPortId::kPortB, 1U}; ///< PB1
-constexpr PinAssignment kHazardLampOutput     {GpioPortId::kPortB, 2U}; ///< PB2
-constexpr PinAssignment kParkLampOutput       {GpioPortId::kPortB, 3U}; ///< PB3
-constexpr PinAssignment kHeadLampOutput       {GpioPortId::kPortB, 4U}; ///< PB4
+constexpr PinAssignment kLeftIndicatorOutput  {GpioPortId::kPortA, 5U};  ///< PA5
+constexpr PinAssignment kRightIndicatorOutput {GpioPortId::kPortA, 9U};  ///< PA9
+constexpr PinAssignment kHazardLampOutput     {GpioPortId::kPortB, 5U};  ///< PB5
+constexpr PinAssignment kParkLampOutput       {GpioPortId::kPortA, 3U};  ///< PA3
+constexpr PinAssignment kHeadLampOutput       {GpioPortId::kPortE, 14U}; ///< PE14
 
 }  // namespace pin_map
 
