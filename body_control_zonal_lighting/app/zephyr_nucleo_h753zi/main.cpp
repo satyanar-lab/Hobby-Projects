@@ -210,12 +210,6 @@ private:
 // Ported from RearLightingNodeHandler in the bare-metal main.cpp.
 // Runs in cmd_thread (single consumer of g_lamp_cmd_queue).
 
-// last_hazard_sequence_: sequence counter of the most recent hazard command.
-// Indicator commands sharing this counter are companion fanout commands from
-// the CZC and must be suppressed — otherwise they activate indicators
-// immediately after a hazard-off toggle.
-static std::uint16_t g_last_hazard_sequence {0U};
-
 static body_control::lighting::application::IndicatorInputRegistry g_indicator_registry {};
 
 void SendLampStatusEvent(const LF func) noexcept
@@ -238,8 +232,6 @@ bool IsOn(const LF func) noexcept
 
 void HandleHazard(const LC& cmd) noexcept
 {
-    g_last_hazard_sequence = cmd.sequence_counter;
-
     const bool hazard_was_on = IsOn(LF::kHazardLamp);
 
     LC resolved     = cmd;
@@ -288,12 +280,16 @@ void HandleHazard(const LC& cmd) noexcept
 
 void HandleIndicator(const LC& cmd) noexcept
 {
-    // Suppress companion indicator commands sent as part of a hazard fanout.
-    if (cmd.sequence_counter == g_last_hazard_sequence) { return; }
-
+    // Only block indicator activation when hazard is currently ON.  The
+    // previous sequence_counter == g_last_hazard_sequence guard fired
+    // spuriously when both counters happened to be 0 (legitimate commands
+    // arriving before any hazard ever ran), masking left/right indicator
+    // operation entirely.  Hazard-active is the true arbitration condition.
     if (IsOn(LF::kHazardLamp))
     {
-        LOG_WRN("Indicator blocked: hazard active");
+        LOG_WRN("Indicator cmd dropped: hazard active (func=%d seq=%u)",
+                static_cast<int>(cmd.function),
+                static_cast<unsigned>(cmd.sequence_counter));
         return;
     }
 
