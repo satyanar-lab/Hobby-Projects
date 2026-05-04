@@ -4,8 +4,8 @@
 ENTRY(Reset_Handler)
 
 _estack         = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM);  /* top of stack */
-_Min_Heap_Size  = 0x2000;   /* 8 KB heap  */
-_Min_Stack_Size = 0x1000;   /* 4 KB stack */
+_Min_Heap_Size  = 0x4000;   /* 16 KB heap  — std::vector in UdsRequestHandler */
+_Min_Stack_Size = 0x2000;   /*  8 KB stack — main frame + DoipTcpServer.rx_buf_ */
 
 MEMORY
 {
