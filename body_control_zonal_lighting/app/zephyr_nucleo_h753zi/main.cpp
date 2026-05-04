@@ -904,28 +904,58 @@ static void DoipThread(void* /*p1*/, void* /*p2*/, void* /*p3*/)
 {
     LOG_INF("[DoIP] thread started on TCP port %u", kDoipPort);
 
-    // Wait for the network interface to be operational before opening a socket.
-    // socket() returns ENOTCONN (errno 107) when called before the Zephyr
-    // network stack finishes link negotiation and address configuration.
-    // Polls every 100 ms; logs a warning every 30 s if the cable is unplugged
-    // and retries indefinitely so DoIP becomes available when the link returns.
+    // Wait until an IPv4 address is assigned before opening a socket.
+    //
+    // net_if_is_up() returns true as soon as the interface is flagged in
+    // software, which happens before the PHY establishes its link (~1-3 s
+    // later).  socket() fails with ENOTCONN (107) in that window.  The IPv4
+    // unicast address is populated by the network stack only after the PHY
+    // link is up and the interface is fully ready, making it the correct
+    // readiness gate.
+    //
+    // Polls every 100 ms.  Logs a warning every 30 s so a missing cable
+    // is detectable in the serial log.  Retries indefinitely — DoIP becomes
+    // available without reboot once the cable is plugged in.
     {
-        static constexpr std::int32_t kPollMs     {100};
-        static constexpr std::int32_t kWarnTicks  {30000 / kPollMs};  // 30 s
+        static constexpr std::int32_t kPollMs    {100};
+        static constexpr std::int32_t kWarnTicks {30000 / kPollMs};
+
         struct net_if* const iface = net_if_get_default();
         std::int32_t ticks {0};
-        while (iface != nullptr && !net_if_is_up(iface))
+        bool addr_found {false};
+
+        while (!addr_found)
         {
-            k_msleep(kPollMs);
-            if (++ticks >= kWarnTicks)
+            if (iface != nullptr)
             {
-                LOG_WRN("[DoIP] network interface not up after 30 s — "
-                        "check Ethernet cable; retrying");
-                ticks = 0;
+                const struct net_if_ipv4* const ipv4 = iface->config.ip.ipv4;
+                if (ipv4 != nullptr)
+                {
+                    for (int i = 0; i < NET_IF_MAX_IPV4_ADDR; ++i)
+                    {
+                        if (ipv4->unicast[i].ipv4.is_used &&
+                            ipv4->unicast[i].ipv4.address.family == AF_INET)
+                        {
+                            addr_found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!addr_found)
+            {
+                k_msleep(kPollMs);
+                if (++ticks >= kWarnTicks)
+                {
+                    LOG_WRN("[DoIP] no IPv4 address after 30 s — "
+                            "check Ethernet cable; retrying");
+                    ticks = 0;
+                }
             }
         }
     }
-    LOG_INF("[DoIP] network interface up, opening TCP socket");
+    LOG_INF("[DoIP] IPv4 address assigned, opening TCP socket");
 
     const int server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (server_fd < 0)
