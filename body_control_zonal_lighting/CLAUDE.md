@@ -87,3 +87,15 @@ When calling the Advisor:
 - Apply the advice and continue without asking again
 
 This saves tokens and gets better results on hard problems.
+
+## Known-good baseline tags
+
+**zephyr-fully-working-v1** — All Zephyr lamp behavior
+verified on hardware. If any future change breaks
+Zephyr functionality, restore from this tag:
+  git checkout zephyr-fully-working-v1 -- \
+    app/zephyr_nucleo_h753zi/ \
+    src/platform/zephyr/
+
+Always verify against this tag before commits that
+touch Zephyr files.
