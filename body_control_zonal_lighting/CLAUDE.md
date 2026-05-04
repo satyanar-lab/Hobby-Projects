@@ -99,3 +99,15 @@ Zephyr functionality, restore from this tag:
 
 Always verify against this tag before commits that
 touch Zephyr files.
+
+**stm32-fully-working-v1** — All STM32 bare-metal lamp
+behavior verified on hardware with new pin map matching
+Zephyr devicetree. If any future change breaks STM32
+functionality, restore from this tag:
+  git checkout stm32-fully-working-v1 -- \
+    app/stm32_nucleo_h753zi/ \
+    src/platform/stm32/ \
+    include/body_control/lighting/platform/stm32/
+
+Always verify against this tag before commits that
+touch STM32 files.
