@@ -133,7 +133,7 @@ public:
     {
         using body_control::lighting::hmi::LampFunctionToString;
         using body_control::lighting::hmi::LampOutputStateToString;
-        std::cout << "[event] "
+        std::cerr << "[event] "
                   << LampFunctionToString(lamp_status.function)
                   << " -> "
                   << LampOutputStateToString(lamp_status.output_state)
@@ -145,7 +145,7 @@ public:
             node_health_status) override
     {
         using body_control::lighting::hmi::NodeHealthStateToString;
-        std::cout << "[event] node health: "
+        std::cerr << "[event] node health: "
                   << NodeHealthStateToString(node_health_status.health_state)
                   << ", svc="
                   << (node_health_status.service_available ? "up" : "down")
@@ -154,7 +154,7 @@ public:
 
     void OnControllerAvailabilityChanged(const bool is_available) override
     {
-        std::cout << "[event] controller "
+        std::cerr << "[event] controller "
                   << (is_available ? "available" : "unavailable")
                   << '\n';
         {
