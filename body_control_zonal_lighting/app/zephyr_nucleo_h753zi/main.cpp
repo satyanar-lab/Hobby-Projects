@@ -33,6 +33,7 @@
 #include <zephyr/dfu/mcuboot.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/net/net_if.h>
 #include <zephyr/net/socket.h>
 
 #include "body_control/lighting/application/command_arbitrator.hpp"
@@ -157,32 +158,21 @@ public:
                 Tick(now_ms, hazard_blink_);
             }
             const bool phase = hazard_blink_.phase_on;
-            LOG_INF("BLINK_TICK hazard=%d left=%d right=%d phase=%d",
+            LOG_DBG("BLINK_TICK hazard=%d left=%d right=%d phase=%d",
                 static_cast<int>(IsOn(LF::kHazardLamp)),
                 static_cast<int>(IsOn(LF::kLeftIndicator)),
                 static_cast<int>(IsOn(LF::kRightIndicator)),
                 static_cast<int>(phase));
-            LOG_INF("BLINK lamp=%d state=%d",
-                static_cast<int>(LF::kHazardLamp),
-                static_cast<int>(phase));
-            static_cast<void>(gpio_.WriteLampOutput(LF::kHazardLamp,     phase));
-            LOG_INF("BLINK lamp=%d state=%d",
-                static_cast<int>(LF::kLeftIndicator),
-                static_cast<int>(phase));
-            static_cast<void>(gpio_.WriteLampOutput(LF::kLeftIndicator,  phase));
-            LOG_INF("BLINK lamp=%d state=%d",
-                static_cast<int>(LF::kRightIndicator),
-                static_cast<int>(phase));
-            static_cast<void>(gpio_.WriteLampOutput(LF::kRightIndicator, phase));
+            WriteGpio(LF::kHazardLamp,     phase, last_written_.hazard);
+            WriteGpio(LF::kLeftIndicator,  phase, last_written_.left);
+            WriteGpio(LF::kRightIndicator, phase, last_written_.right);
         }
         else
         {
             hazard_blink_ = BlinkState {};
-            LOG_INF("BLINK lamp=%d state=%d",
-                static_cast<int>(LF::kHazardLamp), 0);
-            static_cast<void>(gpio_.WriteLampOutput(LF::kHazardLamp, false));
-            DriveIndicator(now_ms, LF::kLeftIndicator,  left_blink_);
-            DriveIndicator(now_ms, LF::kRightIndicator, right_blink_);
+            WriteGpio(LF::kHazardLamp, false, last_written_.hazard);
+            DriveIndicator(now_ms, LF::kLeftIndicator,  left_blink_,  last_written_.left);
+            DriveIndicator(now_ms, LF::kRightIndicator, right_blink_, last_written_.right);
         }
 
         static_cast<void>(gpio_.WriteLampOutput(
@@ -197,6 +187,13 @@ private:
         bool          phase_on       {false};
         std::uint32_t phase_start_ms {0U};
         bool          was_active     {false};
+    };
+
+    struct GpioOutputState
+    {
+        int hazard {-1};
+        int left   {-1};
+        int right  {-1};
     };
 
     bool IsOn(const LF func) const noexcept
@@ -223,34 +220,42 @@ private:
         }
     }
 
+    void WriteGpio(LF func, bool state, int& last) noexcept
+    {
+        const int s {static_cast<int>(state)};
+        if (s != last)
+        {
+            LOG_INF("BLINK lamp=%d state=%d", static_cast<int>(func), s);
+            last = s;
+        }
+        static_cast<void>(gpio_.WriteLampOutput(func, state));
+    }
+
     void DriveIndicator(
         const std::uint32_t now_ms,
         const LF            func,
-        BlinkState&         state) noexcept
+        BlinkState&         state,
+        int&                last_written) noexcept
     {
         if (IsOn(func))
         {
             if (!state.was_active) { state = BlinkState {true, now_ms, true}; }
             else                   { Tick(now_ms, state); }
-            LOG_INF("BLINK lamp=%d state=%d",
-                static_cast<int>(func),
-                static_cast<int>(state.phase_on));
-            static_cast<void>(gpio_.WriteLampOutput(func, state.phase_on));
+            WriteGpio(func, state.phase_on, last_written);
         }
         else
         {
             state = BlinkState {};
-            LOG_INF("BLINK lamp=%d state=%d",
-                static_cast<int>(func), 0);
-            static_cast<void>(gpio_.WriteLampOutput(func, false));
+            WriteGpio(func, false, last_written);
         }
     }
 
     zgpio::ZephyrGpioDriver&                                          gpio_;
     body_control::lighting::application::RearLightingFunctionManager& fmgr_;
-    BlinkState left_blink_   {};
-    BlinkState right_blink_  {};
-    BlinkState hazard_blink_ {};
+    BlinkState      left_blink_    {};
+    BlinkState      right_blink_   {};
+    BlinkState      hazard_blink_  {};
+    GpioOutputState last_written_  {};
 };
 
 // ---- Arbitration helpers ---------------------------------------------------
@@ -898,6 +903,29 @@ static void HandleDoipConnection(int conn_fd) noexcept
 static void DoipThread(void* /*p1*/, void* /*p2*/, void* /*p3*/)
 {
     LOG_INF("[DoIP] thread started on TCP port %u", kDoipPort);
+
+    // Wait for the network interface to be operational before opening a socket.
+    // socket() returns ENOTCONN (errno 107) when called before the Zephyr
+    // network stack finishes link negotiation and address configuration.
+    // Polls every 100 ms; logs a warning every 30 s if the cable is unplugged
+    // and retries indefinitely so DoIP becomes available when the link returns.
+    {
+        static constexpr std::int32_t kPollMs     {100};
+        static constexpr std::int32_t kWarnTicks  {30000 / kPollMs};  // 30 s
+        struct net_if* const iface = net_if_get_default();
+        std::int32_t ticks {0};
+        while (iface != nullptr && !net_if_is_up(iface))
+        {
+            k_msleep(kPollMs);
+            if (++ticks >= kWarnTicks)
+            {
+                LOG_WRN("[DoIP] network interface not up after 30 s — "
+                        "check Ethernet cable; retrying");
+                ticks = 0;
+            }
+        }
+    }
+    LOG_INF("[DoIP] network interface up, opening TCP socket");
 
     const int server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (server_fd < 0)
