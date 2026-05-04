@@ -33,7 +33,9 @@
 #include <zephyr/dfu/mcuboot.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/net/net_event.h>
 #include <zephyr/net/net_if.h>
+#include <zephyr/net/net_mgmt.h>
 #include <zephyr/net/socket.h>
 
 #include "body_control/lighting/application/command_arbitrator.hpp"
@@ -900,62 +902,44 @@ static void HandleDoipConnection(int conn_fd) noexcept
 
 }  // namespace
 
+// ---- Network readiness gate (Phase 13) -------------------------------------
+//
+// NET_EVENT_L4_CONNECTED fires from the connection manager only after PHY
+// autonegotiation completes.  net_if_is_up() and IPv4 address assignment both
+// precede PHY link-up on static-IP configs, making them false readiness gates.
+//
+// The semaphore is given in the event handler.  main() registers the callback
+// before spawning DoipThread so there is no race — if L4 fires first, the
+// semaphore count reaches 1 and k_sem_take returns immediately.
+
+K_SEM_DEFINE(s_doip_net_ready, 0, 1);
+static struct net_mgmt_event_callback s_doip_net_cb;
+
+static void DoipNetReadyHandler(
+    struct net_mgmt_event_callback* /*cb*/,
+    uint32_t                        mgmt_event,
+    struct net_if*                  /*iface*/) noexcept
+{
+    if (mgmt_event == NET_EVENT_L4_CONNECTED)
+    {
+        k_sem_give(&s_doip_net_ready);
+    }
+}
+
 static void DoipThread(void* /*p1*/, void* /*p2*/, void* /*p3*/)
 {
     LOG_INF("[DoIP] thread started on TCP port %u", kDoipPort);
 
-    // Wait until an IPv4 address is assigned before opening a socket.
-    //
-    // net_if_is_up() returns true as soon as the interface is flagged in
-    // software, which happens before the PHY establishes its link (~1-3 s
-    // later).  socket() fails with ENOTCONN (107) in that window.  The IPv4
-    // unicast address is populated by the network stack only after the PHY
-    // link is up and the interface is fully ready, making it the correct
-    // readiness gate.
-    //
-    // Polls every 100 ms.  Logs a warning every 30 s so a missing cable
-    // is detectable in the serial log.  Retries indefinitely — DoIP becomes
-    // available without reboot once the cable is plugged in.
+    // Block until NET_EVENT_L4_CONNECTED — the canonical Zephyr signal that
+    // PHY autonegotiation has completed and the stack is ready for sockets.
+    // The semaphore was registered in main() before this thread started.
+    // Times out every 30 s to log a diagnostic when the cable is unplugged;
+    // retries indefinitely so DoIP comes up without reboot on reconnect.
+    while (k_sem_take(&s_doip_net_ready, K_SECONDS(30)) != 0)
     {
-        static constexpr std::int32_t kPollMs    {100};
-        static constexpr std::int32_t kWarnTicks {30000 / kPollMs};
-
-        struct net_if* const iface = net_if_get_default();
-        std::int32_t ticks {0};
-        bool addr_found {false};
-
-        while (!addr_found)
-        {
-            if (iface != nullptr)
-            {
-                const struct net_if_ipv4* const ipv4 = iface->config.ip.ipv4;
-                if (ipv4 != nullptr)
-                {
-                    for (int i = 0; i < NET_IF_MAX_IPV4_ADDR; ++i)
-                    {
-                        if (ipv4->unicast[i].ipv4.is_used &&
-                            ipv4->unicast[i].ipv4.address.family == AF_INET)
-                        {
-                            addr_found = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!addr_found)
-            {
-                k_msleep(kPollMs);
-                if (++ticks >= kWarnTicks)
-                {
-                    LOG_WRN("[DoIP] no IPv4 address after 30 s — "
-                            "check Ethernet cable; retrying");
-                    ticks = 0;
-                }
-            }
-        }
+        LOG_WRN("[DoIP] no L4 connection after 30 s — check Ethernet cable");
     }
-    LOG_INF("[DoIP] IPv4 address assigned, opening TCP socket");
+    LOG_INF("[DoIP] L4 connected, opening TCP socket");
 
     const int server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (server_fd < 0)
@@ -1069,6 +1053,13 @@ int main()
     k_thread_name_set(&g_cmd_thread_data, "cmd");
 
     LOG_INF("Rear lighting node started");
+
+    // Register L4 connectivity callback before spawning DoipThread.
+    // Must precede thread creation to avoid a race where L4_CONNECTED fires
+    // before the handler is installed and the semaphore is never given.
+    net_mgmt_init_event_callback(&s_doip_net_cb, DoipNetReadyHandler,
+                                 NET_EVENT_L4_CONNECTED);
+    net_mgmt_add_event_callback(&s_doip_net_cb);
 
     k_thread_create(&g_doip_thread_data,
                     g_doip_stack,
