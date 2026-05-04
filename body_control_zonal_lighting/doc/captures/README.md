@@ -5,6 +5,49 @@ Zonal Lighting system showing SOME/IP-shaped UDP traffic and UDS over DoIP
 between the Linux controller (192.168.0.10) and the STM32 NUCLEO-H753ZI
 rear lighting node (192.168.0.20).
 
+## Screenshots
+
+### Packet list — DoIP and UDS frames recognized
+
+![Packet list showing DoIP and UDS frames](screenshots/01_packet_list_doip_uds.png)
+
+Wireshark's protocol dissectors automatically identify DoIP (ISO 13400-2) and
+UDS (ISO 14229-1) frames in the captured traffic. No custom configuration
+required — the framing matches the standards exactly.
+
+### UDS request fully decoded
+
+![UDS request 0x22 ReadDataByIdentifier decoded](screenshots/02_uds_request_decoded.png)
+
+A single UDS request frame expanded through every protocol layer:
+Ethernet → IP → TCP → DoIP → UDS. Service ID 0x22 (ReadDataByIdentifier) and
+Data Identifier 0xF102 (NodeHealthStatus) are visible at the UDS layer.
+
+### TCP flow graph
+
+![TCP flow graph for UDS exchange](screenshots/03_tcp_flow_graph.png)
+
+Complete TCP exchange visualized: handshake (SYN, SYN+ACK, ACK), DoIP routing
+activation, UDS request and response, TCP close (FIN). One full diagnostic
+operation in a single picture.
+
+### Protocol hierarchy
+
+![Protocol hierarchy showing DoIP and UDS percentages](screenshots/04_protocol_hierarchy.png)
+
+Statistics view confirming the full automotive protocol stack is present in
+the capture and identifying the share of UDS-bearing frames within the overall
+TCP traffic.
+
+### SOME/IP-shaped UDP payload
+
+![SOME/IP-shaped UDP frame from rear node](screenshots/05_someip_udp_payload.png)
+
+Frame from the second capture file showing the periodic event traffic on UDP
+ports 41000/41001. Wireshark does not auto-decode our custom SOME/IP framing,
+so the payload is shown as raw bytes — the codec is documented in
+`include/body_control/lighting/transport/lighting_payload_codec.hpp`.
+
 ## Capture 1 — automotive_ethernet_capture.pcapng
 
 Controller-to-rear-node periodic communication on ports 41000/41001 over
