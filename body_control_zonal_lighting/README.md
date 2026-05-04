@@ -58,6 +58,10 @@ src/
 See `doc/system_architecture.md` for the architectural rationale, and
 `doc/service_interface_specification.md` for the service contract.
 
+Real Wireshark packet captures from the running system (SOME/IP-shaped UDP
+and UDS over DoIP) are in `doc/captures/` — see
+`doc/captures/README.md` for details.
+
 ## Build — Linux
 
 ```bash
