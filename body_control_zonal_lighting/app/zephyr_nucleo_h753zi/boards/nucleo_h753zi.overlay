@@ -54,3 +54,62 @@
 	&adc1 {
 	    status = "disabled";
 	};
+
+/*
+ * Flash partition layout for MCUboot dual-slot OTA (Phase 13).
+ *
+ * STM32H753ZI: 2 MB internal flash, dual-bank (1 MB per bank).
+ * Each bank has 8 sectors of 128 KB (erase-block-size = 128 KB,
+ * write-block-size = 32 bytes).
+ *
+ * Addresses are offsets from the start of flash (0x08000000 CPU base).
+ *
+ * +------------------+------------+--------+---------------------------+
+ * | Partition        | Offset     | Size   | Role                      |
+ * +------------------+------------+--------+---------------------------+
+ * | boot_partition   | 0x00000000 | 128 KB | MCUboot bootloader        |
+ * | storage_partition| 0x00020000 | 128 KB | NVS / settings (reserved) |
+ * | slot0_partition  | 0x00040000 | 768 KB | Primary image (bank 1)    |
+ * | slot1_partition  | 0x00100000 | 768 KB | Secondary/OTA image       |
+ * | scratch_partition| 0x001C0000 | 256 KB | Unused (swap-using-move)  |
+ * +------------------+------------+--------+---------------------------+
+ * Total: 2 MB exactly.
+ *
+ * Slot sizes (768 KB) cover current flash usage (113 KB) with room for
+ * growth. boot_partition fits the MCUboot bootloader (~60 KB typical).
+ * scratch_partition is present in DTS but unused with swap-using-move mode.
+ *
+ * The stock nucleo_h753zi.dts defines slot0 at @40000 (256 KB), slot1 at
+ * @80000 (256 KB), and scratch at @c0000 (128 KB).  These are deleted below
+ * before redefining them at the larger sizes required for the real application.
+ * boot_partition (@0) and storage_partition (@20000) are kept as-is.
+ */
+
+/* Step 1: remove the undersized stock partitions to avoid label conflicts. */
+&flash0 {
+    partitions {
+        /delete-node/ partition@40000;
+        /delete-node/ partition@80000;
+        /delete-node/ partition@c0000;
+    };
+};
+
+/* Step 2: add the 768 KB slots and 256 KB scratch at their correct offsets. */
+&flash0 {
+    partitions {
+        slot0_partition: partition@40000 {
+            label = "image-0";
+            reg = <0x00040000 DT_SIZE_K(768)>;
+        };
+
+        slot1_partition: partition@100000 {
+            label = "image-1";
+            reg = <0x00100000 DT_SIZE_K(768)>;
+        };
+
+        scratch_partition: partition@1C0000 {
+            label = "image-scratch";
+            reg = <0x001C0000 DT_SIZE_K(256)>;
+        };
+    };
+};
