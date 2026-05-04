@@ -119,6 +119,10 @@ public:
     {
         const bool hazard_on = IsOn(LF::kHazardLamp);
 
+        LOG_DBG("BLINK park=%d head=%d",
+            static_cast<int>(IsOn(LF::kParkLamp)),
+            static_cast<int>(IsOn(LF::kHeadLamp)));
+
         if (hazard_on)
         {
             if (!hazard_blink_.was_active)
@@ -130,13 +134,29 @@ public:
                 Tick(now_ms, hazard_blink_);
             }
             const bool phase = hazard_blink_.phase_on;
+            LOG_INF("BLINK_TICK hazard=%d left=%d right=%d phase=%d",
+                static_cast<int>(IsOn(LF::kHazardLamp)),
+                static_cast<int>(IsOn(LF::kLeftIndicator)),
+                static_cast<int>(IsOn(LF::kRightIndicator)),
+                static_cast<int>(phase));
+            LOG_INF("BLINK lamp=%d state=%d",
+                static_cast<int>(LF::kHazardLamp),
+                static_cast<int>(phase));
             static_cast<void>(gpio_.WriteLampOutput(LF::kHazardLamp,     phase));
+            LOG_INF("BLINK lamp=%d state=%d",
+                static_cast<int>(LF::kLeftIndicator),
+                static_cast<int>(phase));
             static_cast<void>(gpio_.WriteLampOutput(LF::kLeftIndicator,  phase));
+            LOG_INF("BLINK lamp=%d state=%d",
+                static_cast<int>(LF::kRightIndicator),
+                static_cast<int>(phase));
             static_cast<void>(gpio_.WriteLampOutput(LF::kRightIndicator, phase));
         }
         else
         {
             hazard_blink_ = BlinkState {};
+            LOG_INF("BLINK lamp=%d state=%d",
+                static_cast<int>(LF::kHazardLamp), 0);
             static_cast<void>(gpio_.WriteLampOutput(LF::kHazardLamp, false));
             DriveIndicator(now_ms, LF::kLeftIndicator,  left_blink_);
             DriveIndicator(now_ms, LF::kRightIndicator, right_blink_);
@@ -189,11 +209,16 @@ private:
         {
             if (!state.was_active) { state = BlinkState {true, now_ms, true}; }
             else                   { Tick(now_ms, state); }
+            LOG_INF("BLINK lamp=%d state=%d",
+                static_cast<int>(func),
+                static_cast<int>(state.phase_on));
             static_cast<void>(gpio_.WriteLampOutput(func, state.phase_on));
         }
         else
         {
             state = BlinkState {};
+            LOG_INF("BLINK lamp=%d state=%d",
+                static_cast<int>(func), 0);
             static_cast<void>(gpio_.WriteLampOutput(func, false));
         }
     }
@@ -238,13 +263,31 @@ bool IsOn(const LF func) noexcept
 
 void HandleHazard(const LC& cmd) noexcept
 {
+    LOG_INF("HAZARD action=%d hazard_on=%d",
+        static_cast<int>(cmd.action),
+        static_cast<int>(IsOn(LF::kHazardLamp)));
+
+    LOG_INF("DISPATCH lamp=%d action=%d seq=%u",
+        static_cast<int>(cmd.function),
+        static_cast<int>(cmd.action),
+        static_cast<unsigned>(cmd.sequence_counter));
+
     g_last_hazard_sequence = cmd.sequence_counter;
 
     const bool hazard_was_on = IsOn(LF::kHazardLamp);
 
     LC resolved     = cmd;
     resolved.action = hazard_was_on ? LCA::kDeactivate : LCA::kActivate;
+    LOG_INF("APPLY lamp=%d action=%d",
+        static_cast<int>(resolved.function),
+        static_cast<int>(resolved.action));
     static_cast<void>(g_lamp_mgr.ApplyCommand(resolved));
+    {
+        const bool new_state = IsOn(resolved.function);
+        LOG_INF("APPLIED lamp=%d new_state=%d",
+            static_cast<int>(resolved.function),
+            static_cast<int>(new_state));
+    }
 
     if (hazard_was_on)
     {
@@ -254,9 +297,27 @@ void HandleHazard(const LC& cmd) noexcept
         LC off      = cmd;
         off.action  = LCA::kDeactivate;
         off.function = LF::kLeftIndicator;
+        LOG_INF("APPLY lamp=%d action=%d",
+            static_cast<int>(off.function),
+            static_cast<int>(off.action));
         static_cast<void>(g_lamp_mgr.ApplyCommand(off));
+        {
+            const bool new_state = IsOn(off.function);
+            LOG_INF("APPLIED lamp=%d new_state=%d",
+                static_cast<int>(off.function),
+                static_cast<int>(new_state));
+        }
         off.function = LF::kRightIndicator;
+        LOG_INF("APPLY lamp=%d action=%d",
+            static_cast<int>(off.function),
+            static_cast<int>(off.action));
         static_cast<void>(g_lamp_mgr.ApplyCommand(off));
+        {
+            const bool new_state = IsOn(off.function);
+            LOG_INF("APPLIED lamp=%d new_state=%d",
+                static_cast<int>(off.function),
+                static_cast<int>(new_state));
+        }
         SendLampStatusEvent(LF::kHazardLamp);
         SendLampStatusEvent(LF::kLeftIndicator);
         SendLampStatusEvent(LF::kRightIndicator);
@@ -266,7 +327,16 @@ void HandleHazard(const LC& cmd) noexcept
             LC restore       = cmd;
             restore.function = g_indicator_registry.active_indicator;
             restore.action   = LCA::kActivate;
+            LOG_INF("APPLY lamp=%d action=%d",
+                static_cast<int>(restore.function),
+                static_cast<int>(restore.action));
             static_cast<void>(g_lamp_mgr.ApplyCommand(restore));
+            {
+                const bool new_state = IsOn(restore.function);
+                LOG_INF("APPLIED lamp=%d new_state=%d",
+                    static_cast<int>(restore.function),
+                    static_cast<int>(new_state));
+            }
             SendLampStatusEvent(g_indicator_registry.active_indicator);
             g_indicator_registry.active_indicator = LF::kUnknown;
         }
@@ -288,12 +358,24 @@ void HandleHazard(const LC& cmd) noexcept
 
 void HandleIndicator(const LC& cmd) noexcept
 {
+    LOG_INF("DISPATCH lamp=%d action=%d seq=%u",
+        static_cast<int>(cmd.function),
+        static_cast<int>(cmd.action),
+        static_cast<unsigned>(cmd.sequence_counter));
+
     // Suppress companion indicator commands sent as part of a hazard fanout.
-    if (cmd.sequence_counter == g_last_hazard_sequence) { return; }
+    if (cmd.sequence_counter == g_last_hazard_sequence)
+    {
+        LOG_WRN("DROPPED lamp=%d reason=%s",
+            static_cast<int>(cmd.function), "hazard_companion_seq");
+        return;
+    }
 
     if (IsOn(LF::kHazardLamp))
     {
         LOG_WRN("Indicator blocked: hazard active");
+        LOG_WRN("DROPPED lamp=%d reason=%s",
+            static_cast<int>(cmd.function), "hazard_active");
         return;
     }
 
@@ -317,7 +399,16 @@ void HandleIndicator(const LC& cmd) noexcept
             LC deactivate       = resolved;
             deactivate.function = opposite;
             deactivate.action   = LCA::kDeactivate;
+            LOG_INF("APPLY lamp=%d action=%d",
+                static_cast<int>(deactivate.function),
+                static_cast<int>(deactivate.action));
             static_cast<void>(g_lamp_mgr.ApplyCommand(deactivate));
+            {
+                const bool new_state = IsOn(deactivate.function);
+                LOG_INF("APPLIED lamp=%d new_state=%d",
+                    static_cast<int>(deactivate.function),
+                    static_cast<int>(new_state));
+            }
             SendLampStatusEvent(opposite);
         }
     }
@@ -330,7 +421,16 @@ void HandleIndicator(const LC& cmd) noexcept
         }
     }
 
+    LOG_INF("APPLY lamp=%d action=%d",
+        static_cast<int>(resolved.function),
+        static_cast<int>(resolved.action));
     static_cast<void>(g_lamp_mgr.ApplyCommand(resolved));
+    {
+        const bool new_state = IsOn(resolved.function);
+        LOG_INF("APPLIED lamp=%d new_state=%d",
+            static_cast<int>(resolved.function),
+            static_cast<int>(new_state));
+    }
     SendLampStatusEvent(cmd.function);
 
     LS result {};
@@ -356,8 +456,23 @@ void ApplyLampCommand(const LC& cmd) noexcept
     }
     else
     {
+        LOG_INF("DISPATCH lamp=%d action=%d seq=%u",
+            static_cast<int>(cmd.function),
+            static_cast<int>(cmd.action),
+            static_cast<unsigned>(cmd.sequence_counter));
+
         // Park and head lamps: no arbitration.
-        if (g_lamp_mgr.ApplyCommand(cmd))
+        LOG_INF("APPLY lamp=%d action=%d",
+            static_cast<int>(cmd.function),
+            static_cast<int>(cmd.action));
+        const bool apply_ok = g_lamp_mgr.ApplyCommand(cmd);
+        {
+            const bool new_state = IsOn(cmd.function);
+            LOG_INF("APPLIED lamp=%d new_state=%d",
+                static_cast<int>(cmd.function),
+                static_cast<int>(new_state));
+        }
+        if (apply_ok)
         {
             SendLampStatusEvent(cmd.function);
             LS result {};
@@ -366,6 +481,11 @@ void ApplyLampCommand(const LC& cmd) noexcept
                 LOG_INF("Lamp command applied: %s",
                         (result.output_state == LOS::kOn) ? "ON" : "OFF");
             }
+        }
+        else
+        {
+            LOG_WRN("DROPPED lamp=%d reason=%s",
+                static_cast<int>(cmd.function), "apply_command_rejected");
         }
     }
 
@@ -438,17 +558,20 @@ struct LampCommandDispatcher final
                 static_cast<int>(cmd.action),
                 static_cast<unsigned>(cmd.sequence_counter));
 
-        // Latest-wins: purge any pending unprocessed commands before posting the
-        // new one so rapid input collapses to the operator's most recent intent.
-        // Lamp commands are idempotent at the fmgr level — only the final state
-        // matters.  K_NO_WAIT on the put is still needed in case cmd_thread
-        // dequeued the last item between purge and put; the race window is tiny
-        // and would only drop a duplicate, not a net-new state change.
-        k_msgq_purge(&g_lamp_cmd_queue);
+        // FIFO enqueue — do NOT purge.  A hazard press from the CZC fans out
+        // into three datagrams ([hazard, left, right]) all carrying the same
+        // sequence_counter.  An earlier "latest-wins" purge here destroyed the
+        // hazard and left messages every fanout, leaving only the right
+        // indicator command in the queue.  cmd_thread then ran HandleIndicator
+        // on right (with g_last_hazard_sequence still at its prior value), so
+        // hazard never activated in fmgr — only the right indicator did.
+        // Mirror the STM32 bare-metal path which processes every datagram in
+        // arrival order; queue depth (8) holds two full hazard fanouts and
+        // cmd_thread drains in microseconds, so backpressure is bounded.
         const int ret = k_msgq_put(&g_lamp_cmd_queue, &cmd, K_NO_WAIT);
         if (ret != 0)
         {
-            LOG_WRN("lamp cmd queue full after purge, datagram dropped");
+            LOG_WRN("lamp cmd queue full, datagram dropped");
         }
     }
 
@@ -470,7 +593,24 @@ static void CmdThread(void* /*p1*/, void* /*p2*/, void* /*p3*/)
     LC cmd {};
     while (true)
     {
-        k_msgq_get(&g_lamp_cmd_queue, &cmd, K_FOREVER);
+        // k_msgq_get returns 0 on success.  When the dispatcher calls
+        // k_msgq_purge while this thread is pended on an empty queue,
+        // Zephyr wakes the pended reader with -ENOMSG and does NOT
+        // populate the data buffer (see zephyr/kernel/msg_q.c
+        // z_impl_k_msgq_purge: arch_thread_return_value_set(..., -ENOMSG)
+        // without copying any payload).  If we ignore the return value,
+        // ApplyLampCommand(cmd) runs with a STALE buffer — initially the
+        // zero-initialised LampCommand (lamp=0 action=0 seq=0, the
+        // observed phantom dispatch) and on later iterations the
+        // previously-processed command, which manifested as the apparent
+        // "kToggle expansion" trace where one RX produced two DISPATCH
+        // events (the stale prior command followed by the real new one).
+        // Skip dispatch on any non-success return so each RX yields
+        // exactly one ApplyCommand call.
+        if (k_msgq_get(&g_lamp_cmd_queue, &cmd, K_FOREVER) != 0)
+        {
+            continue;
+        }
         ApplyLampCommand(cmd);
     }
 }
