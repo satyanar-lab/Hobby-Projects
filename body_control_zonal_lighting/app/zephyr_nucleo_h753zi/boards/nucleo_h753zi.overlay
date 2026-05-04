@@ -21,28 +21,36 @@
         compatible = "gpio-leds";
 
         left_indicator: left_indicator {
-            gpios = <&gpiob 5 GPIO_ACTIVE_HIGH>;
+            gpios = <&gpioa 5 GPIO_ACTIVE_HIGH>;
             label = "LEFT_INDICATOR";
         };
 
         right_indicator: right_indicator {
-            gpios = <&gpiob 1 GPIO_ACTIVE_HIGH>;
+            gpios = <&gpioa 9 GPIO_ACTIVE_HIGH>;
             label = "RIGHT_INDICATOR";
         };
 
         hazard_lamp: hazard_lamp {
-            gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
+            gpios = <&gpiob 5 GPIO_ACTIVE_HIGH>;
             label = "HAZARD_LAMP";
         };
 
         park_lamp: park_lamp {
-            gpios = <&gpiob 3 GPIO_ACTIVE_HIGH>;
+            gpios = <&gpioa 3 GPIO_ACTIVE_HIGH>;
             label = "PARK_LAMP";
         };
 
         head_lamp: head_lamp {
-            gpios = <&gpiob 4 GPIO_ACTIVE_HIGH>;
+            gpios = <&gpioe 14 GPIO_ACTIVE_HIGH>;
             label = "HEAD_LAMP";
         };
     };
 };
+	
+	&spi1 {
+	   status = "disabled";
+	};
+
+	&adc1 {
+	    status = "disabled";
+	};
