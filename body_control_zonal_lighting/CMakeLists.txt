@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(body_control_zonal_lighting
-    VERSION 1.0.2
+    VERSION 1.0.3
     DESCRIPTION "Body Control Zonal Lighting over Ethernet using modern C++"
     LANGUAGES CXX
 )

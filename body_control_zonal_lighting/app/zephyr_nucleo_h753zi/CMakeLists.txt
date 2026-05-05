@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.20)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(exterior_lighting_zephyr_node
-    VERSION 1.0.2
+    VERSION 1.0.3
     LANGUAGES C CXX
 )
 

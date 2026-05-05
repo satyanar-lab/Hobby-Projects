@@ -141,6 +141,43 @@ Useful display filters:
 | `udp.port == 41001` | SOME/IP-shaped rear-node events |
 | `tcp.port == 13400` | All DoIP/UDS TCP traffic |
 
+## Capture 3 — someip_sd_capture.pcapng
+
+SOME/IP Service Discovery frames captured on the Linux host during a 15-second
+run of the exterior lighting node simulator. Captured on the WSL2 eth1 interface
+(172.20.10.x) since that is where the kernel routes the SD multicast group
+(224.244.224.245) in a WSL2 mirrored-networking environment.
+
+Wireshark's built-in SOME/IP-SD dissector (no plugins required) decodes every
+frame as a valid SD message. Load with:
+
+```bash
+tshark -r doc/captures/someip_sd_capture.pcapng \
+  -d "udp.port==30490,someip" -Y someip
+```
+
+Expected output (one line per frame, ~2-second cadence):
+
+```
+1  0.000000  172.20.10.2 → 224.244.224.245  SOME/IP-SD  98  SOME/IP Service Discovery Protocol [Offer]
+2  2.000...  172.20.10.2 → 224.244.224.245  SOME/IP-SD  98  SOME/IP Service Discovery Protocol [Offer]
+...
+```
+
+Frame details (from `tshark -V`):
+
+- **SOME/IP header**: Service ID 0xffff, Method ID 0x8100 (SD magic bytes)
+- **Flags**: 0xC0 — Reboot flag + Unicast flag
+- **Entry**: OfferService, Service ID 0x5100 (ExteriorLightingService), Instance 0x0001, Version 1.0, TTL 5
+- **Option**: IPv4 Endpoint 127.0.0.1:41001 (UDP) — loopback for same-host testing
+
+The Zephyr NUCLEO-H753ZI sends the identical frame structure from 192.168.0.20,
+with IPv4 Endpoint option pointing to 192.168.0.20:41001.  Inbound multicast
+from the physical Ethernet is not forwarded into WSL2 guests, so a hardware
+capture from the board requires capturing on the Windows host or a separate
+machine. The firmware is confirmed running on the board (OTA-deployed v1.0.3
+verified via UDS DID read).
+
 ## Why this matters
 
 These captures are wire-level proof that:
@@ -149,3 +186,4 @@ These captures are wire-level proof that:
 - SOME/IP-shaped framing is consistent with the spec
 - Real UDS over DoIP is implemented per ISO standards
 - The Python diagnostic client speaks the same protocol as a production tester would
+- SOME/IP Service Discovery frames match AUTOSAR AP_PRS_SOMEIPServiceDiscovery — Wireshark's own dissector recognises them without any custom plugin
