@@ -33,7 +33,7 @@ public:
     };
 
     OtaSessionManager() noexcept = default;
-    ~OtaSessionManager() noexcept;
+    ~OtaSessionManager() noexcept; // NOLINT(performance-trivially-destructible)
 
     OtaSessionManager(const OtaSessionManager&)            = delete;
     OtaSessionManager& operator=(const OtaSessionManager&) = delete;
@@ -74,11 +74,24 @@ public:
 
 private:
     OtaState      state_          {OtaState::kIdle};
+    // Fields below are used by platform-specific implementations
+    // (ota_session_manager.cpp, ota_session_manager_zephyr.cpp).
+    // Clang (and clang-tidy) reports them as unused when the header is
+    // included without the implementation TU. GCC does not have this warning.
+    // Guard is required: #pragma clang diagnostic is unknown to GCC, which
+    // would error on it under -Werror=unknown-pragmas.
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-private-field"
+#endif
     std::uint32_t expected_size_  {0U};
     std::uint32_t received_size_  {0U};
     std::uint8_t  next_block_seq_ {0x01U};
     std::uint32_t running_crc_    {0xFFFF'FFFFU};
     int           staging_fd_     {-1};
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
     static constexpr const char* kStagingPath  {"/tmp/ota_firmware_staging.bin"};
     static constexpr const char* kValidatedPath{"/tmp/ota_firmware_validated.bin"};

@@ -39,6 +39,7 @@ links to specific evidence in the codebase.
 | **HMI / Qt6** | QML-based control panel with atomic state and 80ms poll timer. Drives all three backends interchangeably. See [app/hmi_control_panel/](app/hmi_control_panel/). |
 | **Build systems** | CMake for Linux + STM32 bare-metal cross-compilation. Zephyr west sysbuild for MCUboot child image build. CI/CD with GitHub Actions. |
 | **Testing** | 14 GoogleTest unit tests covering arbitrator, function manager, fault manager, UDS handler, OTA handler, payload codec, SOME/IP-SD codec. Runs in CI on every push. |
+| **Static analysis** | cppcheck (warning/style/performance/portability) and clang-tidy (bugprone-\*, cert-\*, performance-\*, portability-\*) run as separate CI jobs on every push and PR. Suppressions curated in `cppcheck-suppressions.txt` and `.clang-tidy`; platform files (STM32 HAL, Zephyr kernel, LwIP raw API) excluded from clang-tidy since they do not build on Linux. |
 | **Tooling** | Python UDS client, Python OTA client, Wireshark dissector, sysbuild, west, STM32CubeProgrammer integration, Lauterbach-friendly elf output. |
 
 ### Hardware platforms

@@ -158,7 +158,7 @@ public:
                   << (is_available ? "available" : "unavailable")
                   << '\n';
         {
-            std::lock_guard<std::mutex> lock {mutex_};
+            const std::lock_guard<std::mutex> lock {mutex_};
             controller_available_.store(is_available);
         }
         if (is_available) { cv_.notify_all(); }

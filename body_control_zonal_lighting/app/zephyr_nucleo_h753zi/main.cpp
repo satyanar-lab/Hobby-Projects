@@ -163,9 +163,7 @@ static void SdOfferWorkHandler(struct k_work* /*work*/) noexcept
         offer.local_port    = kExteriorLightingNodePort;
         // Advertise the NUCLEO's static unicast IP so the controller can
         // open a direct data socket to this endpoint.
-        std::strncpy(offer.local_ip,
-                     kCzcIpStr[0] != '\0' ? "192.168.0.20" : "192.168.0.20",
-                     sizeof(offer.local_ip) - 1U);
+        std::strncpy(offer.local_ip, "192.168.0.20", sizeof(offer.local_ip) - 1U);
 
         const auto frame =
             ns::transport::SomeIpSdCodec::EncodeOffer(offer, g_sd_session++);
@@ -904,7 +902,7 @@ static void HandleDoipConnection(int conn_fd) noexcept
             const std::uint16_t tester_addr =
                 (static_cast<std::uint16_t>(payload_buf[0]) << 8U) | payload_buf[1];
 
-            std::uint8_t resp[9U] = {
+            const std::uint8_t resp[9U] = {
                 static_cast<std::uint8_t>(tester_addr >> 8U),
                 static_cast<std::uint8_t>(tester_addr & 0xFFU),
                 static_cast<std::uint8_t>(kDoipNodeAddr >> 8U),
@@ -934,7 +932,7 @@ static void HandleDoipConnection(int conn_fd) noexcept
             }
 
             // Send ACK before dispatching (tester times out without it).
-            std::uint8_t ack[5U] = {
+            const std::uint8_t ack[5U] = {
                 static_cast<std::uint8_t>(kDoipNodeAddr >> 8U),
                 static_cast<std::uint8_t>(kDoipNodeAddr & 0xFFU),
                 static_cast<std::uint8_t>(src_addr >> 8U),

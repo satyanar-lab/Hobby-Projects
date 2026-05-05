@@ -172,8 +172,8 @@ void DoipServer::HandleConnection(const int conn_fd) noexcept
             }
             break;
 
-        case kTypeAliveCheckResponse:
-            break;  // consume silently
+        case kTypeAliveCheckResponse:  // NOLINT(bugprone-branch-clone)
+            break;  // consume silently — distinct from default (known type, no action)
 
         default:
             break;  // ignore unsupported payload types

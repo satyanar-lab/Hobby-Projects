@@ -169,11 +169,11 @@ void OperatorServiceConsumer::OnTransportMessageReceived(
         // LOG-1-CONSUMER: vsomeip IO thread delivered a LampStatus event to the
         // consumer. Printed to stderr because this translation unit has no Qt dep.
         // If this stops appearing, the vsomeip event delivery thread has stalled.
-        std::fprintf(stderr,
+        static_cast<void>(std::fprintf(stderr,
             "[LOG-1-CONSUMER] LampStatusEvent fn=%d state=%d listener=%s\n",
             static_cast<int>(lamp_status.function),
             static_cast<int>(lamp_status.output_state),
-            (listener_ != nullptr) ? "set" : "NULL");
+            (listener_ != nullptr) ? "set" : "NULL"));
 
         // Update the local cache first so a GetLampStatus() call inside the
         // listener callback already sees the new value.

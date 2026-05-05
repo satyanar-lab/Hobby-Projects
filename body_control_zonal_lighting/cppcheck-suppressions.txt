@@ -1,0 +1,24 @@
+# cppcheck suppression list — body_control_zonal_lighting
+# Policy: suppress noise, fail on real errors.
+# Suppressions are reviewed per-release; add inline // cppcheck-suppress
+# comments in source for file-specific deferred items.
+
+# Standard library headers — cppcheck cannot find system includes in CI
+missingIncludeSystem
+
+# Google Test macros use patterns that confuse cppcheck's
+# unused-function and variable-scope checks
+unusedFunction:test/unit/*
+variableScope:test/unit/*
+
+# vsomeip-generated code patterns — not under our control
+*:src/transport/vsomeip/*
+
+# Qt MOC keyword — private slots: is not standard C++; cppcheck false positive
+unknownMacro:app/hmi_control_panel/qml_hmi_bridge.hpp
+
+# Intentional bitmask initialisation: flags starts at 0 then ORs in a mask.
+# cppcheck reads this as "redundant | with zero" but the pattern is correct.
+badBitmaskCheck:src/platform/zephyr/zephyr_udp_transport.cpp
+badBitmaskCheck:src/transport/ethernet/ethernet_frame_adapter.cpp
+badBitmaskCheck:src/transport/lwip/lwip_udp_transport_adapter.cpp

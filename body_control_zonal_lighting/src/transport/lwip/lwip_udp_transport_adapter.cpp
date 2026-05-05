@@ -226,7 +226,7 @@ TransportStatus LwipUdpTransportAdapter::SendMessage(
 
     const std::vector<std::uint8_t> frame = EncodeFrame(transport_message, message_kind);
 
-    pbuf* const p = pbuf_alloc(PBUF_TRANSPORT,
+    pbuf* const p = pbuf_alloc(PBUF_TRANSPORT,  // NOLINT(cppcoreguidelines-init-variables)
                                static_cast<std::uint16_t>(frame.size()),
                                PBUF_RAM);
     if (p == nullptr) { return TransportStatus::kTransmissionFailed; }

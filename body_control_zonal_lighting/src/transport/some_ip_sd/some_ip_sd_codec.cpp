@@ -241,7 +241,7 @@ bool DecodeOffer(
 
     for (std::uint32_t i = 0U; i < num_entries; ++i)
     {
-        const std::uint8_t* const entry = sd + 8U + (i * kEntrySize);
+        const std::uint8_t* const entry = sd + 8U + (static_cast<std::size_t>(i) * kEntrySize);
         if (entry[0] != kEntryTypeOffer) { continue; }  // not OfferService
 
         const std::uint16_t svc  = ReadU16Be(entry + 4U);

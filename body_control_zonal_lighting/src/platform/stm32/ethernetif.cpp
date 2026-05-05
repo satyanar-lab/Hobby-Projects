@@ -242,7 +242,7 @@ void HAL_ETH_RxLinkCallback(
     auto** ppStart = reinterpret_cast<struct pbuf**>(pStart);
     auto** ppEnd   = reinterpret_cast<struct pbuf**>(pEnd);
 
-    struct pbuf* const p = pbuf_alloc(PBUF_RAW,
+    struct pbuf* const p = pbuf_alloc(PBUF_RAW,  // NOLINT(cppcoreguidelines-init-variables)
                                       static_cast<uint16_t>(Length),
                                       PBUF_POOL);
     if (p == nullptr) { return; }

@@ -208,13 +208,15 @@ void ExteriorLightingServiceConsumer::OnTransportMessageReceived(
     // Both event pushes and request responses carry lamp/health data; the same
     // payload handler works for both because the SOME/IP payload layout is
     // identical regardless of whether it arrived as an event or a response.
+    // The four branches below are intentionally paired (event == request for
+    // each function); clang-tidy branch-clone is suppressed.
     if (transport::SomeipMessageParser::IsLampStatusEvent(transport_message))
-    {
+    { // NOLINT(bugprone-branch-clone)
         OnLampStatusPayloadReceived(transport_message);
     }
     else if (
         transport::SomeipMessageParser::IsNodeHealthEvent(transport_message))
-    {
+    { // NOLINT(bugprone-branch-clone)
         OnNodeHealthPayloadReceived(transport_message);
     }
     else if (
