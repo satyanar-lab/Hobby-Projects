@@ -30,6 +30,7 @@ links to specific evidence in the codebase.
 | **MISRA-oriented discipline** | Explicit interfaces, deterministic behavior, low coupling, clean separation between domain/application/service/transport layers. Static analysis ready. |
 | **Adaptive AUTOSAR communication patterns** | Request-response (UDS), publish-subscribe (LampStatusEvent, NodeHealthStatusEvent), service discovery hooks. Three communication patterns implemented. |
 | **MCUboot OTA** | Full bootloader integration on Zephyr with ECDSA-P256 signing, dual-bank flash, swap-using-move algorithm, automatic rollback. End-to-end OTA verified on STM32 hardware. See [doc/mcuboot_integration.md](doc/mcuboot_integration.md). |
+| **Security architecture** | Threat model, implemented controls (ECDSA-P256 signing, MPU stack guards, OTA CRC), and production gap analysis (anti-rollback counter, transport TLS, UDS 0x27, RDP, encrypted images). See [doc/security_architecture.md](doc/security_architecture.md). |
 | **Diagnostic Trouble Codes** | FaultManager with DTCs B1001–B1005 (one per lamp). Fault injection via UDS 0x31 RoutineControl. Implementation at [src/application/fault_manager.cpp](src/application/fault_manager.cpp). |
 | **Zephyr RTOS** | Multi-threaded application with msgq IPC, devicetree GPIO, NET_IF_RUNNING gating, MCUboot integration, BSD sockets. See [app/zephyr_nucleo_h753zi/](app/zephyr_nucleo_h753zi/). |
 | **STM32 bare-metal** | LwIP raw API TCP server, HAL GPIO, custom linker script with MCUboot-compatible offsets, USART3 retarget. See [app/stm32_nucleo_h753zi/](app/stm32_nucleo_h753zi/). |
@@ -58,6 +59,7 @@ Wireshark captures with screenshots in [doc/captures/](doc/captures/).
 - [doc/captures/README.md](doc/captures/README.md) — Wire-level evidence
 - [doc/mcuboot_integration.md](doc/mcuboot_integration.md) — Bootloader integration
 - [doc/ota_specification.md](doc/ota_specification.md) — UDS OTA flow
+- [doc/security_architecture.md](doc/security_architecture.md) — Threat model and gap analysis
 
 ---
 
