@@ -139,16 +139,20 @@ resumes normal lamp operations.  A new 0x34 can restart the OTA session.
 To complete the OTA chain on real hardware:
 
 1. **STM32 bare-metal:** The UDS OTA protocol is implemented in
-   `OtaSessionManager`.  Wire incoming UDS frames to its handlers from an
-   Ethernet-based UDS receiver (e.g., a LwIP TCP server on port 13400).
-   Flash programming requires the STM32 Ethernet/UART bootloader or a
-   custom flash-write routine behind the kValidatedPath staging file.
+   `OtaSessionManager` (`ota_session_manager_stm32.cpp` returns NRC 0x22).
+   Flash programming requires integrating a custom flash-write routine or
+   STM32 system bootloader behind the `kValidatedPath` staging file.
 
-2. **Zephyr RTOS:** Add an `ota_thread` that receives UDS frames via a Zephyr
-   UDP socket and delegates to `OtaSessionManager`.  Flash write via
-   **MCUboot** (`boot_request_upgrade()`) after successful 0x37: MCUboot
-   verifies the image signature on next reset and swaps it into the primary
-   slot.
+2. **Zephyr RTOS (Phase 13 — complete):** DoIP TCP server (`DoipThread` on
+   port 13400) dispatches UDS requests to `UdsRequestHandler` which owns an
+   `OtaSessionManager`.  On successful 0x37 `RequestTransferExit`,
+   `ota_session_manager_zephyr.cpp` flushes the received image from
+   `stream_flash` to `slot1_partition` and calls
+   `boot_request_upgrade(BOOT_UPGRADE_TEST)`.  MCUboot swaps the image into
+   `slot0_partition` on the next boot; the new image confirms itself by
+   calling `boot_write_img_confirmed()` from `HealthThread` after the first
+   successful health event transmission.  See `doc/mcuboot_integration.md`
+   for the full partition layout, build commands, and recovery procedure.
 
 3. **Security:** Production OTA should add:
    - Authenticated extended session (0x27 SecurityAccess / challenge-response)

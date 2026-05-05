@@ -9,8 +9,11 @@
 //   Local port : 41001         (kRearLightingNodePort)
 //   Remote port: 41000         (kCentralZoneControllerPort)
 
+#include <algorithm>
 #include <chrono>
+#include <cstdio>
 #include <cstring>
+#include <vector>
 
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_it.hpp"
@@ -18,10 +21,13 @@
 #include "lwip/init.h"
 #include "lwip/ip_addr.h"
 #include "lwip/netif.h"
+#include "lwip/stats.h"
+#include "lwip/tcp.h"
 #include "lwip/timeouts.h"
 #include "netif/ethernet.h"
 
 #include "body_control/lighting/application/rear_lighting_function_manager.hpp"
+#include "body_control/lighting/application/uds_request_handler.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
 #include "body_control/lighting/domain/lighting_constants.hpp"
@@ -35,6 +41,21 @@
 
 // Required by newlib's __libc_init_array when using a bare-metal toolchain.
 extern "C" void _init(void) {}
+
+// Retarget newlib printf() → USART3 so ETH-TX and pool diagnostics reach the
+// serial console.  Mirrors the polling loop in stm32_diagnostic_logger.cpp.
+extern "C" int _write(int /*fd*/, const char* const ptr, const int len)
+{
+    if ((RCC->APB1LENR & RCC_APB1LENR_USART3EN) == 0U) { return 0; }
+    if ((USART3->CR1 & USART_CR1_UE) == 0U) { return 0; }
+    for (int i = 0; i < len; ++i)
+    {
+        while ((USART3->ISR & USART_ISR_TXE_TXFNF) == 0U) {}
+        USART3->TDR = static_cast<std::uint8_t>(ptr[i]);
+    }
+    while ((USART3->ISR & USART_ISR_TC) == 0U) {}
+    return len;
+}
 
 // Defined in ethernetif.cpp; called from this main loop.
 extern "C"
@@ -367,24 +388,56 @@ private:
         resolved.action = hazard_was_on ? LCA::kDeactivate : LCA::kActivate;
         static_cast<void>(fmgr_.ApplyCommand(resolved));
 
-        if (hazard_was_on)
+        if (!hazard_was_on)
         {
-            // Clear indicator states so they do not resume blinking after hazard off.
-            LC off     = cmd;
-            off.action = LCA::kDeactivate;
-            off.function = LF::kLeftIndicator;
-            static_cast<void>(fmgr_.ApplyCommand(off));
-            off.function = LF::kRightIndicator;
-            static_cast<void>(fmgr_.ApplyCommand(off));
+            // Hazard turning ON — save whichever indicator is active so it can
+            // be restored when hazard deactivates (turn-signal retention).
+            if      (IsOn(LF::kLeftIndicator))  { active_indicator_before_hazard_ = LF::kLeftIndicator;  }
+            else if (IsOn(LF::kRightIndicator)) { active_indicator_before_hazard_ = LF::kRightIndicator; }
+            else                                { active_indicator_before_hazard_ = LF::kUnknown;        }
+
             SendLampStatusEvent(LF::kHazardLamp);
-            SendLampStatusEvent(LF::kLeftIndicator);
-            SendLampStatusEvent(LF::kRightIndicator);
-            logger_.LogInfo("Hazard: OFF");
+            logger_.LogInfo("Hazard: ON");
         }
         else
         {
+            // Hazard turning OFF — restore the saved indicator if one was active
+            // before hazard; otherwise clear both.
+            // Companion kLeft/kRight deactivate commands from the CZC fanout will
+            // be suppressed by the last_hazard_sequence_ guard in HandleIndicator.
+            if (active_indicator_before_hazard_ != LF::kUnknown)
+            {
+                LC restore      = cmd;
+                restore.function = active_indicator_before_hazard_;
+                restore.action   = LCA::kActivate;
+                static_cast<void>(fmgr_.ApplyCommand(restore));
+
+                const LF opposite =
+                    (active_indicator_before_hazard_ == LF::kLeftIndicator)
+                        ? LF::kRightIndicator : LF::kLeftIndicator;
+                LC clr      = cmd;
+                clr.function = opposite;
+                clr.action   = LCA::kDeactivate;
+                static_cast<void>(fmgr_.ApplyCommand(clr));
+
+                SendLampStatusEvent(active_indicator_before_hazard_);
+                SendLampStatusEvent(opposite);
+                active_indicator_before_hazard_ = LF::kUnknown;
+            }
+            else
+            {
+                LC off       = cmd;
+                off.action   = LCA::kDeactivate;
+                off.function = LF::kLeftIndicator;
+                static_cast<void>(fmgr_.ApplyCommand(off));
+                off.function = LF::kRightIndicator;
+                static_cast<void>(fmgr_.ApplyCommand(off));
+                SendLampStatusEvent(LF::kLeftIndicator);
+                SendLampStatusEvent(LF::kRightIndicator);
+            }
+
             SendLampStatusEvent(LF::kHazardLamp);
-            logger_.LogInfo("Hazard: ON");
+            logger_.LogInfo("Hazard: OFF");
         }
     }
 
@@ -469,7 +522,306 @@ private:
     body_control::lighting::transport::TransportAdapterInterface&      transport_;
     // Sequence counter of the last hazard command; indicator commands sharing
     // this counter are companion fanout commands and must be suppressed.
-    std::uint16_t last_hazard_sequence_ {0U};
+    std::uint16_t last_hazard_sequence_        {0U};
+    // Indicator that was active just before hazard activated; kUnknown if none.
+    // Restored when hazard deactivates (turn-signal retention — BUG 2 fix).
+    LF            active_indicator_before_hazard_ {LF::kUnknown};
+};
+
+// ── DoIP TCP server (LwIP raw API, NO_SYS mode) ──────────────────────────────
+//
+// Listens on TCP port 13400 (ISO 13400-2 DoIP diagnostic port).  Accepts one
+// tester connection at a time.  Handles routing activation (0x0005 → 0x0006)
+// and diagnostic messages (0x8001 → 0x8002 ACK + 0x8001 UDS response).
+//
+// All LwIP raw-API callbacks (accept, recv, err) are static members using the
+// void* arg to recover the server instance pointer.  This is standard practice
+// with NO_SYS LwIP and is safe because the single DoipTcpServer instance lives
+// for the entire program lifetime (main() never returns).
+//
+// TCP processing is driven automatically: ethernetif_input() → netif->input()
+// → ethernet_input() → ip4_input() → tcp_input() — no extra main-loop call needed.
+// sys_check_timeouts() handles TCP retransmit and keepalive timers.
+
+class DoipTcpServer
+{
+public:
+    explicit DoipTcpServer(
+        body_control::lighting::application::UdsRequestHandler& uds_handler) noexcept
+        : uds_handler_ {uds_handler}
+    {
+    }
+
+    // Bind the listener PCB.  Must be called after lwip_init().
+    void Init() noexcept
+    {
+        struct tcp_pcb* pcb = tcp_new();
+        if (pcb == nullptr) { return; }
+
+        if (tcp_bind(pcb, IP4_ADDR_ANY, kDoipPort) != ERR_OK)
+        {
+            tcp_abort(pcb);
+            return;
+        }
+
+        // tcp_listen frees pcb and returns a new listen PCB (or nullptr on OOM).
+        struct tcp_pcb* lpcb = tcp_listen(pcb);
+        if (lpcb == nullptr) { return; }
+
+        listen_pcb_ = lpcb;
+        tcp_arg(listen_pcb_, this);
+        tcp_accept(listen_pcb_, AcceptCallback);
+    }
+
+private:
+    // ── LwIP callbacks ───────────────────────────────────────────────────────
+
+    static err_t AcceptCallback(
+        void* arg, struct tcp_pcb* new_pcb, err_t err) noexcept
+    {
+        auto* self = static_cast<DoipTcpServer*>(arg);
+
+        if (err != ERR_OK || new_pcb == nullptr) { return ERR_VAL; }
+
+        if (self->conn_pcb_ != nullptr)
+        {
+            // Reject second connection — DoIP diagnostic supports one tester.
+            tcp_abort(new_pcb);
+            return ERR_ABRT;
+        }
+
+        self->conn_pcb_       = new_pcb;
+        self->rx_len_         = 0U;
+        self->routing_active_ = false;
+
+        tcp_arg(new_pcb,  self);
+        tcp_recv(new_pcb, RecvCallback);
+        tcp_err(new_pcb,  ErrCallback);
+        tcp_nagle_disable(new_pcb);  // send responses without delay
+
+        return ERR_OK;
+    }
+
+    static err_t RecvCallback(
+        void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err) noexcept
+    {
+        auto* self = static_cast<DoipTcpServer*>(arg);
+
+        if (p == nullptr || err != ERR_OK)
+        {
+            self->CloseConn();
+            return ERR_OK;
+        }
+
+        // Accumulate into rx_buf_, capped at buffer size.
+        const std::uint32_t space =
+            static_cast<std::uint32_t>(kRxBufSize) - self->rx_len_;
+        const std::uint32_t copy_len =
+            std::min(static_cast<std::uint32_t>(p->tot_len), space);
+
+        pbuf_copy_partial(p, self->rx_buf_ + self->rx_len_,
+                          static_cast<std::uint16_t>(copy_len), 0U);
+        self->rx_len_ += copy_len;
+        tcp_recved(pcb, p->tot_len);
+        pbuf_free(p);
+
+        self->ProcessFrames();
+        return ERR_OK;
+    }
+
+    static void ErrCallback(void* arg, err_t /*err*/) noexcept
+    {
+        auto* self = static_cast<DoipTcpServer*>(arg);
+        // LwIP already closed the PCB; just clear our pointer.
+        self->conn_pcb_       = nullptr;
+        self->rx_len_         = 0U;
+        self->routing_active_ = false;
+    }
+
+    // ── Frame processing ─────────────────────────────────────────────────────
+
+    void CloseConn() noexcept
+    {
+        if (conn_pcb_ != nullptr)
+        {
+            tcp_arg(conn_pcb_,  nullptr);
+            tcp_recv(conn_pcb_, nullptr);
+            tcp_err(conn_pcb_,  nullptr);
+            tcp_close(conn_pcb_);
+            conn_pcb_ = nullptr;
+        }
+        rx_len_         = 0U;
+        routing_active_ = false;
+    }
+
+    void ProcessFrames() noexcept
+    {
+        while (rx_len_ >= kHeaderSize)
+        {
+            if (rx_buf_[0] != kProtocolVersion) { CloseConn(); return; }
+
+            const std::uint16_t ptype =
+                (static_cast<std::uint16_t>(rx_buf_[2]) << 8U) | rx_buf_[3];
+            const std::uint32_t plen  =
+                (static_cast<std::uint32_t>(rx_buf_[4]) << 24U) |
+                (static_cast<std::uint32_t>(rx_buf_[5]) << 16U) |
+                (static_cast<std::uint32_t>(rx_buf_[6]) <<  8U) |
+                 static_cast<std::uint32_t>(rx_buf_[7]);
+
+            if (plen > kMaxPayloadLen) { CloseConn(); return; }
+
+            if (rx_len_ < kHeaderSize + plen) { return; }  // wait for more data
+
+            HandleFrame(ptype, rx_buf_ + kHeaderSize, plen);
+
+            const std::uint32_t frame_len = kHeaderSize + plen;
+            std::memmove(rx_buf_, rx_buf_ + frame_len, rx_len_ - frame_len);
+            rx_len_ -= frame_len;
+        }
+    }
+
+    void HandleFrame(
+        const std::uint16_t  ptype,
+        const std::uint8_t*  payload,
+        const std::uint32_t  plen) noexcept
+    {
+        switch (ptype)
+        {
+        case kTypeRoutingActivReq:
+            HandleRoutingActivation(payload, plen);
+            break;
+        case kTypeDiagMsg:
+            if (routing_active_) { HandleDiagnosticMessage(payload, plen); }
+            break;
+        default:
+            break;  // ignore unsupported payload types
+        }
+    }
+
+    void HandleRoutingActivation(
+        const std::uint8_t* payload,
+        const std::uint32_t plen) noexcept
+    {
+        if (plen < 7U) { CloseConn(); return; }
+
+        const std::uint16_t tester_addr =
+            (static_cast<std::uint16_t>(payload[0]) << 8U) | payload[1];
+
+        // Response: tester_addr(2) + node_addr(2) + code(1) + reserved(4) = 9 B
+        const std::uint8_t resp[9U] = {
+            static_cast<std::uint8_t>(tester_addr >> 8U),
+            static_cast<std::uint8_t>(tester_addr & 0xFFU),
+            static_cast<std::uint8_t>(kNodeAddr >> 8U),
+            static_cast<std::uint8_t>(kNodeAddr & 0xFFU),
+            kRoutingActivated,
+            0U, 0U, 0U, 0U
+        };
+
+        if (SendFrame(kTypeRoutingActivResp, resp, 9U)) { routing_active_ = true; }
+    }
+
+    void HandleDiagnosticMessage(
+        const std::uint8_t* payload,
+        const std::uint32_t plen) noexcept
+    {
+        if (plen < 5U) { return; }
+
+        const std::uint16_t src_addr =
+            (static_cast<std::uint16_t>(payload[0]) << 8U) | payload[1];
+        const std::uint16_t dst_addr =
+            (static_cast<std::uint16_t>(payload[2]) << 8U) | payload[3];
+
+        if (dst_addr != kNodeAddr) { return; }
+
+        // Send positive diagnostic message ACK.
+        const std::uint8_t ack[5U] = {
+            static_cast<std::uint8_t>(kNodeAddr >> 8U),
+            static_cast<std::uint8_t>(kNodeAddr & 0xFFU),
+            static_cast<std::uint8_t>(src_addr >> 8U),
+            static_cast<std::uint8_t>(src_addr & 0xFFU),
+            0x00U
+        };
+        if (!SendFrame(kTypeDiagMsgAck, ack, 5U)) { return; }
+
+        // Dispatch UDS request.
+        const std::vector<std::uint8_t> uds_req(
+            payload + 4U, payload + static_cast<std::size_t>(plen));
+        const std::vector<std::uint8_t> uds_resp =
+            uds_handler_.HandleRequest(uds_req);
+
+        // Build response payload: node_addr(2) + src_addr(2) + uds_response.
+        static std::uint8_t resp_buf[512U];
+        const std::size_t   uds_len = uds_resp.size();
+        if (uds_len > 508U) { return; }  // sanity guard
+
+        resp_buf[0] = static_cast<std::uint8_t>(kNodeAddr >> 8U);
+        resp_buf[1] = static_cast<std::uint8_t>(kNodeAddr & 0xFFU);
+        resp_buf[2] = static_cast<std::uint8_t>(src_addr >> 8U);
+        resp_buf[3] = static_cast<std::uint8_t>(src_addr & 0xFFU);
+        std::memcpy(resp_buf + 4U, uds_resp.data(), uds_len);
+
+        SendFrame(kTypeDiagMsg, resp_buf,
+                  static_cast<std::uint32_t>(4U + uds_len));
+    }
+
+    // Returns false and closes connection on LwIP error.
+    bool SendFrame(
+        const std::uint16_t  ptype,
+        const std::uint8_t*  payload,
+        const std::uint32_t  plen) noexcept
+    {
+        if (conn_pcb_ == nullptr) { return false; }
+
+        std::uint8_t hdr[kHeaderSize] = {
+            kProtocolVersion,
+            static_cast<std::uint8_t>(~kProtocolVersion),
+            static_cast<std::uint8_t>(ptype >> 8U),
+            static_cast<std::uint8_t>(ptype  & 0xFFU),
+            static_cast<std::uint8_t>(plen >> 24U),
+            static_cast<std::uint8_t>(plen >> 16U),
+            static_cast<std::uint8_t>(plen >>  8U),
+            static_cast<std::uint8_t>(plen  & 0xFFU),
+        };
+
+        if (tcp_write(conn_pcb_, hdr,
+                      static_cast<std::uint16_t>(kHeaderSize),
+                      TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE) != ERR_OK)
+        {
+            CloseConn(); return false;
+        }
+        if (plen > 0U)
+        {
+            if (tcp_write(conn_pcb_, payload,
+                          static_cast<std::uint16_t>(plen),
+                          TCP_WRITE_FLAG_COPY) != ERR_OK)
+            {
+                CloseConn(); return false;
+            }
+        }
+        tcp_output(conn_pcb_);
+        return true;
+    }
+
+    // ── Protocol constants ───────────────────────────────────────────────────
+    static constexpr std::uint16_t kDoipPort            {13400U};
+    static constexpr std::uint8_t  kProtocolVersion     {0xFDU};
+    static constexpr std::size_t   kHeaderSize          {8U};
+    static constexpr std::uint32_t kMaxPayloadLen       {1024U};
+    static constexpr std::size_t   kRxBufSize           {1024U};
+
+    static constexpr std::uint16_t kTypeRoutingActivReq  {0x0005U};
+    static constexpr std::uint16_t kTypeRoutingActivResp {0x0006U};
+    static constexpr std::uint16_t kTypeDiagMsg          {0x8001U};
+    static constexpr std::uint16_t kTypeDiagMsgAck       {0x8002U};
+    static constexpr std::uint16_t kNodeAddr             {0x0E01U};
+    static constexpr std::uint8_t  kRoutingActivated     {0x10U};
+
+    body_control::lighting::application::UdsRequestHandler& uds_handler_;
+    struct tcp_pcb*  listen_pcb_     {nullptr};
+    struct tcp_pcb*  conn_pcb_       {nullptr};
+    std::uint8_t     rx_buf_[kRxBufSize] {};
+    std::uint32_t    rx_len_         {0U};
+    bool             routing_active_ {false};
 };
 
 }  // namespace
@@ -545,12 +897,21 @@ int main()
 
     static_cast<void>(transport.Initialize());
 
+    // --- DoIP TCP diagnostic server -----------------------------------------
+    // UdsRequestHandler wraps function_manager + FaultManager for UDS services.
+    // DoipTcpServer binds on TCP 13400; TCP processing is driven by the LwIP
+    // stack inside ethernetif_input() — no extra main-loop call required.
+    body_control::lighting::application::UdsRequestHandler uds_handler {function_manager};
+    DoipTcpServer doip_server {uds_handler};
+    doip_server.Init();
+
     logger.LogInfo("Rear lighting node started");
 
     // --- Main loop ----------------------------------------------------------
     std::uint32_t last_tick      = HAL_GetTick();
     std::uint32_t last_phy_ms    = HAL_GetTick();
     std::uint32_t last_health_ms = HAL_GetTick();
+    std::uint32_t last_stats_ms  = HAL_GetTick();
 
     while (true)
     {
@@ -567,11 +928,25 @@ int main()
             ethernetif_poll_phy(&gnetif);
         }
 
-        if ((now - last_health_ms) >= kNodeHealthPublishPeriodMs)
+        if (netif_is_link_up(&gnetif) && (now - last_health_ms) >= kNodeHealthPublishPeriodMs)
         {
             last_health_ms = now;
             handler.PublishNodeHealth();
         }
+
+        if ((now - last_stats_ms) >= 10000U)
+        {
+            last_stats_ms = now;
+            printf("memp PBUF_POOL: %d available\r\n",
+                   static_cast<int>(MEMP_STATS_GET(avail, MEMP_PBUF_POOL)));
+        }
+
+        // ARP aging (etharp_tmr) and IP reassembly (ip_reass_tmr) are both
+        // registered as cyclic timers in lwip_cyclic_timers[] (timeouts.c) and
+        // are driven by sys_check_timeouts() above.  Calling them explicitly
+        // here would double-increment ARP entry ctime and cause stable entries
+        // to expire at ARP_MAXAGE/2 wall-clock seconds — the bug fixed in the
+        // commit that removed this block.
 
         // BlinkManager owns all five GPIO outputs each tick.
         blink_manager.ProcessMainLoop(now);

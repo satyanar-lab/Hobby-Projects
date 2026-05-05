@@ -1,28 +1,44 @@
 // Zephyr RTOS rear lighting node — NUCLEO-H753ZI
 //
-// Phase 9: Zephyr RTOS port.  Replaces the Phase 6/7 bare-metal superloop
-// with four RTOS threads connected by a Zephyr message queue:
-//
+// Phase 9:  Zephyr RTOS port.  Four threads over a Zephyr message queue:
 //   udp_rx_thread  — blocks on UDP recv, posts LampCommand to g_lamp_cmd_queue
 //   cmd_thread     — dequeues commands, applies arbitration, sends LampStatus
 //   blink_thread   — 20 ms periodic tick, drives GPIO for blink patterns
-//   health_thread  — 1000 ms periodic, publishes NodeHealthStatusEvent
+//   health_thread  — 200 ms broadcast + 1000 ms NodeHealthStatus publish
 //
-// Network configuration (static, same as bare-metal build):
-//   NUCLEO IP  : 192.168.0.20  (kNucleoIpStr / prj.conf NET_CONFIG_MY_IPV4_ADDR)
+// Phase 13: DoIP/UDS TCP thread for OTA firmware update:
+//   doip_thread    — blocks on accept(), handles DoIP framing (ISO 13400-2),
+//                    dispatches UDS requests to UdsRequestHandler.
+//                    UDS 0x34/0x36/0x37 write the incoming image to
+//                    slot1_partition via stream_flash, then call
+//                    boot_request_upgrade(BOOT_UPGRADE_TEST) and reboot.
+//
+//   DoIP uses Zephyr BSD sockets (not LwIP raw API) because the Zephyr
+//   networking stack does not expose the LwIP raw-API callback model used
+//   by the bare-metal STM32 DoipTcpServer.  The protocol framing logic is
+//   identical; only the socket layer differs.  See app/stm32_nucleo_h753zi/
+//   main.cpp for the LwIP version.
+//
+// Network configuration (static):
+//   NUCLEO IP  : 192.168.0.20  (prj.conf NET_CONFIG_MY_IPV4_ADDR)
 //   CZC IP     : 192.168.0.10  (kCzcIpStr)
 //   Local port : 41001         (kRearLightingNodePort)
 //   Remote port: 41000         (kCentralZoneControllerPort)
+//   DoIP port  : 13400         (ISO 13400-2, kDoipPort)
 
 #include <array>
 #include <cstdint>
 #include <cstring>
 
+#include <zephyr/dfu/mcuboot.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/net/net_if.h>
+#include <zephyr/net/socket.h>
 
 #include "body_control/lighting/application/command_arbitrator.hpp"
 #include "body_control/lighting/application/rear_lighting_function_manager.hpp"
+#include "body_control/lighting/application/uds_request_handler.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
 #include "body_control/lighting/domain/lighting_constants.hpp"
@@ -89,11 +105,19 @@ K_THREAD_STACK_DEFINE(g_udp_rx_stack,  1536);
 K_THREAD_STACK_DEFINE(g_cmd_stack,     2048);
 K_THREAD_STACK_DEFINE(g_blink_stack,   1024);
 K_THREAD_STACK_DEFINE(g_health_stack,  1536);
+// DoIP thread uses BSD sockets with a 1024-byte static recv buffer on its stack.
+// 3072 bytes covers the socket frame + UdsRequestHandler std::vector allocations.
+K_THREAD_STACK_DEFINE(g_doip_stack,    3072);
 
 static struct k_thread g_udp_rx_thread_data;
 static struct k_thread g_cmd_thread_data;
 static struct k_thread g_blink_thread_data;
 static struct k_thread g_health_thread_data;
+static struct k_thread g_doip_thread_data;
+
+// UDS request handler — accessed only from DoIP thread; no locking needed.
+static body_control::lighting::application::UdsRequestHandler
+    g_uds_handler {g_lamp_mgr};
 
 // ---- Blink manager ---------------------------------------------------------
 //
@@ -134,32 +158,21 @@ public:
                 Tick(now_ms, hazard_blink_);
             }
             const bool phase = hazard_blink_.phase_on;
-            LOG_INF("BLINK_TICK hazard=%d left=%d right=%d phase=%d",
+            LOG_DBG("BLINK_TICK hazard=%d left=%d right=%d phase=%d",
                 static_cast<int>(IsOn(LF::kHazardLamp)),
                 static_cast<int>(IsOn(LF::kLeftIndicator)),
                 static_cast<int>(IsOn(LF::kRightIndicator)),
                 static_cast<int>(phase));
-            LOG_INF("BLINK lamp=%d state=%d",
-                static_cast<int>(LF::kHazardLamp),
-                static_cast<int>(phase));
-            static_cast<void>(gpio_.WriteLampOutput(LF::kHazardLamp,     phase));
-            LOG_INF("BLINK lamp=%d state=%d",
-                static_cast<int>(LF::kLeftIndicator),
-                static_cast<int>(phase));
-            static_cast<void>(gpio_.WriteLampOutput(LF::kLeftIndicator,  phase));
-            LOG_INF("BLINK lamp=%d state=%d",
-                static_cast<int>(LF::kRightIndicator),
-                static_cast<int>(phase));
-            static_cast<void>(gpio_.WriteLampOutput(LF::kRightIndicator, phase));
+            WriteGpio(LF::kHazardLamp,     phase, last_written_.hazard);
+            WriteGpio(LF::kLeftIndicator,  phase, last_written_.left);
+            WriteGpio(LF::kRightIndicator, phase, last_written_.right);
         }
         else
         {
             hazard_blink_ = BlinkState {};
-            LOG_INF("BLINK lamp=%d state=%d",
-                static_cast<int>(LF::kHazardLamp), 0);
-            static_cast<void>(gpio_.WriteLampOutput(LF::kHazardLamp, false));
-            DriveIndicator(now_ms, LF::kLeftIndicator,  left_blink_);
-            DriveIndicator(now_ms, LF::kRightIndicator, right_blink_);
+            WriteGpio(LF::kHazardLamp, false, last_written_.hazard);
+            DriveIndicator(now_ms, LF::kLeftIndicator,  left_blink_,  last_written_.left);
+            DriveIndicator(now_ms, LF::kRightIndicator, right_blink_, last_written_.right);
         }
 
         static_cast<void>(gpio_.WriteLampOutput(
@@ -174,6 +187,13 @@ private:
         bool          phase_on       {false};
         std::uint32_t phase_start_ms {0U};
         bool          was_active     {false};
+    };
+
+    struct GpioOutputState
+    {
+        int hazard {-1};
+        int left   {-1};
+        int right  {-1};
     };
 
     bool IsOn(const LF func) const noexcept
@@ -200,34 +220,42 @@ private:
         }
     }
 
+    void WriteGpio(LF func, bool state, int& last) noexcept
+    {
+        const int s {static_cast<int>(state)};
+        if (s != last)
+        {
+            LOG_INF("BLINK lamp=%d state=%d", static_cast<int>(func), s);
+            last = s;
+        }
+        static_cast<void>(gpio_.WriteLampOutput(func, state));
+    }
+
     void DriveIndicator(
         const std::uint32_t now_ms,
         const LF            func,
-        BlinkState&         state) noexcept
+        BlinkState&         state,
+        int&                last_written) noexcept
     {
         if (IsOn(func))
         {
             if (!state.was_active) { state = BlinkState {true, now_ms, true}; }
             else                   { Tick(now_ms, state); }
-            LOG_INF("BLINK lamp=%d state=%d",
-                static_cast<int>(func),
-                static_cast<int>(state.phase_on));
-            static_cast<void>(gpio_.WriteLampOutput(func, state.phase_on));
+            WriteGpio(func, state.phase_on, last_written);
         }
         else
         {
             state = BlinkState {};
-            LOG_INF("BLINK lamp=%d state=%d",
-                static_cast<int>(func), 0);
-            static_cast<void>(gpio_.WriteLampOutput(func, false));
+            WriteGpio(func, false, last_written);
         }
     }
 
     zgpio::ZephyrGpioDriver&                                          gpio_;
     body_control::lighting::application::RearLightingFunctionManager& fmgr_;
-    BlinkState left_blink_   {};
-    BlinkState right_blink_  {};
-    BlinkState hazard_blink_ {};
+    BlinkState      left_blink_    {};
+    BlinkState      right_blink_   {};
+    BlinkState      hazard_blink_  {};
+    GpioOutputState last_written_  {};
 };
 
 // ---- Arbitration helpers ---------------------------------------------------
@@ -680,8 +708,278 @@ static void HealthThread(void* /*p1*/, void* /*p2*/, void* /*p3*/)
             else
             {
                 LOG_DBG("Health TX OK");
+
+                // MCUboot image confirmation — called once after the first
+                // successful health event transmission.  This proves the
+                // network stack, GPIO driver, and dispatch loop are all
+                // healthy.  Without this call MCUboot rolls back to the
+                // previous image on the next boot (BOOT_UPGRADE_TEST mode).
+                static bool s_image_confirmed {false};
+                if (!s_image_confirmed)
+                {
+                    if (boot_write_img_confirmed() == 0)
+                    {
+                        LOG_INF("[OTA] image confirmed");
+                    }
+                    s_image_confirmed = true;
+                }
             }
         }
+    }
+}
+
+// ---- DoIP TCP diagnostic server (Phase 13) ---------------------------------
+//
+// Implements ISO 13400-2 DoIP over Zephyr BSD sockets (TCP port 13400).
+// Accepts one tester connection at a time.  Handles:
+//   0x0005 RoutingActivationRequest → 0x0006 RoutingActivationResponse
+//   0x8001 DiagnosticMessage        → 0x8002 ACK + 0x8001 UDS response
+//
+// UDS requests are dispatched to g_uds_handler which includes the
+// OtaSessionManager.  After a successful 0x37 RequestTransferExit the
+// OtaSessionManager schedules a 100 ms delayed reboot; this thread will
+// naturally exit when the system resets.
+//
+// This is a parallel implementation to the LwIP-based DoipTcpServer in
+// app/stm32_nucleo_h753zi/main.cpp.  The two cannot share code because
+// the STM32 bare-metal build uses the LwIP raw-API callback model (driven
+// by the main polling loop) while Zephyr requires a dedicated blocking
+// thread on BSD sockets.  The DoIP framing logic (~80 lines) is identical.
+
+namespace
+{
+
+// DoIP protocol constants (ISO 13400-2).
+static constexpr std::uint16_t kDoipPort               {13400U};
+static constexpr std::uint8_t  kDoipProtocolVersion    {0xFDU};
+static constexpr std::size_t   kDoipHeaderSize         {8U};
+static constexpr std::uint32_t kDoipMaxPayloadLen      {1024U};
+static constexpr std::uint16_t kDoipTypeRoutingReq     {0x0005U};
+static constexpr std::uint16_t kDoipTypeRoutingResp    {0x0006U};
+static constexpr std::uint16_t kDoipTypeDiagMsg        {0x8001U};
+static constexpr std::uint16_t kDoipTypeDiagMsgAck     {0x8002U};
+static constexpr std::uint16_t kDoipNodeAddr           {0x0E01U};
+static constexpr std::uint8_t  kDoipRoutingActivated   {0x10U};
+
+// Receive exactly n bytes from socket fd.  Returns false on disconnect/error.
+static bool RecvExact(int fd, std::uint8_t* buf, std::size_t n) noexcept
+{
+    std::size_t received {0U};
+    while (received < n)
+    {
+        const ssize_t r = recv(fd, buf + received, n - received, 0);
+        if (r <= 0) { return false; }
+        received += static_cast<std::size_t>(r);
+    }
+    return true;
+}
+
+// Send a complete DoIP frame.  Returns false on error.
+static bool SendDoipFrame(
+    int                  fd,
+    std::uint16_t        ptype,
+    const std::uint8_t*  payload,
+    std::uint32_t        plen) noexcept
+{
+    std::uint8_t hdr[kDoipHeaderSize] = {
+        kDoipProtocolVersion,
+        static_cast<std::uint8_t>(~kDoipProtocolVersion),
+        static_cast<std::uint8_t>(ptype >> 8U),
+        static_cast<std::uint8_t>(ptype & 0xFFU),
+        static_cast<std::uint8_t>(plen >> 24U),
+        static_cast<std::uint8_t>(plen >> 16U),
+        static_cast<std::uint8_t>(plen >>  8U),
+        static_cast<std::uint8_t>(plen  & 0xFFU),
+    };
+
+    if (send(fd, hdr, kDoipHeaderSize, 0) !=
+        static_cast<ssize_t>(kDoipHeaderSize)) { return false; }
+
+    if (plen > 0U)
+    {
+        if (send(fd, payload, plen, 0) != static_cast<ssize_t>(plen))
+        { return false; }
+    }
+    return true;
+}
+
+static void HandleDoipConnection(int conn_fd) noexcept
+{
+    bool routing_active {false};
+    std::uint8_t hdr[kDoipHeaderSize];
+    static std::uint8_t payload_buf[kDoipMaxPayloadLen];
+
+    while (true)
+    {
+        if (!RecvExact(conn_fd, hdr, kDoipHeaderSize)) { break; }
+
+        if (hdr[0] != kDoipProtocolVersion) { break; }
+
+        const std::uint16_t ptype =
+            (static_cast<std::uint16_t>(hdr[2]) << 8U) | hdr[3];
+        const std::uint32_t plen  =
+            (static_cast<std::uint32_t>(hdr[4]) << 24U) |
+            (static_cast<std::uint32_t>(hdr[5]) << 16U) |
+            (static_cast<std::uint32_t>(hdr[6]) <<  8U) |
+             static_cast<std::uint32_t>(hdr[7]);
+
+        if (plen > kDoipMaxPayloadLen) { break; }
+
+        if (!RecvExact(conn_fd, payload_buf, plen)) { break; }
+
+        if (ptype == kDoipTypeRoutingReq && plen >= 7U)
+        {
+            const std::uint16_t tester_addr =
+                (static_cast<std::uint16_t>(payload_buf[0]) << 8U) | payload_buf[1];
+
+            std::uint8_t resp[9U] = {
+                static_cast<std::uint8_t>(tester_addr >> 8U),
+                static_cast<std::uint8_t>(tester_addr & 0xFFU),
+                static_cast<std::uint8_t>(kDoipNodeAddr >> 8U),
+                static_cast<std::uint8_t>(kDoipNodeAddr & 0xFFU),
+                kDoipRoutingActivated,
+                0U, 0U, 0U, 0U
+            };
+
+            if (SendDoipFrame(conn_fd, kDoipTypeRoutingResp, resp, 9U))
+            {
+                routing_active = true;
+                LOG_INF("[DoIP] routing activated");
+            }
+            else { break; }
+        }
+        else if (ptype == kDoipTypeDiagMsg && routing_active && plen >= 5U)
+        {
+            const std::uint16_t src_addr =
+                (static_cast<std::uint16_t>(payload_buf[0]) << 8U) | payload_buf[1];
+            const std::uint16_t dst_addr =
+                (static_cast<std::uint16_t>(payload_buf[2]) << 8U) | payload_buf[3];
+
+            if (dst_addr != kDoipNodeAddr)
+            {
+                LOG_WRN("[DoIP] wrong target addr 0x%04X", dst_addr);
+                continue;
+            }
+
+            // Send ACK before dispatching (tester times out without it).
+            std::uint8_t ack[5U] = {
+                static_cast<std::uint8_t>(kDoipNodeAddr >> 8U),
+                static_cast<std::uint8_t>(kDoipNodeAddr & 0xFFU),
+                static_cast<std::uint8_t>(src_addr >> 8U),
+                static_cast<std::uint8_t>(src_addr & 0xFFU),
+                0x00U
+            };
+            if (!SendDoipFrame(conn_fd, kDoipTypeDiagMsgAck, ack, 5U)) { break; }
+
+            // UDS payload starts at payload_buf[4].
+            const std::vector<std::uint8_t> uds_req(
+                payload_buf + 4U,
+                payload_buf + plen);
+
+            const std::vector<std::uint8_t> uds_resp =
+                g_uds_handler.HandleRequest(uds_req);
+
+            // Response: node_addr(2) + src_addr(2) + uds_response bytes.
+            static std::uint8_t resp_buf[520U];
+            const std::size_t uds_len = uds_resp.size();
+            if (uds_len > 516U) { break; }
+
+            resp_buf[0] = static_cast<std::uint8_t>(kDoipNodeAddr >> 8U);
+            resp_buf[1] = static_cast<std::uint8_t>(kDoipNodeAddr & 0xFFU);
+            resp_buf[2] = static_cast<std::uint8_t>(src_addr >> 8U);
+            resp_buf[3] = static_cast<std::uint8_t>(src_addr & 0xFFU);
+            std::memcpy(resp_buf + 4U, uds_resp.data(), uds_len);
+
+            if (!SendDoipFrame(conn_fd, kDoipTypeDiagMsg, resp_buf,
+                               static_cast<std::uint32_t>(4U + uds_len))) { break; }
+        }
+    }
+
+    close(conn_fd);
+}
+
+}  // namespace
+
+static void DoipThread(void* /*p1*/, void* /*p2*/, void* /*p3*/)
+{
+    LOG_INF("[DoIP] thread started on TCP port %u", kDoipPort);
+
+    // Poll NET_IF_RUNNING — set by the Ethernet driver only after PHY
+    // autonegotiation completes.  net_if_is_up() and IPv4 address assignment
+    // both precede PHY link-up on static-IP configs and are false gates.
+    // NET_EVENT_L4_CONNECTED requires IPv6 to fire reliably; with
+    // CONFIG_NET_IPV6=n it never fires.  The flag poll is IPv4/IPv6 agnostic.
+    struct net_if* const iface = net_if_get_default();
+    std::int32_t warn_ticks {0};
+    while (true)
+    {
+        if ((iface != nullptr)
+         && net_if_is_up(iface)
+         && net_if_flag_is_set(iface, NET_IF_RUNNING))
+        {
+            break;
+        }
+        k_msleep(100);
+        if (++warn_ticks >= 300)
+        {
+            LOG_WRN("[DoIP] PHY not running after 30 s — check Ethernet cable");
+            warn_ticks = 0;
+        }
+    }
+    LOG_INF("[DoIP] PHY link running, opening TCP socket");
+
+    const int server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (server_fd < 0)
+    {
+        LOG_ERR("[DoIP] socket() failed: %d", errno);
+        return;
+    }
+
+    const int opt {1};
+    static_cast<void>(setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR,
+                                 &opt, sizeof(opt)));
+
+    struct sockaddr_in addr {};
+    addr.sin_family      = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port        = htons(kDoipPort);
+
+    if (bind(server_fd, reinterpret_cast<const struct sockaddr*>(&addr),
+             sizeof(addr)) < 0)
+    {
+        LOG_ERR("[DoIP] bind() failed: %d", errno);
+        close(server_fd);
+        return;
+    }
+
+    if (listen(server_fd, 1) < 0)
+    {
+        LOG_ERR("[DoIP] listen() failed: %d", errno);
+        close(server_fd);
+        return;
+    }
+
+    LOG_INF("[DoIP] listening");
+
+    while (true)
+    {
+        struct sockaddr_in client_addr {};
+        socklen_t client_len {sizeof(client_addr)};
+
+        const int conn_fd = accept(
+            server_fd,
+            reinterpret_cast<struct sockaddr*>(&client_addr),
+            &client_len);
+
+        if (conn_fd < 0)
+        {
+            LOG_WRN("[DoIP] accept() failed: %d", errno);
+            continue;
+        }
+
+        LOG_INF("[DoIP] tester connected");
+        HandleDoipConnection(conn_fd);
+        LOG_INF("[DoIP] tester disconnected");
     }
 }
 
@@ -743,27 +1041,15 @@ int main()
 
     LOG_INF("Rear lighting node started");
 
-    // OTA firmware update — integration point (Phase 12)
-    //
-    // Production path: spawn an ota_thread that opens a UDP socket on a
-    // dedicated port, receives UDS frames, and delegates to OtaSessionManager:
-    //
-    //   OtaSessionManager ota_mgr;
-    //
-    //   // On 0x34 RequestDownload:
-    //   LOG_INF("[OTA] entering update mode — %u bytes expected", size);
-    //
-    //   // On 0x36 TransferData:
-    //   LOG_INF("[OTA] received block %u", block_seq);
-    //
-    //   // On 0x37 RequestTransferExit:
-    //   LOG_INF("[OTA] transfer complete — flash write requires MCUboot");
-    //
-    // Note: Actual flash write requires MCUboot or a custom bootloader.
-    // The UDS OTA protocol flow is fully implemented and validated on the
-    // Linux simulator (tools/ota_client/ota_client.py).
+    k_thread_create(&g_doip_thread_data,
+                    g_doip_stack,
+                    K_THREAD_STACK_SIZEOF(g_doip_stack),
+                    DoipThread,
+                    nullptr, nullptr, nullptr,
+                    7, 0, K_NO_WAIT);
+    k_thread_name_set(&g_doip_thread_data, "doip");
 
     // main() returns; the Zephyr idle thread takes over.  All work is in the
-    // four spawned threads which run indefinitely.
+    // five spawned threads which run indefinitely.
     return 0;
 }

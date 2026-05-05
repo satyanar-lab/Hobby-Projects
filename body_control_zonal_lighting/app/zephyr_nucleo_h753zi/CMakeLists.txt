@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.20)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(rear_lighting_zephyr_node
-    VERSION 1.0.0
+    VERSION 1.0.1
     LANGUAGES C CXX
 )
 
@@ -30,6 +30,10 @@ target_sources(app PRIVATE
     # and HMI sources are excluded as they were for the bare-metal target.
     ${DOMAIN_SRC_DIR}/application/fault_manager.cpp
     ${DOMAIN_SRC_DIR}/application/rear_lighting_function_manager.cpp
+    ${DOMAIN_SRC_DIR}/application/uds_request_handler.cpp
+    # Zephyr OTA implementation: stream_flash + boot_request_upgrade.
+    # Replaces ota_session_manager_stm32.cpp (NRC stub) used by the bare-metal build.
+    ${DOMAIN_SRC_DIR}/application/ota_session_manager_zephyr.cpp
     ${DOMAIN_SRC_DIR}/domain/domain_type_validators.cpp
     ${DOMAIN_SRC_DIR}/domain/lighting_payload_codec.cpp
     ${DOMAIN_SRC_DIR}/transport/someip_message_builder.cpp
@@ -44,6 +48,12 @@ target_include_directories(app PRIVATE
 set_property(TARGET app PROPERTY CXX_STANDARD          17)
 set_property(TARGET app PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET app PROPERTY CXX_EXTENSIONS        OFF)
+
+# uds_request_handler.cpp uses BODY_CONTROL_LIGHTING_PROJECT_VERSION in the
+# ECU identification DID encoder.  Mirror the definition from src/CMakeLists.txt.
+target_compile_definitions(app PRIVATE
+    BODY_CONTROL_LIGHTING_PROJECT_VERSION="${PROJECT_VERSION}"
+)
 
 # ── C++ STL headers ──────────────────────────────────────────────────────────
 # Zephyr's cross-compile toolchain variant passes -nostdinc++ which suppresses

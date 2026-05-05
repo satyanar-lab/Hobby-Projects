@@ -6,11 +6,23 @@ Implements the download side of ISO 14229-1 §14:
   0x36  TransferData      — send 512-byte chunks
   0x37  RequestTransferExit — finalise with CRC-32 validation
 
-The rear node saves the received image to /tmp/ota_firmware_validated.bin.
-During transfer the F102 NodeHealth DID returns health_state=0x04 (UPDATING).
+Target behaviour by platform:
+  Linux simulator  — saves received image to /tmp/ota_firmware_validated.bin.
+  Zephyr RTOS      — writes to slot1_partition via stream_flash, calls
+                     boot_request_upgrade(BOOT_UPGRADE_TEST), reboots into
+                     MCUboot which swaps the image. Use the SIGNED image:
+                     ~/zephyr-workspace/build/zephyr_nucleo_h753zi/zephyr/zephyr.signed.bin
+  STM32 bare-metal — returns NRC 0x22 (not yet implemented).
 
 Usage examples:
+    # Linux simulator
     python ota_client.py --host 127.0.0.1 --firmware /path/to/image.bin
+
+    # Zephyr RTOS hardware (use signed image from west build --sysbuild)
+    python ota_client.py --host 192.168.0.20 \
+        --firmware ~/zephyr-workspace/build/zephyr_nucleo_h753zi/zephyr/zephyr.signed.bin
+
+    # Dry-run (no real firmware file needed)
     python ota_client.py --host 127.0.0.1 --dry-run
     python ota_client.py --host 127.0.0.1 --dry-run --size 4096
 

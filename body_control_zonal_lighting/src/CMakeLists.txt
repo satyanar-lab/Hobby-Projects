@@ -69,6 +69,9 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_STM32
     application/fault_manager.cpp
     application/lamp_state_manager.cpp
     application/rear_lighting_function_manager.cpp
+    application/uds_request_handler.cpp
+    # OTA stub — replaces ota_session_manager.cpp which requires POSIX file I/O.
+    application/ota_session_manager_stm32.cpp
 
     domain/domain_type_validators.cpp
     domain/lighting_payload_codec.cpp
@@ -141,6 +144,9 @@ if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "stm32")
         ${lwip_SOURCE_DIR}/src/core/sys.c
         ${lwip_SOURCE_DIR}/src/core/timeouts.c
         ${lwip_SOURCE_DIR}/src/core/udp.c
+        ${lwip_SOURCE_DIR}/src/core/tcp.c
+        ${lwip_SOURCE_DIR}/src/core/tcp_in.c
+        ${lwip_SOURCE_DIR}/src/core/tcp_out.c
         ${lwip_SOURCE_DIR}/src/core/ipv4/etharp.c
         ${lwip_SOURCE_DIR}/src/core/ipv4/icmp.c
         ${lwip_SOURCE_DIR}/src/core/ipv4/ip4.c

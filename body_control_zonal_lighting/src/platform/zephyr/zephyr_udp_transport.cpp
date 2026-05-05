@@ -235,9 +235,19 @@ TransportStatus ZephyrUdpTransportAdapter::SendMessage(
         reinterpret_cast<const struct sockaddr*>(&remote_addr),
         sizeof(remote_addr));
 
-    return (sent == static_cast<ssize_t>(frame.size()))
-               ? TransportStatus::kSuccess
-               : TransportStatus::kTransmissionFailed;
+    if (sent != static_cast<ssize_t>(frame.size()))
+    {
+        // Silent UDP TX failure is how an ARP wedge or net_pkt-pool exhaustion
+        // hides itself.  Log errno and the requested length so the UART trace
+        // records the exact moment the link starts dropping datagrams.
+        // Mirrors LwipUdpTransportAdapter::SendMessage in the bare-metal port.
+        LOG_WRN("UDP TX failed: errno=%d sent=%d wanted=%u",
+                errno,
+                static_cast<int>(sent),
+                static_cast<unsigned>(frame.size()));
+        return TransportStatus::kTransmissionFailed;
+    }
+    return TransportStatus::kSuccess;
 }
 
 void ZephyrUdpTransportAdapter::ReceiveBlocking() noexcept

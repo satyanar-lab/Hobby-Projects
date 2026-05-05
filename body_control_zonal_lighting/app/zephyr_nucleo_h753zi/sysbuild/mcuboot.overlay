@@ -1,0 +1,68 @@
+/*
+ * Flash partition DTS overlay for the MCUboot child image.
+ *
+ * Picked up automatically by sysbuild as sysbuild/mcuboot.overlay and passed
+ * to the MCUboot build via mcuboot_DTC_OVERLAY_FILE.  Must define identical
+ * slot sizes to the application's boards/nucleo_h753zi.overlay; if they
+ * differ, imgtool signs the image with the app's slot size while MCUboot
+ * validates against its own, causing "Image in the primary slot is not valid!"
+ *
+ * GPIO bindings are omitted — MCUboot has no lamp drivers.
+ *
+ * STM32H753ZI: 2 MB internal flash, dual-bank (1 MB per bank).
+ * 8 sectors × 128 KB per bank; erase-block-size = 128 KB.
+ *
+ * +------------------+------------+--------+---------------------------+
+ * | Partition        | Offset     | Size   | Role                      |
+ * +------------------+------------+--------+---------------------------+
+ * | boot_partition   | 0x00000000 | 128 KB | MCUboot bootloader        |
+ * | storage_partition| 0x00020000 | 128 KB | NVS / settings (reserved) |
+ * | slot0_partition  | 0x00040000 | 768 KB | Primary image (bank 1)    |
+ * | slot1_partition  | 0x00100000 | 768 KB | Secondary/OTA image       |
+ * | scratch_partition| 0x001C0000 | 256 KB | Unused (swap-using-move)  |
+ * +------------------+------------+--------+---------------------------+
+ */
+
+/*
+ * Override the chosen code partition for MCUboot.
+ *
+ * nucleo_h753zi.dts sets zephyr,code-partition = &slot0_partition so the
+ * application links at 0x08040000.  Without this override, MCUboot inherits
+ * that chosen node through the overlay merge and also links at 0x08040000,
+ * producing a hex file with load address 0x08040000 — the bootloader ends up
+ * in slot0 instead of the boot partition at 0x08000000.
+ */
+/ {
+    chosen {
+        zephyr,code-partition = &boot_partition;
+    };
+};
+
+/* Step 1: remove the undersized stock partitions to avoid label conflicts. */
+&flash0 {
+    partitions {
+        /delete-node/ partition@40000;
+        /delete-node/ partition@80000;
+        /delete-node/ partition@c0000;
+    };
+};
+
+/* Step 2: add the 768 KB slots and 256 KB scratch at their correct offsets. */
+&flash0 {
+    partitions {
+        slot0_partition: partition@40000 {
+            label = "image-0";
+            reg = <0x00040000 DT_SIZE_K(768)>;
+        };
+
+        slot1_partition: partition@100000 {
+            label = "image-1";
+            reg = <0x00100000 DT_SIZE_K(768)>;
+        };
+
+        scratch_partition: partition@1C0000 {
+            label = "image-scratch";
+            reg = <0x001C0000 DT_SIZE_K(256)>;
+        };
+    };
+};

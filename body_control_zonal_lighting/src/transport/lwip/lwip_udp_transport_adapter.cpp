@@ -2,12 +2,14 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <vector>
 
 #include "lwip/def.h"
 #include "lwip/ip_addr.h"
 #include "lwip/pbuf.h"
+#include "lwip/sys.h"
 #include "lwip/udp.h"
 
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
@@ -239,6 +241,16 @@ TransportStatus LwipUdpTransportAdapter::SendMessage(
 
     const err_t send_err = udp_sendto(pcb_, p, &dest, config_.remote_port);
     pbuf_free(p);
+
+    if (send_err != ERR_OK)
+    {
+        // Silent UDP TX failures are how the 5-minute ARP-expiry stall
+        // hides itself.  Log the lwIP error code and timestamp so the
+        // serial console records the exact moment the link wedges.
+        std::printf("UDP TX failed: %d at tick %lu\r\n",
+                    static_cast<int>(send_err),
+                    static_cast<unsigned long>(sys_now()));
+    }
 
     return (send_err == ERR_OK) ? TransportStatus::kSuccess
                                 : TransportStatus::kTransmissionFailed;

@@ -5,16 +5,20 @@
 //           HAL_ETH_ReadData() which drives both callbacks and returns a pbuf
 //           chain ready for netif->input().
 //
-// TX path:  low_level_output() copies the pbuf chain into a static RAM_D2
-//           bounce buffer and calls HAL_ETH_Transmit().  The ETH DMA cannot
-//           reach DTCMRAM where LwIP pbuf payloads live, so the copy is
-//           mandatory.  HAL_ETH_TxFreeCallback() frees the pbuf ref after DMA
-//           completes.
+// TX path:  low_level_output() flattens the pbuf chain into a static RAM_D2
+//           bounce buffer (s_tx_scratch) and calls HAL_ETH_Transmit().  The
+//           ETH DMA cannot reach DTCMRAM where LwIP pbuf payloads live, so the
+//           copy is mandatory.  Because we own s_tx_scratch, tx_cfg.pData is
+//           set to nullptr — HAL_ETH_TxFreeCallback is a no-op for null.  This
+//           avoids a double-free: on TX timeout the error path would pbuf_free
+//           the pbuf_ref, then a late DMA completion would fire TxFreeCallback
+//           and pbuf_free again, corrupting the LwIP pbuf pool.
 //
 // ETH DMA descriptor tables and static RX/TX buffers are placed in RAM_D2 via
 // the linker-script sections .RxDecripSection / .TxDecripSection /
 // .RxArraySection / .TxScratchSection so the ETH DMA can reach them.
 
+#include <cstdio>
 #include <cstring>
 
 #include "stm32h7xx_hal.h"
@@ -133,13 +137,12 @@ err_t low_level_output(struct netif* /*netif*/, struct pbuf* const p)
     tx_cfg.CRCPadCtrl = ETH_CRC_PAD_INSERT;
     tx_cfg.Length     = frame_len;
     tx_cfg.TxBuffer   = &tx_buf;
-    tx_cfg.pData      = p;  // returned to HAL_ETH_TxFreeCallback after DMA completes
+    // pData left nullptr — s_tx_scratch is static; TxFreeCallback skips null.
 
-    pbuf_ref(p);  // HAL_ETH_TxFreeCallback calls pbuf_free, balancing this ref
-
-    if (HAL_ETH_Transmit(&heth, &tx_cfg, 100U) != HAL_OK)
+    const HAL_StatusTypeDef hal_status = HAL_ETH_Transmit(&heth, &tx_cfg, 20U);
+    if (hal_status != HAL_OK)
     {
-        pbuf_free(p);  // undo pbuf_ref; caller retains its own reference
+        printf("ETH TX failed: %d\r\n", static_cast<int>(hal_status));
         return ERR_IF;
     }
 
@@ -267,9 +270,12 @@ void HAL_ETH_RxLinkCallback(
     }
 }
 
-// Called by HAL after TX DMA completes — free the pbuf ref'd in low_level_output.
+// Called by HAL after TX DMA completes.  pData is nullptr (s_tx_scratch is
+// static), so there is nothing to free.  The null guard also protects against
+// a late callback firing after a TX timeout on a prior descriptor.
 void HAL_ETH_TxFreeCallback(uint32_t* buff)
 {
+    if (buff == nullptr) { return; }
     pbuf_free(reinterpret_cast<struct pbuf*>(buff));
 }
 
