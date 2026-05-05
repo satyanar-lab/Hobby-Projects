@@ -171,12 +171,46 @@ Frame details (from `tshark -V`):
 - **Entry**: OfferService, Service ID 0x5100 (ExteriorLightingService), Instance 0x0001, Version 1.0, TTL 5
 - **Option**: IPv4 Endpoint 127.0.0.1:41001 (UDP) — loopback for same-host testing
 
-The Zephyr NUCLEO-H753ZI sends the identical frame structure from 192.168.0.20,
-with IPv4 Endpoint option pointing to 192.168.0.20:41001.  Inbound multicast
-from the physical Ethernet is not forwarded into WSL2 guests, so a hardware
-capture from the board requires capturing on the Windows host or a separate
-machine. The firmware is confirmed running on the board (OTA-deployed v1.0.3
-verified via UDS DID read).
+## Capture 4 — someip_sd_hardware_capture.pcapng
+
+### SOME/IP-SD on real hardware
+
+![SOME/IP-SD frames captured from STM32 NUCLEO-H753ZI](screenshots/09_someip_sd_hardware.png)
+
+`doc/captures/someip_sd_hardware_capture.pcapng` captures SOME/IP Service
+Discovery OfferService frames from the STM32 NUCLEO-H753ZI (192.168.0.20)
+running firmware v1.0.3 with the SD codec. Frames arrive every 2 seconds on
+multicast 224.244.224.245:30490 and Wireshark recognizes them as standard
+SOME/IP-SD with Service ID 0x5100 (ExteriorLightingService), Instance ID
+0x0001, TTL 5, and IPv4 endpoint option pointing to the STM32 board.
+
+This firmware was deployed to the board via OTA over UDS/DoIP — no
+STM32CubeProgrammer or manual flashing involved. The complete SDV chain is
+exercised: build new firmware on Linux, sign with ECDSA-P256, OTA-deploy to
+running hardware, board boots into new image and starts offering services on
+the wire, host captures the wire-level proof.
+
+Capture details:
+
+- Source: 192.168.0.20 (STM32 NUCLEO-H753ZI, firmware v1.0.3)
+- Destination: 224.244.224.245:30490 (project SD multicast group)
+- Cadence: one OfferService every ~2 seconds
+- Decoded fields: Service ID 0x5100, Instance ID 0x0001, Major Version 1, TTL 5, IPv4 Endpoint 192.168.0.20:41001
+
+Load with:
+
+```bash
+tshark -r doc/captures/someip_sd_hardware_capture.pcapng \
+  -d "udp.port==30490,someip" -Y someip
+```
+
+Expected output:
+
+```
+1  0.000000  192.168.0.20 → 224.244.224.245  SOME/IP-SD  98  SOME/IP Service Discovery Protocol [Offer]
+2  2.015...  192.168.0.20 → 224.244.224.245  SOME/IP-SD  98  SOME/IP Service Discovery Protocol [Offer]
+...
+```
 
 ## Why this matters
 
@@ -186,4 +220,5 @@ These captures are wire-level proof that:
 - SOME/IP-shaped framing is consistent with the spec
 - Real UDS over DoIP is implemented per ISO standards
 - The Python diagnostic client speaks the same protocol as a production tester would
-- SOME/IP Service Discovery frames match AUTOSAR AP_PRS_SOMEIPServiceDiscovery — Wireshark's own dissector recognises them without any custom plugin
+- SOME/IP Service Discovery frames from both Linux simulator and real STM32 hardware match AUTOSAR AP_PRS_SOMEIPServiceDiscovery — Wireshark's own dissector recognises them without any custom plugin
+- The full OTA chain works end-to-end: build, ECDSA-sign, UDS/DoIP transfer, MCUboot swap, confirmed v1.0.3 on hardware, then wire-level SD evidence captured
