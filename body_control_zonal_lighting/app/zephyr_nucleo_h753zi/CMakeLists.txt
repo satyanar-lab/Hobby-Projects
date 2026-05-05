@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.20)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(rear_lighting_zephyr_node
-    VERSION 1.0.0
+    VERSION 1.0.1
     LANGUAGES C CXX
 )
 
