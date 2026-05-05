@@ -1,5 +1,5 @@
 /**
- * @file test_rear_lighting_function_manager.cpp
+ * @file test_exterior_lighting_function_manager.cpp
  * @brief Unit tests for the rear-node function manager behavior.
  *
  * Covered:
@@ -11,12 +11,12 @@
 
 #include <gtest/gtest.h>
 
-#include "body_control/lighting/application/rear_lighting_function_manager.hpp"
+#include "body_control/lighting/application/exterior_lighting_function_manager.hpp"
 
 namespace
 {
 
-using body_control::lighting::application::RearLightingFunctionManager;
+using body_control::lighting::application::ExteriorLightingFunctionManager;
 using body_control::lighting::domain::CommandSource;
 using body_control::lighting::domain::LampCommand;
 using body_control::lighting::domain::LampCommandAction;
@@ -41,9 +41,9 @@ LampCommand MakeCommand(
 
 }  // namespace
 
-TEST(RearLightingFunctionManagerTest, InitialOutputsAreOff)
+TEST(ExteriorLightingFunctionManagerTest, InitialOutputsAreOff)
 {
-    const RearLightingFunctionManager manager {};
+    const ExteriorLightingFunctionManager manager {};
 
     for (const LampFunction function : {
              LampFunction::kLeftIndicator,
@@ -59,9 +59,9 @@ TEST(RearLightingFunctionManagerTest, InitialOutputsAreOff)
     }
 }
 
-TEST(RearLightingFunctionManagerTest, ActivateTurnsLampOn)
+TEST(ExteriorLightingFunctionManagerTest, ActivateTurnsLampOn)
 {
-    RearLightingFunctionManager manager {};
+    ExteriorLightingFunctionManager manager {};
 
     const LampCommand command = MakeCommand(
         LampFunction::kHeadLamp, LampCommandAction::kActivate, 5U);
@@ -74,9 +74,9 @@ TEST(RearLightingFunctionManagerTest, ActivateTurnsLampOn)
     EXPECT_EQ(status.last_sequence_counter, 5U);
 }
 
-TEST(RearLightingFunctionManagerTest, DeactivateTurnsLampOff)
+TEST(ExteriorLightingFunctionManagerTest, DeactivateTurnsLampOff)
 {
-    RearLightingFunctionManager manager {};
+    ExteriorLightingFunctionManager manager {};
 
     ASSERT_TRUE(manager.ApplyCommand(MakeCommand(
         LampFunction::kParkLamp, LampCommandAction::kActivate, 1U)));
@@ -89,9 +89,9 @@ TEST(RearLightingFunctionManagerTest, DeactivateTurnsLampOff)
     EXPECT_EQ(status.last_sequence_counter, 2U);
 }
 
-TEST(RearLightingFunctionManagerTest, ToggleInvertsOutputState)
+TEST(ExteriorLightingFunctionManagerTest, ToggleInvertsOutputState)
 {
-    RearLightingFunctionManager manager {};
+    ExteriorLightingFunctionManager manager {};
 
     LampStatus status {};
     ASSERT_TRUE(manager.GetLampStatus(LampFunction::kLeftIndicator, status));
@@ -108,9 +108,9 @@ TEST(RearLightingFunctionManagerTest, ToggleInvertsOutputState)
     EXPECT_EQ(status.output_state, LampOutputState::kOff);
 }
 
-TEST(RearLightingFunctionManagerTest, NoActionCommandIsRejected)
+TEST(ExteriorLightingFunctionManagerTest, NoActionCommandIsRejected)
 {
-    RearLightingFunctionManager manager {};
+    ExteriorLightingFunctionManager manager {};
 
     const LampCommand command = MakeCommand(
         LampFunction::kHeadLamp, LampCommandAction::kNoAction, 1U);
@@ -118,9 +118,9 @@ TEST(RearLightingFunctionManagerTest, NoActionCommandIsRejected)
     EXPECT_FALSE(manager.ApplyCommand(command));
 }
 
-TEST(RearLightingFunctionManagerTest, UnknownFunctionIsRejected)
+TEST(ExteriorLightingFunctionManagerTest, UnknownFunctionIsRejected)
 {
-    RearLightingFunctionManager manager {};
+    ExteriorLightingFunctionManager manager {};
 
     const LampCommand command = MakeCommand(
         LampFunction::kUnknown, LampCommandAction::kActivate, 1U);
@@ -128,9 +128,9 @@ TEST(RearLightingFunctionManagerTest, UnknownFunctionIsRejected)
     EXPECT_FALSE(manager.ApplyCommand(command));
 }
 
-TEST(RearLightingFunctionManagerTest, GetLampStatusRejectsUnknownFunction)
+TEST(ExteriorLightingFunctionManagerTest, GetLampStatusRejectsUnknownFunction)
 {
-    const RearLightingFunctionManager manager {};
+    const ExteriorLightingFunctionManager manager {};
 
     LampStatus status {};
     EXPECT_FALSE(

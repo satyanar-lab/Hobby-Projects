@@ -1,4 +1,4 @@
-// STM32 NUCLEO-H753ZI — rear lighting node entry point.
+// STM32 NUCLEO-H753ZI — exterior lighting node entry point.
 //
 // Role: receives SOME/IP lamp commands from the Linux CentralZoneController
 // over UDP/LwIP and drives the five GPIO outputs (PB0-PB4).
@@ -6,7 +6,7 @@
 // Network configuration (static):
 //   NUCLEO IP  : 192.168.0.20  (kNucleoIpAddr)
 //   CZC IP     : 192.168.0.10  (kCzcIpAddr)
-//   Local port : 41001         (kRearLightingNodePort)
+//   Local port : 41001         (kExteriorLightingNodePort)
 //   Remote port: 41000         (kCentralZoneControllerPort)
 
 #include <algorithm>
@@ -26,7 +26,7 @@
 #include "lwip/timeouts.h"
 #include "netif/ethernet.h"
 
-#include "body_control/lighting/application/rear_lighting_function_manager.hpp"
+#include "body_control/lighting/application/exterior_lighting_function_manager.hpp"
 #include "body_control/lighting/application/uds_request_handler.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
@@ -82,7 +82,7 @@ constexpr std::uint32_t kCzcIpAddr     {0xC0A8000AU};  // 192.168.0.10
 constexpr std::uint32_t kSubnetMask    {0xFFFFFF00U};  // /24
 constexpr std::uint32_t kGatewayAddr   {0xC0A80001U};  // 192.168.0.1
 
-constexpr std::uint16_t kRearLightingNodePort       {41001U};
+constexpr std::uint16_t kExteriorLightingNodePort       {41001U};
 constexpr std::uint16_t kCentralZoneControllerPort  {41000U};
 
 constexpr std::uint32_t kNodeHealthPublishPeriodMs {
@@ -173,7 +173,7 @@ class BlinkManager
 public:
     explicit BlinkManager(
         body_control::lighting::platform::stm32::GpioOutputDriver&        gpio,
-        body_control::lighting::application::RearLightingFunctionManager& fmgr) noexcept
+        body_control::lighting::application::ExteriorLightingFunctionManager& fmgr) noexcept
         : gpio_(gpio)
         , fmgr_(fmgr)
     {
@@ -276,13 +276,13 @@ private:
     }
 
     body_control::lighting::platform::stm32::GpioOutputDriver&        gpio_;
-    body_control::lighting::application::RearLightingFunctionManager& fmgr_;
+    body_control::lighting::application::ExteriorLightingFunctionManager& fmgr_;
     BlinkState left_blink_   {};
     BlinkState right_blink_  {};
     BlinkState hazard_blink_ {};
 };
 
-// ---- Rear lighting node message handler ------------------------------------
+// ---- Exterior lighting node message handler ------------------------------------
 //
 // Applies local arbitration so the STM32 is self-sufficient.  The Linux CZC
 // uses LampStateManager to build its ArbitrationContext, but that state is
@@ -299,7 +299,7 @@ private:
 //
 //   Park/head:  Applied as received — no arbitration needed.
 
-class RearLightingNodeHandler final
+class ExteriorLightingNodeHandler final
     : public body_control::lighting::transport::TransportMessageHandlerInterface
 {
     using LF  = body_control::lighting::domain::LampFunction;
@@ -309,8 +309,8 @@ class RearLightingNodeHandler final
     using LS  = body_control::lighting::domain::LampStatus;
 
 public:
-    explicit RearLightingNodeHandler(
-        body_control::lighting::application::RearLightingFunctionManager& fmgr,
+    explicit ExteriorLightingNodeHandler(
+        body_control::lighting::application::ExteriorLightingFunctionManager& fmgr,
         body_control::lighting::platform::stm32::Stm32DiagnosticLogger&   logger,
         body_control::lighting::transport::TransportAdapterInterface&      transport) noexcept
         : fmgr_(fmgr)
@@ -517,7 +517,7 @@ private:
         }
     }
 
-    body_control::lighting::application::RearLightingFunctionManager& fmgr_;
+    body_control::lighting::application::ExteriorLightingFunctionManager& fmgr_;
     body_control::lighting::platform::stm32::Stm32DiagnosticLogger&   logger_;
     body_control::lighting::transport::TransportAdapterInterface&      transport_;
     // Sequence counter of the last hazard command; indicator commands sharing
@@ -877,7 +877,7 @@ int main()
     body_control::lighting::platform::stm32::EthernetLinkSupervisor link_supervisor {};
 
     // --- Application layer --------------------------------------------------
-    body_control::lighting::application::RearLightingFunctionManager function_manager {};
+    body_control::lighting::application::ExteriorLightingFunctionManager function_manager {};
 
     BlinkManager blink_manager {gpio_driver, function_manager};
 
@@ -886,13 +886,13 @@ int main()
     // LwipUdpTransportAdapter sends events to remote and receives commands from it.
     const body_control::lighting::transport::lwip::LwipUdpConfig udp_config {
         kCzcIpAddr,
-        kRearLightingNodePort,
+        kExteriorLightingNodePort,
         kCentralZoneControllerPort
     };
 
     body_control::lighting::transport::lwip::LwipUdpTransportAdapter transport {udp_config};
 
-    RearLightingNodeHandler handler {function_manager, logger, transport};
+    ExteriorLightingNodeHandler handler {function_manager, logger, transport};
     transport.SetMessageHandler(&handler);
 
     static_cast<void>(transport.Initialize());
@@ -905,7 +905,7 @@ int main()
     DoipTcpServer doip_server {uds_handler};
     doip_server.Init();
 
-    logger.LogInfo("Rear lighting node started");
+    logger.LogInfo("Exterior lighting node started");
 
     // --- Main loop ----------------------------------------------------------
     std::uint32_t last_tick      = HAL_GetTick();

@@ -2,8 +2,8 @@
  * @file test_request_response_path.cpp
  * @brief End-to-end service-path integration test.
  *
- * Wires a RearLightingServiceConsumer (controller side) and a
- * RearLightingServiceProvider (node side) through an in-memory loopback
+ * Wires a ExteriorLightingServiceConsumer (controller side) and a
+ * ExteriorLightingServiceProvider (node side) through an in-memory loopback
  * transport pair and verifies that a SetLampCommand issued on the
  * consumer reaches the provider, updates the node's LampStatus, and its
  * published event is delivered back to the consumer's listener.
@@ -19,19 +19,19 @@
 
 #include <gtest/gtest.h>
 
-#include "body_control/lighting/application/rear_lighting_function_manager.hpp"
+#include "body_control/lighting/application/exterior_lighting_function_manager.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
-#include "body_control/lighting/service/rear_lighting_service_consumer.hpp"
-#include "body_control/lighting/service/rear_lighting_service_interface.hpp"
-#include "body_control/lighting/service/rear_lighting_service_provider.hpp"
+#include "body_control/lighting/service/exterior_lighting_service_consumer.hpp"
+#include "body_control/lighting/service/exterior_lighting_service_interface.hpp"
+#include "body_control/lighting/service/exterior_lighting_service_provider.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 #include "body_control/lighting/transport/transport_status.hpp"
 
 namespace
 {
 
-using body_control::lighting::application::RearLightingFunctionManager;
+using body_control::lighting::application::ExteriorLightingFunctionManager;
 using body_control::lighting::domain::CommandSource;
 using body_control::lighting::domain::LampCommand;
 using body_control::lighting::domain::LampCommandAction;
@@ -39,9 +39,9 @@ using body_control::lighting::domain::LampFunction;
 using body_control::lighting::domain::LampOutputState;
 using body_control::lighting::domain::LampStatus;
 using body_control::lighting::domain::NodeHealthStatus;
-using body_control::lighting::service::RearLightingServiceConsumer;
-using body_control::lighting::service::RearLightingServiceEventListenerInterface;
-using body_control::lighting::service::RearLightingServiceProvider;
+using body_control::lighting::service::ExteriorLightingServiceConsumer;
+using body_control::lighting::service::ExteriorLightingServiceEventListenerInterface;
+using body_control::lighting::service::ExteriorLightingServiceProvider;
 using body_control::lighting::service::ServiceStatus;
 using body_control::lighting::transport::TransportAdapterInterface;
 using body_control::lighting::transport::TransportMessage;
@@ -125,7 +125,7 @@ private:
  * @brief Captures the most recent lamp status and node health event seen.
  */
 class RecordingEventListener final
-    : public RearLightingServiceEventListenerInterface
+    : public ExteriorLightingServiceEventListenerInterface
 {
 public:
     void OnLampStatusReceived(const LampStatus& lamp_status) override
@@ -162,10 +162,10 @@ TEST(ServicePathIntegration, ConsumerProviderWireUpSucceeds)
     consumer_transport.SetPeer(&provider_transport);
     provider_transport.SetPeer(&consumer_transport);
 
-    RearLightingFunctionManager rear_lighting_function_manager {};
-    RearLightingServiceProvider provider {
-        rear_lighting_function_manager, provider_transport};
-    RearLightingServiceConsumer consumer {consumer_transport};
+    ExteriorLightingFunctionManager exterior_lighting_function_manager {};
+    ExteriorLightingServiceProvider provider {
+        exterior_lighting_function_manager, provider_transport};
+    ExteriorLightingServiceConsumer consumer {consumer_transport};
 
     RecordingEventListener listener {};
     consumer.SetEventListener(&listener);

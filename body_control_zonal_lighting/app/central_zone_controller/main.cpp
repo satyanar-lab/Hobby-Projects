@@ -6,7 +6,7 @@
 #include "body_control/lighting/application/central_zone_controller.hpp"
 #include "body_control/lighting/platform/linux/process_signal_handler.hpp"
 #include "body_control/lighting/service/operator_service_provider.hpp"
-#include "body_control/lighting/service/rear_lighting_service_consumer.hpp"
+#include "body_control/lighting/service/exterior_lighting_service_consumer.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
 namespace body_control
@@ -149,9 +149,9 @@ private:
 
 // Component wiring:
 //   FanoutTransportAdapter  (rear transport)
-//     ├─ primary:   vsomeip CZC client  → rear lighting node simulator (Linux)
+//     ├─ primary:   vsomeip CZC client  → exterior lighting node simulator (Linux)
 //     └─ secondary: DirectUdpTransport  → NUCLEO 192.168.0.20:41001
-//   RearLightingServiceConsumer  (wraps rear transport)
+//   ExteriorLightingServiceConsumer  (wraps rear transport)
 //   CentralZoneController        (owns consumer, runs health poll thread)
 //   OperatorServiceProvider      (wraps operator vsomeip server transport)
 //     └─ notifies CZC status changes to HMI control panel
@@ -164,7 +164,7 @@ int main()
     using body_control::lighting::platform::linux::SignalHandlerStatus;
     using body_control::lighting::service::OperatorServiceProvider;
     using body_control::lighting::service::OperatorServiceStatus;
-    using body_control::lighting::service::RearLightingServiceConsumer;
+    using body_control::lighting::service::ExteriorLightingServiceConsumer;
     using body_control::lighting::transport::TransportAdapterInterface;
 
     ProcessSignalHandler signal_handler {};
@@ -180,7 +180,7 @@ int main()
 
     if (vsomeip_rear_transport == nullptr)
     {
-        std::cerr << "Failed to create rear lighting vsomeip transport adapter.\n";
+        std::cerr << "Failed to create exterior lighting vsomeip transport adapter.\n";
         return 1;
     }
 
@@ -204,11 +204,11 @@ int main()
         return 1;
     }
 
-    RearLightingServiceConsumer rear_lighting_service_consumer {
+    ExteriorLightingServiceConsumer exterior_lighting_service_consumer {
         *rear_transport};
 
     CentralZoneController central_zone_controller {
-        rear_lighting_service_consumer};
+        exterior_lighting_service_consumer};
 
     OperatorServiceProvider operator_service_provider {
         central_zone_controller,

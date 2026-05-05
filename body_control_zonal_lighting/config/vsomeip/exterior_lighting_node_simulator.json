@@ -8,7 +8,7 @@
     },
     "applications": [
         {
-            "name": "rear_lighting_node_simulator",
+            "name": "exterior_lighting_node_simulator",
             "id": "0x2001"
         },
         {

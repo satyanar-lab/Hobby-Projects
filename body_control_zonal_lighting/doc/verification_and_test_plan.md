@@ -80,7 +80,7 @@ Nine cases covering the on-wire codec:
 - `NodeHealthStatus` decode rejects out-of-range `NodeHealthState` (0xEE).
 - `NodeHealthStatus` decode rejects wrong-length buffer (3 bytes).
 
-### 3.4 `test_rear_lighting_function_manager.cpp`
+### 3.4 `test_exterior_lighting_function_manager.cpp`
 
 Seven cases covering command application:
 
@@ -96,7 +96,7 @@ Seven cases covering command application:
 
 ### 4.1 `test_request_response_path.cpp`
 
-Wires `RearLightingServiceConsumer` + `RearLightingServiceProvider`
+Wires `ExteriorLightingServiceConsumer` + `ExteriorLightingServiceProvider`
 through a synchronous `LoopbackTransportAdapter` pair.  Confirms that
 `SendLampCommand(kParkLamp, kActivate)` delivers exactly one
 `OnLampStatusReceived(kParkLamp, kOn)` callback (with the correct
@@ -130,8 +130,8 @@ transport pairs:
 
 ```
 OperatorServiceConsumer ↔ [loopback A] ↔ OperatorServiceProvider
-  → CentralZoneController → RearLightingServiceConsumer
-  ↔ [loopback B] ↔ RearLightingServiceProvider → RearLightingFunctionManager
+  → CentralZoneController → ExteriorLightingServiceConsumer
+  ↔ [loopback B] ↔ ExteriorLightingServiceProvider → ExteriorLightingFunctionManager
 ```
 
 The loopback adapter uses a mutex on the handler pointer to be safe

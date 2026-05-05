@@ -13,7 +13,7 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_COMMON
     application/lamp_state_manager.cpp
     application/node_health_monitor.cpp
     application/central_zone_controller.cpp
-    application/rear_lighting_function_manager.cpp
+    application/exterior_lighting_function_manager.cpp
     application/uds_request_handler.cpp
     application/ota_session_manager.cpp
 
@@ -27,8 +27,8 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_COMMON
 
     service/operator_service_consumer.cpp
     service/operator_service_provider.cpp
-    service/rear_lighting_service_consumer.cpp
-    service/rear_lighting_service_provider.cpp
+    service/exterior_lighting_service_consumer.cpp
+    service/exterior_lighting_service_provider.cpp
 
     transport/someip_message_builder.cpp
     transport/someip_message_parser.cpp
@@ -68,7 +68,7 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_STM32
     application/command_arbitrator.cpp
     application/fault_manager.cpp
     application/lamp_state_manager.cpp
-    application/rear_lighting_function_manager.cpp
+    application/exterior_lighting_function_manager.cpp
     application/uds_request_handler.cpp
     # OTA stub — replaces ota_session_manager.cpp which requires POSIX file I/O.
     application/ota_session_manager_stm32.cpp
@@ -76,7 +76,7 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_STM32
     domain/domain_type_validators.cpp
     domain/lighting_payload_codec.cpp
 
-    service/rear_lighting_service_provider.cpp
+    service/exterior_lighting_service_provider.cpp
 
     transport/someip_message_builder.cpp
     transport/someip_message_parser.cpp

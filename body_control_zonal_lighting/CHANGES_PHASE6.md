@@ -3,7 +3,7 @@
 ## Overview
 
 Adds a cross-compilation path for the STM32H753ZI Cortex-M7 microcontroller.
-The NUCLEO board acts as the **rear lighting node**: it receives SOME/IP lamp
+The NUCLEO board acts as the **exterior lighting node**: it receives SOME/IP lamp
 commands from the Linux CentralZoneController over UDP/LwIP and drives five
 GPIO outputs (PB0–PB4) wired to indicator and lamp circuits.
 

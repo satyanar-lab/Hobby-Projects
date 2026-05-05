@@ -3,11 +3,11 @@
 #include <memory>
 #include <thread>
 
-#include "body_control/lighting/application/rear_lighting_function_manager.hpp"
+#include "body_control/lighting/application/exterior_lighting_function_manager.hpp"
 #include "body_control/lighting/application/uds_request_handler.hpp"
 #include "body_control/lighting/domain/lighting_constants.hpp"
 #include "body_control/lighting/platform/linux/process_signal_handler.hpp"
-#include "body_control/lighting/service/rear_lighting_service_provider.hpp"
+#include "body_control/lighting/service/exterior_lighting_service_provider.hpp"
 #include "body_control/lighting/transport/doip_server.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
@@ -21,7 +21,7 @@ namespace vsomeip
 {
 
 std::unique_ptr<TransportAdapterInterface>
-CreateRearLightingNodeVsomeipServerAdapter();
+CreateExteriorLightingNodeVsomeipServerAdapter();
 
 }  // namespace vsomeip
 }  // namespace transport
@@ -30,14 +30,14 @@ CreateRearLightingNodeVsomeipServerAdapter();
 
 int main()
 {
-    using body_control::lighting::application::RearLightingFunctionManager;
+    using body_control::lighting::application::ExteriorLightingFunctionManager;
     using body_control::lighting::application::UdsRequestHandler;
     using body_control::lighting::domain::timing::kLampStatusPublishPeriod;
     using body_control::lighting::domain::timing::kMainLoopPeriod;
     using body_control::lighting::domain::timing::kNodeHealthPublishPeriod;
     using body_control::lighting::platform::linux::ProcessSignalHandler;
     using body_control::lighting::platform::linux::SignalHandlerStatus;
-    using body_control::lighting::service::RearLightingServiceProvider;
+    using body_control::lighting::service::ExteriorLightingServiceProvider;
     using body_control::lighting::service::ServiceStatus;
     using body_control::lighting::transport::DoipServer;
     using body_control::lighting::transport::TransportAdapterInterface;
@@ -50,38 +50,38 @@ int main()
         return 1;
     }
 
-    RearLightingFunctionManager rear_lighting_function_manager {};
+    ExteriorLightingFunctionManager exterior_lighting_function_manager {};
 
     // DoIP diagnostic server — runs on TCP :13400 parallel to the SOME/IP path.
-    UdsRequestHandler uds_handler {rear_lighting_function_manager};
+    UdsRequestHandler uds_handler {exterior_lighting_function_manager};
     DoipServer        doip_server  {uds_handler};
 
     std::unique_ptr<TransportAdapterInterface> transport_adapter =
         body_control::lighting::transport::vsomeip::
-            CreateRearLightingNodeVsomeipServerAdapter();
+            CreateExteriorLightingNodeVsomeipServerAdapter();
 
     if (transport_adapter == nullptr)
     {
-        std::cerr << "Failed to create rear lighting node transport adapter.\n";
+        std::cerr << "Failed to create exterior lighting node transport adapter.\n";
         return 1;
     }
 
-    RearLightingServiceProvider rear_lighting_service_provider {
-        rear_lighting_function_manager,
+    ExteriorLightingServiceProvider exterior_lighting_service_provider {
+        exterior_lighting_function_manager,
         *transport_adapter};
 
     const ServiceStatus init_status =
-        rear_lighting_service_provider.Initialize();
+        exterior_lighting_service_provider.Initialize();
 
     if (init_status != ServiceStatus::kSuccess)
     {
-        std::cerr << "Failed to initialize rear lighting node simulator.\n";
+        std::cerr << "Failed to initialize exterior lighting node simulator.\n";
         return 1;
     }
 
     doip_server.Start();
 
-    std::cout << "Rear lighting node simulator is running.\n";
+    std::cout << "Exterior lighting node simulator is running.\n";
     std::cout << "Send SIGINT or SIGTERM to shut down.\n";
 
     // Two independent accumulators so lamp and health can have different
@@ -99,13 +99,13 @@ int main()
         {
             // Periodic push so the CZC cache stays current even if no command
             // arrived since the last broadcast.
-            rear_lighting_service_provider.BroadcastAllLampStatuses();
+            exterior_lighting_service_provider.BroadcastAllLampStatuses();
             lamp_elapsed = std::chrono::milliseconds {0};
         }
 
         if (health_elapsed >= kNodeHealthPublishPeriod)
         {
-            rear_lighting_service_provider.BroadcastNodeHealth();
+            exterior_lighting_service_provider.BroadcastNodeHealth();
             health_elapsed = std::chrono::milliseconds {0};
         }
     }
@@ -113,11 +113,11 @@ int main()
     doip_server.Stop();
 
     const ServiceStatus shutdown_status =
-        rear_lighting_service_provider.Shutdown();
+        exterior_lighting_service_provider.Shutdown();
 
     if (shutdown_status != ServiceStatus::kSuccess)
     {
-        std::cerr << "Rear lighting node simulator shutdown completed with errors.\n";
+        std::cerr << "Exterior lighting node simulator shutdown completed with errors.\n";
         return 1;
     }
 

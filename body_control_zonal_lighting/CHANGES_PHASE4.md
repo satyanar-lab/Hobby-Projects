@@ -36,7 +36,7 @@ Defines the operator service public contract:
 
 Declares `OperatorServiceProvider`, the controller-side operator service
 host.  Implements both `TransportMessageHandlerInterface` (receives lamp
-requests from operator clients) and `RearLightingServiceEventListenerInterface`
+requests from operator clients) and `ExteriorLightingServiceEventListenerInterface`
 (registered as a `CentralZoneController` status observer so it can fan
 `LampStatus` / `NodeHealth` events to connected clients).
 
@@ -107,7 +107,7 @@ and port assignments for the operator service path:
 
 ### `include/body_control/lighting/application/central_zone_controller.hpp`
 
-Added `SetStatusObserver(RearLightingServiceEventListenerInterface* observer)`
+Added `SetStatusObserver(ExteriorLightingServiceEventListenerInterface* observer)`
 — registers a single observer that is notified inline after every cache
 update (`OnLampStatusReceived`, `OnNodeHealthStatusReceived`,
 `OnServiceAvailabilityChanged`).  Intended for `OperatorServiceProvider` so
@@ -228,7 +228,7 @@ as they arrive.
 Updated constructor to take `OperatorServiceProviderInterface&` instead of
 `CentralZoneController&`.  `MainWindow` now implements
 `OperatorServiceEventListenerInterface` (previously
-`RearLightingServiceEventListenerInterface`) so it can receive push events
+`ExteriorLightingServiceEventListenerInterface`) so it can receive push events
 from the operator consumer.
 
 ---
@@ -270,4 +270,4 @@ Added `test_operator_service_roundtrip` and
 
 All seven pre-Phase-4 GoogleTest cases remain green (9/9 total after Phase 4).
 The rear lighting service interface, codec, domain types, and STM32 build
-path are unmodified.  The `rear_lighting_node_simulator` is unchanged.
+path are unmodified.  The `exterior_lighting_node_simulator` is unchanged.

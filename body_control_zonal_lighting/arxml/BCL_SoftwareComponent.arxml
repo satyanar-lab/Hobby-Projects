@@ -17,7 +17,7 @@
                 <!-- ============================================================ -->
                 <!-- CentralZoneController                                         -->
                 <!--   Provides : OperatorService  (PPort)                         -->
-                <!--   Requires: RearLightingService (RPort)                       -->
+                <!--   Requires: ExteriorLightingService (RPort)                       -->
                 <!-- ============================================================ -->
                 <APPLICATION-SW-COMPONENT-TYPE>
                   <SHORT-NAME>CentralZoneController</SHORT-NAME>
@@ -29,24 +29,24 @@
                     </P-PORT-PROTOTYPE>
 
                     <R-PORT-PROTOTYPE>
-                      <SHORT-NAME>RearLightingServicePort</SHORT-NAME>
-                      <REQUIRED-INTERFACE-TREF DEST="SERVICE-INTERFACE">/body_control/lighting/si/RearLightingService</REQUIRED-INTERFACE-TREF>
+                      <SHORT-NAME>ExteriorLightingServicePort</SHORT-NAME>
+                      <REQUIRED-INTERFACE-TREF DEST="SERVICE-INTERFACE">/body_control/lighting/si/ExteriorLightingService</REQUIRED-INTERFACE-TREF>
                     </R-PORT-PROTOTYPE>
 
                   </PORTS>
                 </APPLICATION-SW-COMPONENT-TYPE>
 
                 <!-- ============================================================ -->
-                <!-- RearLightingNode                                              -->
-                <!--   Provides : RearLightingService (PPort)                      -->
+                <!-- ExteriorLightingNode                                              -->
+                <!--   Provides : ExteriorLightingService (PPort)                      -->
                 <!-- ============================================================ -->
                 <APPLICATION-SW-COMPONENT-TYPE>
-                  <SHORT-NAME>RearLightingNode</SHORT-NAME>
+                  <SHORT-NAME>ExteriorLightingNode</SHORT-NAME>
                   <PORTS>
 
                     <P-PORT-PROTOTYPE>
-                      <SHORT-NAME>RearLightingServicePort</SHORT-NAME>
-                      <PROVIDED-INTERFACE-TREF DEST="SERVICE-INTERFACE">/body_control/lighting/si/RearLightingService</PROVIDED-INTERFACE-TREF>
+                      <SHORT-NAME>ExteriorLightingServicePort</SHORT-NAME>
+                      <PROVIDED-INTERFACE-TREF DEST="SERVICE-INTERFACE">/body_control/lighting/si/ExteriorLightingService</PROVIDED-INTERFACE-TREF>
                     </P-PORT-PROTOTYPE>
 
                   </PORTS>
@@ -82,8 +82,8 @@
                       <TYPE-TREF DEST="APPLICATION-SW-COMPONENT-TYPE">/body_control/lighting/swc/CentralZoneController</TYPE-TREF>
                     </SW-COMPONENT-PROTOTYPE>
                     <SW-COMPONENT-PROTOTYPE>
-                      <SHORT-NAME>RearLightingNode</SHORT-NAME>
-                      <TYPE-TREF DEST="APPLICATION-SW-COMPONENT-TYPE">/body_control/lighting/swc/RearLightingNode</TYPE-TREF>
+                      <SHORT-NAME>ExteriorLightingNode</SHORT-NAME>
+                      <TYPE-TREF DEST="APPLICATION-SW-COMPONENT-TYPE">/body_control/lighting/swc/ExteriorLightingNode</TYPE-TREF>
                     </SW-COMPONENT-PROTOTYPE>
                     <SW-COMPONENT-PROTOTYPE>
                       <SHORT-NAME>HmiClient</SHORT-NAME>
@@ -106,16 +106,16 @@
                       </REQUESTER-IREF>
                     </ASSEMBLY-SW-CONNECTOR>
 
-                    <!-- CentralZoneController.RearLightingServicePort (R) -> RearLightingNode.RearLightingServicePort (P) -->
+                    <!-- CentralZoneController.ExteriorLightingServicePort (R) -> ExteriorLightingNode.ExteriorLightingServicePort (P) -->
                     <ASSEMBLY-SW-CONNECTOR>
-                      <SHORT-NAME>AssemblyConnector_RearLighting</SHORT-NAME>
+                      <SHORT-NAME>AssemblyConnector_ExteriorLighting</SHORT-NAME>
                       <PROVIDER-IREF>
-                        <CONTEXT-COMPONENT-REF DEST="SW-COMPONENT-PROTOTYPE">/body_control/lighting/swc/BCL_Composition/RearLightingNode</CONTEXT-COMPONENT-REF>
-                        <TARGET-P-PORT-REF DEST="P-PORT-PROTOTYPE">/body_control/lighting/swc/RearLightingNode/RearLightingServicePort</TARGET-P-PORT-REF>
+                        <CONTEXT-COMPONENT-REF DEST="SW-COMPONENT-PROTOTYPE">/body_control/lighting/swc/BCL_Composition/ExteriorLightingNode</CONTEXT-COMPONENT-REF>
+                        <TARGET-P-PORT-REF DEST="P-PORT-PROTOTYPE">/body_control/lighting/swc/ExteriorLightingNode/ExteriorLightingServicePort</TARGET-P-PORT-REF>
                       </PROVIDER-IREF>
                       <REQUESTER-IREF>
                         <CONTEXT-COMPONENT-REF DEST="SW-COMPONENT-PROTOTYPE">/body_control/lighting/swc/BCL_Composition/CentralZoneController</CONTEXT-COMPONENT-REF>
-                        <TARGET-R-PORT-REF DEST="R-PORT-PROTOTYPE">/body_control/lighting/swc/CentralZoneController/RearLightingServicePort</TARGET-R-PORT-REF>
+                        <TARGET-R-PORT-REF DEST="R-PORT-PROTOTYPE">/body_control/lighting/swc/CentralZoneController/ExteriorLightingServicePort</TARGET-R-PORT-REF>
                       </REQUESTER-IREF>
                     </ASSEMBLY-SW-CONNECTOR>
 

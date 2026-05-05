@@ -9,7 +9,7 @@ namespace body_control::lighting::application
 {
 
 /**
- * Tracks the operational health of the rear lighting node and detects
+ * Tracks the operational health of the exterior lighting node and detects
  * heartbeat timeouts.
  *
  * The rear node publishes a NodeHealthStatus at kNodeHealthPublishPeriod

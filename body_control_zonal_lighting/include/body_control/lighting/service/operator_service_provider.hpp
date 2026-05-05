@@ -3,7 +3,7 @@
 
 #include "body_control/lighting/application/central_zone_controller.hpp"
 #include "body_control/lighting/service/operator_service_interface.hpp"
-#include "body_control/lighting/service/rear_lighting_service_interface.hpp"
+#include "body_control/lighting/service/exterior_lighting_service_interface.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
 namespace body_control
@@ -24,7 +24,7 @@ namespace service
  *      RequestLampDeactivate / RequestNodeHealth datagrams and dispatches each
  *      to the corresponding CentralZoneController method.
  *
- *   2. RearLightingServiceEventListenerInterface — registered as the controller's
+ *   2. ExteriorLightingServiceEventListenerInterface — registered as the controller's
  *      status observer so it is called inline whenever the controller's lamp or
  *      health cache is updated.  It immediately re-broadcasts the update as a
  *      LampStatus or NodeHealthStatus event datagram to all connected operator
@@ -35,7 +35,7 @@ namespace service
  */
 class OperatorServiceProvider final
     : public transport::TransportMessageHandlerInterface
-    , public RearLightingServiceEventListenerInterface
+    , public ExteriorLightingServiceEventListenerInterface
 {
 public:
     /**
@@ -62,7 +62,7 @@ public:
      */
     [[nodiscard]] OperatorServiceStatus Shutdown();
 
-    // ── RearLightingServiceEventListenerInterface ────────────────────────────
+    // ── ExteriorLightingServiceEventListenerInterface ────────────────────────────
     // Called by the controller after every cache update; the provider
     // immediately re-broadcasts the update to operator clients.
 

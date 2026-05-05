@@ -49,7 +49,7 @@ domain::LampFunction RoutineIdToLampFunction(const std::uint16_t id) noexcept
 // ─────────────────────────────────────────────────────────────────────────────
 
 UdsRequestHandler::UdsRequestHandler(
-    RearLightingFunctionManager& function_manager) noexcept
+    ExteriorLightingFunctionManager& function_manager) noexcept
     : function_manager_ {function_manager}
 {
 }
@@ -383,7 +383,7 @@ std::vector<std::uint8_t> UdsRequestHandler::EncodeEcuIdentification() noexcept
 {
     // Return an ASCII ECU identification string.  The version string is
     // injected via the project-wide compile definition set in CMakeLists.
-    static const char kEcuId[] {"BCL-REAR-NODE " BODY_CONTROL_LIGHTING_PROJECT_VERSION};
+    static const char kEcuId[] {"BCL-EXTERIOR-NODE " BODY_CONTROL_LIGHTING_PROJECT_VERSION};
     const std::size_t len = std::strlen(kEcuId);
     return std::vector<std::uint8_t>(
         reinterpret_cast<const std::uint8_t*>(kEcuId),

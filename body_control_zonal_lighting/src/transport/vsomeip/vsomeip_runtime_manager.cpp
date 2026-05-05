@@ -401,7 +401,7 @@ private:
 std::unique_ptr<TransportAdapterInterface>
 CreateCentralZoneControllerRuntimeAdapter()
 {
-    namespace rls = domain::rear_lighting_service;
+    namespace rls = domain::exterior_lighting_service;
     using EC      = VsomeipClientAdapterImpl::EventConfig;
     return std::make_unique<VsomeipClientAdapterImpl>(
         "central_zone_controller",
@@ -413,12 +413,12 @@ CreateCentralZoneControllerRuntimeAdapter()
 }
 
 std::unique_ptr<TransportAdapterInterface>
-CreateRearLightingNodeRuntimeAdapter()
+CreateExteriorLightingNodeRuntimeAdapter()
 {
-    namespace rls = domain::rear_lighting_service;
+    namespace rls = domain::exterior_lighting_service;
     using EC      = VsomeipServerAdapterImpl::EventConfig;
     return std::make_unique<VsomeipServerAdapterImpl>(
-        "rear_lighting_node_simulator",
+        "exterior_lighting_node_simulator",
         rls::kServiceId,
         rls::kInstanceId,
         std::vector<::vsomeip::method_t>{

@@ -1,4 +1,4 @@
-// Zephyr RTOS rear lighting node — NUCLEO-H753ZI
+// Zephyr RTOS exterior lighting node — NUCLEO-H753ZI
 //
 // Phase 9:  Zephyr RTOS port.  Four threads over a Zephyr message queue:
 //   udp_rx_thread  — blocks on UDP recv, posts LampCommand to g_lamp_cmd_queue
@@ -22,7 +22,7 @@
 // Network configuration (static):
 //   NUCLEO IP  : 192.168.0.20  (prj.conf NET_CONFIG_MY_IPV4_ADDR)
 //   CZC IP     : 192.168.0.10  (kCzcIpStr)
-//   Local port : 41001         (kRearLightingNodePort)
+//   Local port : 41001         (kExteriorLightingNodePort)
 //   Remote port: 41000         (kCentralZoneControllerPort)
 //   DoIP port  : 13400         (ISO 13400-2, kDoipPort)
 
@@ -37,7 +37,7 @@
 #include <zephyr/net/socket.h>
 
 #include "body_control/lighting/application/command_arbitrator.hpp"
-#include "body_control/lighting/application/rear_lighting_function_manager.hpp"
+#include "body_control/lighting/application/exterior_lighting_function_manager.hpp"
 #include "body_control/lighting/application/uds_request_handler.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
@@ -48,7 +48,7 @@
 #include "zephyr_gpio_driver.hpp"
 #include "zephyr_udp_transport.hpp"
 
-LOG_MODULE_REGISTER(rear_lighting_node, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(exterior_lighting_node, LOG_LEVEL_INF);
 
 // ---- Type aliases ----------------------------------------------------------
 
@@ -67,7 +67,7 @@ namespace zgpio = body_control::lighting::platform::zephyr_platform;
 // ---- Network constants -----------------------------------------------------
 
 static constexpr const char*   kCzcIpStr                 {"192.168.0.10"};
-static constexpr std::uint16_t kRearLightingNodePort      {41001U};
+static constexpr std::uint16_t kExteriorLightingNodePort      {41001U};
 static constexpr std::uint16_t kCentralZoneControllerPort {41000U};
 
 // ---- Shared resources ------------------------------------------------------
@@ -82,7 +82,7 @@ static constexpr std::uint16_t kCentralZoneControllerPort {41000U};
 // cmd_thread to prevent priority inversion.
 static K_MUTEX_DEFINE(g_lamp_mgr_mutex);
 
-static body_control::lighting::application::RearLightingFunctionManager
+static body_control::lighting::application::ExteriorLightingFunctionManager
     g_lamp_mgr;
 
 // Queue depth of 8: the CZC sends at most one command per operator action;
@@ -94,7 +94,7 @@ static zgpio::ZephyrGpioDriver g_gpio;
 
 static const zudp::ZephyrUdpConfig kUdpConfig {
     kCzcIpStr,
-    kRearLightingNodePort,
+    kExteriorLightingNodePort,
     kCentralZoneControllerPort
 };
 static zudp::ZephyrUdpTransportAdapter g_transport {kUdpConfig};
@@ -134,7 +134,7 @@ class BlinkManager
 public:
     explicit BlinkManager(
         zgpio::ZephyrGpioDriver&                                        gpio,
-        body_control::lighting::application::RearLightingFunctionManager& fmgr)
+        body_control::lighting::application::ExteriorLightingFunctionManager& fmgr)
         noexcept
         : gpio_(gpio), fmgr_(fmgr)
     {}
@@ -251,7 +251,7 @@ private:
     }
 
     zgpio::ZephyrGpioDriver&                                          gpio_;
-    body_control::lighting::application::RearLightingFunctionManager& fmgr_;
+    body_control::lighting::application::ExteriorLightingFunctionManager& fmgr_;
     BlinkState      left_blink_    {};
     BlinkState      right_blink_   {};
     BlinkState      hazard_blink_  {};
@@ -260,7 +260,7 @@ private:
 
 // ---- Arbitration helpers ---------------------------------------------------
 //
-// Ported from RearLightingNodeHandler in the bare-metal main.cpp.
+// Ported from ExteriorLightingNodeHandler in the bare-metal main.cpp.
 // Runs in cmd_thread (single consumer of g_lamp_cmd_queue).
 
 // last_hazard_sequence_: sequence counter of the most recent hazard command.
@@ -987,7 +987,7 @@ static void DoipThread(void* /*p1*/, void* /*p2*/, void* /*p3*/)
 
 int main()
 {
-    LOG_INF("Rear lighting node starting (Zephyr RTOS)");
+    LOG_INF("Exterior lighting node starting (Zephyr RTOS)");
 
     // GPIO driver
     if (g_gpio.Initialize() != zgpio::GpioDriverStatus::kSuccess)
@@ -1004,7 +1004,7 @@ int main()
         LOG_ERR("Transport init failed");
         return -1;
     }
-    LOG_INF("Transport init OK — listening on :%u", kRearLightingNodePort);
+    LOG_INF("Transport init OK — listening on :%u", kExteriorLightingNodePort);
 
     // Spawn threads — lower priority number = higher Zephyr preemptive priority.
     k_thread_create(&g_blink_thread_data,
@@ -1039,7 +1039,7 @@ int main()
                     6, 0, K_NO_WAIT);
     k_thread_name_set(&g_cmd_thread_data, "cmd");
 
-    LOG_INF("Rear lighting node started");
+    LOG_INF("Exterior lighting node started");
 
     k_thread_create(&g_doip_thread_data,
                     g_doip_stack,

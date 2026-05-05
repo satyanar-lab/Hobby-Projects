@@ -6,7 +6,7 @@ These files document, in AUTOSAR R20-11 Adaptive ARXML form, the service
 model that the C++ in this repository already implements. They describe:
 
 - The application data types exchanged on the bus (`LampDataTypes.arxml`)
-- The two service interfaces (`RearLightingService.arxml`,
+- The two service interfaces (`ExteriorLightingService.arxml`,
   `OperatorService.arxml`)
 - The three application software components and how they are wired into a
   composition (`BCL_SoftwareComponent.arxml`)
@@ -20,7 +20,7 @@ The toolchain consumes the service-interface model and produces the C++
 binding that application code links against.
 
 This project takes the opposite path: the C++ proxies and skeletons
-(`RearLightingServiceConsumer`, `OperatorServiceProvider`, etc.) are
+(`ExteriorLightingServiceConsumer`, `OperatorServiceProvider`, etc.) are
 written **by hand** to demonstrate first-principles understanding of the
 service-interface and SOME/IP layers underneath. The ARXML in this
 directory is the model these hand-written classes would be generated
@@ -31,12 +31,12 @@ generator would have produced.
 
 | ARXML element                                | C++ file / class                                                                 |
 |---|---|
-| `RearLightingService` methods                | `service::RearLightingServiceConsumerInterface` (in `rear_lighting_service_interface.hpp`); concrete sender in `RearLightingServiceConsumer` |
-| `RearLightingService` events                 | `service::RearLightingServiceEventListenerInterface` callbacks (`OnLampStatusReceived`, `OnNodeHealthStatusReceived`) |
+| `ExteriorLightingService` methods                | `service::ExteriorLightingServiceConsumerInterface` (in `exterior_lighting_service_interface.hpp`); concrete sender in `ExteriorLightingServiceConsumer` |
+| `ExteriorLightingService` events                 | `service::ExteriorLightingServiceEventListenerInterface` callbacks (`OnLampStatusReceived`, `OnNodeHealthStatusReceived`) |
 | `OperatorService` methods                    | `service::OperatorServiceProviderInterface` (in `operator_service_interface.hpp`); concrete sender in `OperatorServiceConsumer` |
 | `OperatorService` events                     | `service::OperatorServiceEventListenerInterface` callbacks (`OnLampStatusUpdated`, `OnNodeHealthUpdated`) |
 | `CentralZoneController` SWC                  | `application::CentralZoneController` class; runtime in `app/central_zone_controller/main.cpp` |
-| `RearLightingNode` SWC                       | Linux: `app/rear_lighting_node_simulator/main.cpp`; STM32: `app/stm32_nucleo_h753zi/main.cpp`; Zephyr: `app/zephyr_nucleo_h753zi/` |
+| `ExteriorLightingNode` SWC                       | Linux: `app/exterior_lighting_node_simulator/main.cpp`; STM32: `app/stm32_nucleo_h753zi/main.cpp`; Zephyr: `app/zephyr_nucleo_h753zi/` |
 | `HmiClient` SWC                              | `app/hmi_control_panel_qt/main.cpp` (Qt6 GUI), `app/hmi_control_panel_terminal/main.cpp` (terminal fallback), `app/diagnostic_console/main.cpp` |
 | `BCL_Composition` assembly connectors        | UDP transport wiring in `src/transport/vsomeip/` and `src/transport/lwip/` |
 | `LampCommand` data type                      | `domain::LampCommand` struct (`include/.../lamp_command_types.hpp`) |

@@ -1,5 +1,5 @@
-#ifndef BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_INTERFACE_HPP
-#define BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_INTERFACE_HPP
+#ifndef BODY_CONTROL_LIGHTING_SERVICE_EXTERIOR_LIGHTING_SERVICE_INTERFACE_HPP
+#define BODY_CONTROL_LIGHTING_SERVICE_EXTERIOR_LIGHTING_SERVICE_INTERFACE_HPP
 
 #include "body_control/lighting/domain/fault_types.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
@@ -22,7 +22,7 @@ enum class ServiceStatus : std::uint8_t
 {
     kSuccess         = 0U,  ///< Operation sent or processed without error.
     kNotInitialized  = 1U,  ///< Initialize() has not yet been called.
-    kNotAvailable    = 2U,  ///< Rear lighting node is not currently reachable.
+    kNotAvailable    = 2U,  ///< Exterior lighting node is not currently reachable.
     kInvalidArgument = 3U,  ///< A domain type field is out of its valid range.
     kTransportError  = 4U,  ///< The underlying transport layer reported a send failure.
 };
@@ -35,10 +35,10 @@ enum class ServiceStatus : std::uint8_t
  * The OperatorServiceProvider also implements it to relay those updates
  * onward to connected HMI clients.
  */
-class RearLightingServiceEventListenerInterface
+class ExteriorLightingServiceEventListenerInterface
 {
 public:
-    virtual ~RearLightingServiceEventListenerInterface() = default;
+    virtual ~ExteriorLightingServiceEventListenerInterface() = default;
 
     /** Called when the rear node publishes a LampStatus event or responds to a status request. */
     virtual void OnLampStatusReceived(
@@ -61,14 +61,14 @@ public:
 /**
  * Abstract interface for the rear-lighting service consumer.
  *
- * Implemented by RearLightingServiceConsumer (vsomeip/UDP transport) and
+ * Implemented by ExteriorLightingServiceConsumer (vsomeip/UDP transport) and
  * potentially by a mock in unit tests.  The CentralZoneController holds a
  * reference to this interface, keeping it transport-agnostic.
  */
-class RearLightingServiceConsumerInterface
+class ExteriorLightingServiceConsumerInterface
 {
 public:
-    virtual ~RearLightingServiceConsumerInterface() = default;
+    virtual ~ExteriorLightingServiceConsumerInterface() = default;
 
     /**
      * Connects to the transport, subscribes to lamp-status and health events,
@@ -144,7 +144,7 @@ public:
      * Pass nullptr to deregister.  Only one listener is supported.
      */
     virtual void SetEventListener(
-        RearLightingServiceEventListenerInterface* event_listener) noexcept = 0;
+        ExteriorLightingServiceEventListenerInterface* event_listener) noexcept = 0;
 
     /** Returns true when the rear-lighting vsomeip service is currently offered. */
     virtual bool IsServiceAvailable() const noexcept = 0;
@@ -154,4 +154,4 @@ public:
 }  // namespace lighting
 }  // namespace body_control
 
-#endif  // BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_INTERFACE_HPP
+#endif  // BODY_CONTROL_LIGHTING_SERVICE_EXTERIOR_LIGHTING_SERVICE_INTERFACE_HPP

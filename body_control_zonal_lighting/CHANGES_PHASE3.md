@@ -39,7 +39,7 @@ Because the loopback is synchronous these assertions require no sleeps.
 
 ---
 
-### `include/body_control/lighting/service/rear_lighting_service_provider.hpp`
+### `include/body_control/lighting/service/exterior_lighting_service_provider.hpp`
 
 Added two public methods:
 
@@ -49,7 +49,7 @@ Added two public methods:
 
 ---
 
-### `src/service/rear_lighting_service_provider.cpp`
+### `src/service/exterior_lighting_service_provider.cpp`
 
 Implemented `BroadcastAllLampStatuses` and `BroadcastNodeHealth`.
 
@@ -59,7 +59,7 @@ Implemented `BroadcastAllLampStatuses` and `BroadcastNodeHealth`.
 
 ---
 
-### `app/rear_lighting_node_simulator/main.cpp`
+### `app/exterior_lighting_node_simulator/main.cpp`
 
 Replaced the `std::cin.get()` blocking wait with a real periodic publish
 loop:
@@ -90,7 +90,7 @@ clean.
 
 End-to-end smoke test script:
 
-1. Starts `rear_lighting_node_simulator` in the background and waits up to
+1. Starts `exterior_lighting_node_simulator` in the background and waits up to
    3 seconds for its "running" banner.
 2. Pipes `7\n0\n` into `diagnostic_console` (activate park lamp, then exit)
    and captures stdout.

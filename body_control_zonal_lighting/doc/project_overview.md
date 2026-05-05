@@ -50,7 +50,7 @@ A reviewer opens the repository and, within a few minutes, can:
 | Node / executable | Responsibility |
 |---|---|
 | **Central zone controller** | Receive upstream intent (from HMI or diagnostic console via the operator service), arbitrate command priorities, issue rear-lighting service requests, track node availability and cached state, fan status events back to all operator clients. |
-| **Rear lighting node** | Apply commands to outputs (simulated on Linux, GPIO on STM32), publish lamp status and node-health events, reflect failures honestly. Same logical behaviour regardless of platform. |
+| **Exterior lighting node** | Apply commands to outputs (simulated on Linux, GPIO on STM32), publish lamp status and node-health events, reflect failures honestly. Same logical behaviour regardless of platform. |
 | **HMI control panel** | Provide an operator-facing interface for lamp commands; surface the latest state via push events from the controller. Available as a Qt6 QML dashboard or a terminal menu. |
 | **Diagnostic console** | Engineering entry point for manual requests, health checks, and service-path validation. |
 

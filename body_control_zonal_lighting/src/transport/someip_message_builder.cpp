@@ -39,9 +39,9 @@ TransportMessage BuildBaseMessage(
     TransportMessage transport_message {};
 
     transport_message.service_id =
-        domain::rear_lighting_service::kServiceId;
+        domain::exterior_lighting_service::kServiceId;
     transport_message.instance_id =
-        domain::rear_lighting_service::kInstanceId;
+        domain::exterior_lighting_service::kInstanceId;
     transport_message.method_or_event_id = method_or_event_id;
     transport_message.client_id = client_id;
     transport_message.session_id = session_id;
@@ -60,7 +60,7 @@ TransportMessage SomeipMessageBuilder::BuildSetLampCommandRequest(
 {
     TransportMessage transport_message {
         BuildBaseMessage(
-            domain::rear_lighting_service::kSetLampCommandMethodId,
+            domain::exterior_lighting_service::kSetLampCommandMethodId,
             client_id,
             session_id,
             false)};
@@ -88,7 +88,7 @@ TransportMessage SomeipMessageBuilder::BuildGetLampStatusRequest(
 {
     TransportMessage transport_message {
         BuildBaseMessage(
-            domain::rear_lighting_service::kGetLampStatusMethodId,
+            domain::exterior_lighting_service::kGetLampStatusMethodId,
             client_id,
             session_id,
             false)};
@@ -105,7 +105,7 @@ TransportMessage SomeipMessageBuilder::BuildGetNodeHealthRequest(
     const std::uint16_t session_id)
 {
     return BuildBaseMessage(
-        domain::rear_lighting_service::kGetNodeHealthMethodId,
+        domain::exterior_lighting_service::kGetNodeHealthMethodId,
         client_id,
         session_id,
         false);
@@ -119,7 +119,7 @@ TransportMessage SomeipMessageBuilder::BuildLampStatusEvent(
     // them from method responses at the receiver.
     TransportMessage transport_message {
         BuildBaseMessage(
-            domain::rear_lighting_service::kLampStatusEventId,
+            domain::exterior_lighting_service::kLampStatusEventId,
             0U,
             0U,
             true)};
@@ -145,7 +145,7 @@ TransportMessage SomeipMessageBuilder::BuildNodeHealthEvent(
 {
     TransportMessage transport_message {
         BuildBaseMessage(
-            domain::rear_lighting_service::kNodeHealthEventId,
+            domain::exterior_lighting_service::kNodeHealthEventId,
             0U,
             0U,
             true)};
@@ -301,7 +301,7 @@ TransportMessage SomeipMessageBuilder::BuildInjectFaultRequest(
     const std::uint16_t session_id)
 {
     TransportMessage msg {BuildBaseMessage(
-        domain::rear_lighting_service::kInjectLampFaultMethodId,
+        domain::exterior_lighting_service::kInjectLampFaultMethodId,
         client_id,
         session_id,
         false)};
@@ -318,7 +318,7 @@ TransportMessage SomeipMessageBuilder::BuildClearFaultRequest(
     const std::uint16_t session_id)
 {
     TransportMessage msg {BuildBaseMessage(
-        domain::rear_lighting_service::kClearLampFaultMethodId,
+        domain::exterior_lighting_service::kClearLampFaultMethodId,
         client_id,
         session_id,
         false)};
@@ -334,7 +334,7 @@ TransportMessage SomeipMessageBuilder::BuildGetFaultStatusRequest(
     const std::uint16_t session_id)
 {
     return BuildBaseMessage(
-        domain::rear_lighting_service::kGetFaultStatusMethodId,
+        domain::exterior_lighting_service::kGetFaultStatusMethodId,
         client_id,
         session_id,
         false);
@@ -344,7 +344,7 @@ TransportMessage SomeipMessageBuilder::BuildFaultStatusEvent(
     const domain::LampFaultStatus& fault_status)
 {
     TransportMessage msg {BuildBaseMessage(
-        domain::rear_lighting_service::kFaultStatusEventId,
+        domain::exterior_lighting_service::kFaultStatusEventId,
         0U,
         0U,
         true)};

@@ -102,7 +102,7 @@ Replaced the UDP-delegation stub with a full vsomeip3 implementation.
 | Function | Adapter type | App name | Service |
 |---|---|---|---|
 | `CreateCentralZoneControllerRuntimeAdapter` | Client | `central_zone_controller` | `0x5100` |
-| `CreateRearLightingNodeRuntimeAdapter` | Server | `rear_lighting_node_simulator` | `0x5100` |
+| `CreateExteriorLightingNodeRuntimeAdapter` | Server | `exterior_lighting_node_simulator` | `0x5100` |
 | `CreateControllerOperatorRuntimeAdapter` | Server | `controller_operator` | `0x5200` |
 | `CreateOperatorClientRuntimeAdapter` | Client | `hmi_control_panel` | `0x5200` |
 
@@ -118,8 +118,8 @@ a real vsomeip-backed adapter.
 
 ### `src/transport/vsomeip/vsomeip_server_adapter.cpp`
 
-No logic change — `CreateRearLightingNodeVsomeipServerAdapter()` still
-forwards to `CreateRearLightingNodeRuntimeAdapter()`, which now returns a
+No logic change — `CreateExteriorLightingNodeVsomeipServerAdapter()` still
+forwards to `CreateExteriorLightingNodeRuntimeAdapter()`, which now returns a
 real vsomeip-backed adapter.
 
 ---
@@ -136,9 +136,9 @@ real vsomeip-backed adapter.
 
 ---
 
-### `config/vsomeip/rear_lighting_node_simulator.json`
+### `config/vsomeip/exterior_lighting_node_simulator.json`
 
-- Changed `"routing"` from `"rear_lighting_node_simulator"` to
+- Changed `"routing"` from `"exterior_lighting_node_simulator"` to
   `"central_zone_controller"` — the simulator connects to the controller's
   routing manager instead of starting its own.
 - Kept `0x5100` service entry with `reliable.port: 30510` (the simulator
@@ -189,11 +189,11 @@ active simultaneously.  All five context flags (`left_indicator_active`,
 
 ### `tools/run_simulator.sh`
 
-Exports before launching `rear_lighting_node_simulator`:
+Exports before launching `exterior_lighting_node_simulator`:
 
 ```
-VSOMEIP_CONFIGURATION=<project_root>/config/vsomeip/rear_lighting_node_simulator.json
-VSOMEIP_APPLICATION_NAME=rear_lighting_node_simulator
+VSOMEIP_CONFIGURATION=<project_root>/config/vsomeip/exterior_lighting_node_simulator.json
+VSOMEIP_APPLICATION_NAME=exterior_lighting_node_simulator
 ```
 
 ---

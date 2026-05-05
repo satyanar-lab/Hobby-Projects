@@ -54,7 +54,7 @@ buffer returns `kInvalidPayloadLength`.
 ### `lighting_service_ids.hpp`
 
 Centralises all service, method, event, and application IDs for the rear
-lighting service (namespace `rear_lighting_service`, service ID `0x5100`).
+lighting service (namespace `exterior_lighting_service`, service ID `0x5100`).
 A zero-valued ID is never assigned so a zeroed message is structurally
 distinguishable from a valid one.
 
@@ -114,7 +114,7 @@ Tracks node health over time with a heartbeat timeout.
   not `kUnavailable`, and both `ethernet_link_available` and
   `service_available` are set.
 
-### `rear_lighting_function_manager.hpp` / `rear_lighting_function_manager.cpp`
+### `exterior_lighting_function_manager.hpp` / `exterior_lighting_function_manager.cpp`
 
 Node-side command executor.  `ApplyCommand()` validates the command,
 updates the stored `LampStatus` for the function (output state + sequence
@@ -124,7 +124,7 @@ failure.
 ### `central_zone_controller.hpp` / `central_zone_controller.cpp`
 
 Orchestrates the controller side.  Owns a `LampStateManager`,
-`NodeHealthMonitor`, and a reference to `RearLightingServiceConsumerInterface`.
+`NodeHealthMonitor`, and a reference to `ExteriorLightingServiceConsumerInterface`.
 `SendLampCommand()` runs arbitration and, on acceptance, calls the service
 consumer.  The health-poll background thread calls `RequestNodeHealth()`
 on the service consumer every `kNodeHealthPublishPeriod`.
@@ -133,27 +133,27 @@ on the service consumer every `kNodeHealthPublishPeriod`.
 
 ## Service layer (`include/body_control/lighting/service/`)
 
-### `rear_lighting_service_interface.hpp`
+### `exterior_lighting_service_interface.hpp`
 
 Defines the public contracts:
 
-- `RearLightingServiceConsumerInterface` — `SendLampCommand`,
+- `ExteriorLightingServiceConsumerInterface` — `SendLampCommand`,
   `RequestLampStatus`, `RequestNodeHealth`, `Initialize`, `Shutdown`,
   `SetEventListener`.
-- `RearLightingServiceEventListenerInterface` — `OnLampStatusReceived`,
+- `ExteriorLightingServiceEventListenerInterface` — `OnLampStatusReceived`,
   `OnNodeHealthStatusReceived`, `OnServiceAvailabilityChanged`.
 - `ServiceStatus` — scoped enum for service-layer return codes.
 
-### `rear_lighting_service_consumer.hpp` / `.cpp`
+### `exterior_lighting_service_consumer.hpp` / `.cpp`
 
 Proxy that translates service calls into `TransportMessage` objects and
 dispatches incoming messages (events and responses) to the registered
-`RearLightingServiceEventListenerInterface`.
+`ExteriorLightingServiceEventListenerInterface`.
 
-### `rear_lighting_service_provider.hpp` / `.cpp`
+### `exterior_lighting_service_provider.hpp` / `.cpp`
 
 Receives `TransportMessage` objects from the transport adapter and calls
-the corresponding `RearLightingFunctionManager` method.  After applying
+the corresponding `ExteriorLightingFunctionManager` method.  After applying
 a command it publishes the resulting `LampStatus` via
 `TransportAdapter::SendEvent`.  `BroadcastAllLampStatuses()` and
 `BroadcastNodeHealth()` support the periodic publish loop added in Phase 3.
@@ -201,7 +201,7 @@ Nine `TEST` cases covering encode/decode round-trips and all decode
 rejection paths (wrong length, null pointer, out-of-range enum, invalid
 boolean byte).
 
-### `test/unit/test_rear_lighting_function_manager.cpp`
+### `test/unit/test_exterior_lighting_function_manager.cpp`
 
 Seven `TEST` cases: initial state `kOff`, activate/deactivate/toggle
 behavior, `kNoAction` and unknown function rejection, `GetLampStatus`
@@ -209,7 +209,7 @@ unknown rejection.
 
 ### `test/integration/test_request_response_path.cpp`
 
-Wires `RearLightingServiceConsumer` + `RearLightingServiceProvider`
+Wires `ExteriorLightingServiceConsumer` + `ExteriorLightingServiceProvider`
 through a synchronous `LoopbackTransportAdapter`.  Asserts that
 `SendLampCommand(kParkLamp, kActivate)` delivers exactly one
 `OnLampStatusReceived(kParkLamp, kOn)` callback to the recording listener.

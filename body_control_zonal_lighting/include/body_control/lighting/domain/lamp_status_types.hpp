@@ -23,7 +23,7 @@ enum class LampOutputState : std::uint8_t
 };
 
 /**
- * Status report for a single lamp function, published by the rear lighting node.
+ * Status report for a single lamp function, published by the exterior lighting node.
  *
  * The rear node sends one LampStatus per active lamp function at
  * kLampStatusPublishPeriod (100 ms).  The controller stores the latest
@@ -53,7 +53,7 @@ struct LampStatus
 };
 
 /**
- * Overall operational state of the rear lighting node as assessed by the
+ * Overall operational state of the exterior lighting node as assessed by the
  * controller's health monitor.
  *
  * This is a controller-side classification, not a raw self-report from the
@@ -71,7 +71,7 @@ enum class NodeHealthState : std::uint8_t
 };
 
 /**
- * Aggregated health snapshot published by the rear lighting node at
+ * Aggregated health snapshot published by the exterior lighting node at
  * kNodeHealthPublishPeriod (1 000 ms).
  *
  * All fields are populated by the node itself based on what it can observe

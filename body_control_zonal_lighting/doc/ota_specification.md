@@ -3,7 +3,7 @@
 ## Overview
 
 Phase 12 adds an OTA (Over-The-Air) firmware update channel to the body
-control rear lighting node.  The transfer protocol follows ISO 14229-1 §14
+control exterior lighting node.  The transfer protocol follows ISO 14229-1 §14
 (RequestDownload / TransferData / RequestTransferExit) delivered over the
 existing DoIP TCP diagnostic channel (ISO 13400-2, port 13400).
 
@@ -164,7 +164,7 @@ To complete the OTA chain on real hardware:
 ## Demo Usage
 
 ```bash
-# Start the rear lighting node simulator (in a separate terminal):
+# Start the exterior lighting node simulator (in a separate terminal):
 tools/run_simulator.sh
 
 # Dry-run OTA with 2048 synthetic bytes:

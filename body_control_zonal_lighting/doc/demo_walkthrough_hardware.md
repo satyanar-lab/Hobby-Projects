@@ -121,7 +121,7 @@ Expected output after boot:
 ```
 [INF] Boot: clocks+UART up
 [INF] Boot: lwip_init done
-[INF] Rear lighting node started
+[INF] Exterior lighting node started
 ```
 
 Once the Ethernet link comes up (PHY polling detects link within ~1 s):
@@ -213,7 +213,7 @@ PuTTY and has no effect on LEDs.
 ```
 [INF] Boot: clocks+UART up
 [INF] Boot: lwip_init done
-[INF] Rear lighting node started
+[INF] Exterior lighting node started
 [INF] Transport up                   ← PHY link detected, LwIP socket bound
 ... (1 s intervals)
 [INF] Lamp command applied: ON       ← first HMI button press
@@ -247,7 +247,7 @@ A classic body control module (BCM) is a single, monolithic ECU:
  │  │   HMI Control Panel  │   │                    │  NUCLEO-H753ZI      │
  │  │  (operator intent)   │   │                    │  Rear Zone Node     │
  │  └──────────┬───────────┘   │                    │                     │
- │             │               │                    │  RearLightingFmgr   │
+ │             │               │                    │  ExteriorLightingFmgr   │
  │  ┌──────────▼───────────┐   │                    │  BlinkManager       │
  │  │ CentralZoneController│ ──┼──── lamp commands ─▶  GpioOutputDriver   │
  │  │ CommandArbitrator    │   │◀─── status events ─── PB1/PB2/PB3/PB4/PB5│

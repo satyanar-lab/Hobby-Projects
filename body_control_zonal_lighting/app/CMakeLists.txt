@@ -77,8 +77,8 @@ if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "linux")
     )
 
     body_control_lighting_add_application(
-        rear_lighting_node_simulator
-        rear_lighting_node_simulator/main.cpp
+        exterior_lighting_node_simulator
+        exterior_lighting_node_simulator/main.cpp
     )
 
 elseif(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "stm32")

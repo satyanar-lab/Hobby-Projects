@@ -15,12 +15,12 @@ namespace vsomeip
 {
 
 std::unique_ptr<TransportAdapterInterface>
-CreateRearLightingNodeRuntimeAdapter();
+CreateExteriorLightingNodeRuntimeAdapter();
 
 std::unique_ptr<TransportAdapterInterface>
-CreateRearLightingNodeVsomeipServerAdapter()
+CreateExteriorLightingNodeVsomeipServerAdapter()
 {
-    return CreateRearLightingNodeRuntimeAdapter();
+    return CreateExteriorLightingNodeRuntimeAdapter();
 }
 
 }  // namespace vsomeip

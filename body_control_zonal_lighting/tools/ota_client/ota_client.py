@@ -265,7 +265,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description='BCL OTA client — UDS firmware transfer over DoIP (TCP)')
     parser.add_argument('--host', default='127.0.0.1',
-                        help='IP address of the rear lighting node')
+                        help='IP address of the exterior lighting node')
     parser.add_argument('--port', type=int, default=DOIP_PORT,
                         help=f'DoIP TCP port (default: {DOIP_PORT})')
     parser.add_argument('--timeout', type=float, default=10.0,
@@ -301,7 +301,7 @@ def main() -> int:
             transfer_firmware(client, firmware, verbose=not args.quiet)
     except (ConnectionRefusedError, ConnectionError) as exc:
         print(f'Connection failed: {exc}', file=sys.stderr)
-        print(f'Is rear_lighting_node_simulator running at '
+        print(f'Is exterior_lighting_node_simulator running at '
               f'{args.host}:{args.port}?', file=sys.stderr)
         return 1
     except Exception as exc:  # pylint: disable=broad-except

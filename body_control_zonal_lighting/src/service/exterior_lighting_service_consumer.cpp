@@ -1,4 +1,4 @@
-#include "body_control/lighting/service/rear_lighting_service_consumer.hpp"
+#include "body_control/lighting/service/exterior_lighting_service_consumer.hpp"
 
 #include "body_control/lighting/domain/lighting_service_ids.hpp"
 #include "body_control/lighting/transport/someip_message_builder.hpp"
@@ -11,7 +11,7 @@ namespace lighting
 namespace service
 {
 
-RearLightingServiceConsumer::RearLightingServiceConsumer(
+ExteriorLightingServiceConsumer::ExteriorLightingServiceConsumer(
     transport::TransportAdapterInterface& transport_adapter) noexcept
     : transport_adapter_(transport_adapter)
     , event_listener_(nullptr)
@@ -19,12 +19,12 @@ RearLightingServiceConsumer::RearLightingServiceConsumer(
     , is_service_available_(false)
     // The Central Zone Controller owns this consumer; its application ID is used
     // as the SOME/IP client ID so the rear node can identify the source of requests.
-    , client_id_(domain::rear_lighting_service::kCentralZoneControllerApplicationId)
+    , client_id_(domain::exterior_lighting_service::kCentralZoneControllerApplicationId)
     , next_session_id_(1U)  // Session IDs start at 1; 0 is reserved per SOME/IP spec.
 {
 }
 
-ServiceStatus RearLightingServiceConsumer::Initialize()
+ServiceStatus ExteriorLightingServiceConsumer::Initialize()
 {
     const transport::TransportStatus transport_status =
         transport_adapter_.Initialize();
@@ -45,7 +45,7 @@ ServiceStatus RearLightingServiceConsumer::Initialize()
     return ServiceStatus::kSuccess;
 }
 
-ServiceStatus RearLightingServiceConsumer::Shutdown()
+ServiceStatus ExteriorLightingServiceConsumer::Shutdown()
 {
     // Clear the handler before shutting down so no callbacks arrive during teardown.
     transport_adapter_.SetMessageHandler(nullptr);
@@ -59,7 +59,7 @@ ServiceStatus RearLightingServiceConsumer::Shutdown()
     return ConvertTransportStatus(transport_status);
 }
 
-ServiceStatus RearLightingServiceConsumer::SendLampCommand(
+ServiceStatus ExteriorLightingServiceConsumer::SendLampCommand(
     const domain::LampCommand& lamp_command)
 {
     if (!is_initialized_)
@@ -85,7 +85,7 @@ ServiceStatus RearLightingServiceConsumer::SendLampCommand(
     return ConvertTransportStatus(transport_status);
 }
 
-ServiceStatus RearLightingServiceConsumer::RequestLampStatus(
+ServiceStatus ExteriorLightingServiceConsumer::RequestLampStatus(
     const domain::LampFunction lamp_function)
 {
     if (!is_initialized_)
@@ -110,7 +110,7 @@ ServiceStatus RearLightingServiceConsumer::RequestLampStatus(
     return ConvertTransportStatus(transport_status);
 }
 
-ServiceStatus RearLightingServiceConsumer::RequestNodeHealth()
+ServiceStatus ExteriorLightingServiceConsumer::RequestNodeHealth()
 {
     if (!is_initialized_)
     {
@@ -133,7 +133,7 @@ ServiceStatus RearLightingServiceConsumer::RequestNodeHealth()
     return ConvertTransportStatus(transport_status);
 }
 
-ServiceStatus RearLightingServiceConsumer::SendInjectFault(
+ServiceStatus ExteriorLightingServiceConsumer::SendInjectFault(
     const domain::LampFunction lamp_function)
 {
     if (!is_initialized_) { return ServiceStatus::kNotInitialized; }
@@ -156,7 +156,7 @@ ServiceStatus RearLightingServiceConsumer::SendInjectFault(
     return ConvertTransportStatus(transport_adapter_.SendRequest(transport_message));
 }
 
-ServiceStatus RearLightingServiceConsumer::SendClearFault(
+ServiceStatus ExteriorLightingServiceConsumer::SendClearFault(
     const domain::LampFunction lamp_function)
 {
     if (!is_initialized_) { return ServiceStatus::kNotInitialized; }
@@ -179,7 +179,7 @@ ServiceStatus RearLightingServiceConsumer::SendClearFault(
     return ConvertTransportStatus(transport_adapter_.SendRequest(transport_message));
 }
 
-ServiceStatus RearLightingServiceConsumer::SendGetFaultStatus()
+ServiceStatus ExteriorLightingServiceConsumer::SendGetFaultStatus()
 {
     if (!is_initialized_) { return ServiceStatus::kNotInitialized; }
     if (!is_service_available_) { return ServiceStatus::kNotAvailable; }
@@ -191,18 +191,18 @@ ServiceStatus RearLightingServiceConsumer::SendGetFaultStatus()
     return ConvertTransportStatus(transport_adapter_.SendRequest(transport_message));
 }
 
-void RearLightingServiceConsumer::SetEventListener(
-    RearLightingServiceEventListenerInterface* const event_listener) noexcept
+void ExteriorLightingServiceConsumer::SetEventListener(
+    ExteriorLightingServiceEventListenerInterface* const event_listener) noexcept
 {
     event_listener_ = event_listener;
 }
 
-bool RearLightingServiceConsumer::IsServiceAvailable() const noexcept
+bool ExteriorLightingServiceConsumer::IsServiceAvailable() const noexcept
 {
     return is_service_available_;
 }
 
-void RearLightingServiceConsumer::OnTransportMessageReceived(
+void ExteriorLightingServiceConsumer::OnTransportMessageReceived(
     const transport::TransportMessage& transport_message)
 {
     // Both event pushes and request responses carry lamp/health data; the same
@@ -233,13 +233,13 @@ void RearLightingServiceConsumer::OnTransportMessageReceived(
     }
 }
 
-void RearLightingServiceConsumer::OnTransportAvailabilityChanged(
+void ExteriorLightingServiceConsumer::OnTransportAvailabilityChanged(
     const bool is_available)
 {
     SetServiceAvailability(is_available);
 }
 
-void RearLightingServiceConsumer::OnLampStatusPayloadReceived(
+void ExteriorLightingServiceConsumer::OnLampStatusPayloadReceived(
     const transport::TransportMessage& transport_message)
 {
     if (event_listener_ == nullptr)
@@ -253,7 +253,7 @@ void RearLightingServiceConsumer::OnLampStatusPayloadReceived(
     event_listener_->OnLampStatusReceived(lamp_status);
 }
 
-void RearLightingServiceConsumer::OnNodeHealthPayloadReceived(
+void ExteriorLightingServiceConsumer::OnNodeHealthPayloadReceived(
     const transport::TransportMessage& transport_message)
 {
     if (event_listener_ == nullptr)
@@ -267,7 +267,7 @@ void RearLightingServiceConsumer::OnNodeHealthPayloadReceived(
     event_listener_->OnNodeHealthStatusReceived(node_health_status);
 }
 
-void RearLightingServiceConsumer::SetServiceAvailability(
+void ExteriorLightingServiceConsumer::SetServiceAvailability(
     const bool is_service_available) noexcept
 {
     is_service_available_ = is_service_available;
@@ -278,7 +278,7 @@ void RearLightingServiceConsumer::SetServiceAvailability(
     }
 }
 
-ServiceStatus RearLightingServiceConsumer::ConvertTransportStatus(
+ServiceStatus ExteriorLightingServiceConsumer::ConvertTransportStatus(
     const transport::TransportStatus transport_status) noexcept
 {
     ServiceStatus service_status {ServiceStatus::kTransportError};

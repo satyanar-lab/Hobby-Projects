@@ -15,21 +15,21 @@ with real LEDs.
 
 ### End-to-end status event path
 
-With Phase 6 complete, the STM32 `RearLightingFunctionManager` called
+With Phase 6 complete, the STM32 `ExteriorLightingFunctionManager` called
 `ApplyCommand()` and updated its internal state, but the resulting
 `LampStatus` event was not always reaching the operator clients.  Phase 7
 confirms and hardens the full event flow:
 
 ```
 NUCLEO firmware
-  RearLightingFunctionManager::ApplyCommand()
-    → RearLightingServiceProvider::OnCommandApplied()
+  ExteriorLightingFunctionManager::ApplyCommand()
+    → ExteriorLightingServiceProvider::OnCommandApplied()
     → LwipUdpTransportAdapter::SendEvent()
     → UDP → 192.168.0.10:41000
 
 Linux CZC
   UdpTransportAdapter::ReceiverLoop()
-    → RearLightingServiceConsumer::OnTransportMessageReceived()
+    → ExteriorLightingServiceConsumer::OnTransportMessageReceived()
     → CentralZoneController::OnLampStatusReceived()
     → LampStateManager::UpdateLampStatus()
     → OperatorServiceProvider::OnLampStatusReceived()  (status observer)
@@ -91,5 +91,5 @@ domain struct.  No logic was changed; only documentation was added.
 ## What is unchanged
 
 All nine GoogleTest cases remain green.  No domain types, codec, or
-service interface contracts were modified.  The `rear_lighting_node_simulator`
+service interface contracts were modified.  The `exterior_lighting_node_simulator`
 (Linux) remains fully functional for the software-only demo path.
