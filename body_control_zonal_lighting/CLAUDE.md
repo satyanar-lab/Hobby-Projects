@@ -127,3 +127,16 @@ If any future change breaks OTA functionality, restore:
 
 Always verify against this tag before commits that
 touch OTA or MCUboot files.
+
+**exterior-rename-fully-working-v1** — Exterior_lighting
+rename fully verified on STM32 hardware (Phase 14).
+OEM-accurate naming: ExteriorLightingService,
+exterior_lighting_node, BCL-EXTERIOR-NODE v1.0.2.
+Wire protocol unchanged from prior tags.
+If any future change introduces old rear_lighting names,
+restore:
+  git checkout exterior-rename-fully-working-v1 -- \
+    app/ src/ include/ test/ arxml/ config/ doc/
+
+Always verify against this tag after any broad rename
+or refactor touching service/class names.
