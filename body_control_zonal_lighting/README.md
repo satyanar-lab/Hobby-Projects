@@ -61,6 +61,22 @@ Wireshark captures with screenshots in [doc/captures/](doc/captures/).
 
 ---
 
+## Known Issues
+
+### HMI lamp symbol freeze on long-running sessions
+
+After approximately 5–10 minutes of continuous operation, the HMI control panel's lamp display symbols can stop updating on both STM32 bare-metal and Zephyr targets. Physical LEDs continue to work correctly — the bug is purely in the HMI display refresh path.
+
+**Root cause isolated**: layered diagnostic instrumentation (LOG-0 through LOG-5 in the HMI event pipeline) traces the freeze to vsomeip 3.4.10's IO thread on the HMI side ceasing to deliver events to the application. The Qt main thread remains healthy (LOG-0 heartbeat continues for 100+ seconds after freeze) while the vsomeip event entry point (LOG-1-CONSUMER) stops firing entirely.
+
+**Why it's not a project bug**: this is a known class of issue with vsomeip versions in the 3.4.x range under sustained event traffic. The application code is doing nothing wrong; the underlying middleware stalls. A reactive pull-model backup was implemented but does not resolve it because pull requests also traverse the same stalled vsomeip IO path.
+
+**Workaround**: restart the HMI process. Backend behavior is unaffected throughout.
+
+**Production fix path** (not implemented in this portfolio project): replace vsomeip-based HMI transport with a simpler IPC mechanism (named pipe, ZeroMQ, or direct UDP), or upgrade to a newer vsomeip release where the IO thread behavior may be addressed.
+
+---
+
 ## Why this project exists
 
 A small, familiar feature rebuilt as if it were part of a modern automotive
