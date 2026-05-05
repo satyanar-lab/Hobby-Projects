@@ -33,9 +33,7 @@
 #include <zephyr/dfu/mcuboot.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net/net_event.h>
 #include <zephyr/net/net_if.h>
-#include <zephyr/net/net_mgmt.h>
 #include <zephyr/net/socket.h>
 
 #include "body_control/lighting/application/command_arbitrator.hpp"
@@ -902,44 +900,33 @@ static void HandleDoipConnection(int conn_fd) noexcept
 
 }  // namespace
 
-// ---- Network readiness gate (Phase 13) -------------------------------------
-//
-// NET_EVENT_L4_CONNECTED fires from the connection manager only after PHY
-// autonegotiation completes.  net_if_is_up() and IPv4 address assignment both
-// precede PHY link-up on static-IP configs, making them false readiness gates.
-//
-// The semaphore is given in the event handler.  main() registers the callback
-// before spawning DoipThread so there is no race — if L4 fires first, the
-// semaphore count reaches 1 and k_sem_take returns immediately.
-
-K_SEM_DEFINE(s_doip_net_ready, 0, 1);
-static struct net_mgmt_event_callback s_doip_net_cb;
-
-static void DoipNetReadyHandler(
-    struct net_mgmt_event_callback* /*cb*/,
-    uint32_t                        mgmt_event,
-    struct net_if*                  /*iface*/) noexcept
-{
-    if (mgmt_event == NET_EVENT_L4_CONNECTED)
-    {
-        k_sem_give(&s_doip_net_ready);
-    }
-}
-
 static void DoipThread(void* /*p1*/, void* /*p2*/, void* /*p3*/)
 {
     LOG_INF("[DoIP] thread started on TCP port %u", kDoipPort);
 
-    // Block until NET_EVENT_L4_CONNECTED — the canonical Zephyr signal that
-    // PHY autonegotiation has completed and the stack is ready for sockets.
-    // The semaphore was registered in main() before this thread started.
-    // Times out every 30 s to log a diagnostic when the cable is unplugged;
-    // retries indefinitely so DoIP comes up without reboot on reconnect.
-    while (k_sem_take(&s_doip_net_ready, K_SECONDS(30)) != 0)
+    // Poll NET_IF_RUNNING — set by the Ethernet driver only after PHY
+    // autonegotiation completes.  net_if_is_up() and IPv4 address assignment
+    // both precede PHY link-up on static-IP configs and are false gates.
+    // NET_EVENT_L4_CONNECTED requires IPv6 to fire reliably; with
+    // CONFIG_NET_IPV6=n it never fires.  The flag poll is IPv4/IPv6 agnostic.
+    struct net_if* const iface = net_if_get_default();
+    std::int32_t warn_ticks {0};
+    while (true)
     {
-        LOG_WRN("[DoIP] no L4 connection after 30 s — check Ethernet cable");
+        if ((iface != nullptr)
+         && net_if_is_up(iface)
+         && net_if_flag_is_set(iface, NET_IF_RUNNING))
+        {
+            break;
+        }
+        k_msleep(100);
+        if (++warn_ticks >= 300)
+        {
+            LOG_WRN("[DoIP] PHY not running after 30 s — check Ethernet cable");
+            warn_ticks = 0;
+        }
     }
-    LOG_INF("[DoIP] L4 connected, opening TCP socket");
+    LOG_INF("[DoIP] PHY link running, opening TCP socket");
 
     const int server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (server_fd < 0)
@@ -1053,13 +1040,6 @@ int main()
     k_thread_name_set(&g_cmd_thread_data, "cmd");
 
     LOG_INF("Rear lighting node started");
-
-    // Register L4 connectivity callback before spawning DoipThread.
-    // Must precede thread creation to avoid a race where L4_CONNECTED fires
-    // before the handler is installed and the semaphore is never given.
-    net_mgmt_init_event_callback(&s_doip_net_cb, DoipNetReadyHandler,
-                                 NET_EVENT_L4_CONNECTED);
-    net_mgmt_add_event_callback(&s_doip_net_cb);
 
     k_thread_create(&g_doip_thread_data,
                     g_doip_stack,
