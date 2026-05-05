@@ -13,6 +13,54 @@ NUCLEO-H753ZI** rear-node target.
 
 ---
 
+## Skills Demonstrated
+
+This project demonstrates skills relevant to AUTOSAR
+Integration Engineer (Ethernet/SDV) roles. Each row
+links to specific evidence in the codebase.
+
+| Skill area | Evidence in this project |
+|---|---|
+| **Adaptive AUTOSAR** | Service-oriented architecture with proxy/skeleton pattern. ARXML interface descriptions in [arxml/](arxml/) describe ExteriorLightingService and OperatorService following AUTOSAR R20-11 schema. |
+| **SOME/IP** | Custom SOME/IP-shaped UDP transport between controller and rear node. Wire-format documented in [include/.../lighting_payload_codec.hpp](include/body_control/lighting/domain/lighting_payload_codec.hpp). Custom Wireshark Lua dissector at [doc/captures/wireshark_dissector/](doc/captures/wireshark_dissector/) decodes the framing. |
+| **Automotive Ethernet** | Real Ethernet traffic between Linux host (192.168.0.10) and STM32 NUCLEO-H753ZI (192.168.0.20) at 100 Mbps full-duplex. Captures in [doc/captures/](doc/captures/) prove the wire-level behavior. |
+| **DoIP (ISO 13400-2)** | TCP server on port 13400 with routing activation, diagnostic message dispatch. Implementation in [src/transport/](src/transport/) for Linux, [app/stm32_nucleo_h753zi/main.cpp](app/stm32_nucleo_h753zi/main.cpp) for STM32, [app/zephyr_nucleo_h753zi/main.cpp](app/zephyr_nucleo_h753zi/main.cpp) for Zephyr. |
+| **UDS (ISO 14229-1)** | Services 0x10 (Diagnostic Session Control), 0x14 (Clear DTC), 0x19 (Read DTC), 0x22 (Read Data By Identifier), 0x31 (Routine Control), 0x34/0x36/0x37 (OTA download). Handler at [src/application/uds_request_handler.cpp](src/application/uds_request_handler.cpp). |
+| **Embedded C++ (modern)** | C++17 throughout, RAII resource management, std::variant for type-safe message dispatch, no exceptions, no dynamic allocation in critical paths. Builds for Linux, STM32 bare-metal, and Zephyr RTOS from a shared codebase. |
+| **MISRA-oriented discipline** | Explicit interfaces, deterministic behavior, low coupling, clean separation between domain/application/service/transport layers. Static analysis ready. |
+| **Adaptive AUTOSAR communication patterns** | Request-response (UDS), publish-subscribe (LampStatusEvent, NodeHealthStatusEvent), service discovery hooks. Three communication patterns implemented. |
+| **MCUboot OTA** | Full bootloader integration on Zephyr with ECDSA-P256 signing, dual-bank flash, swap-using-move algorithm, automatic rollback. End-to-end OTA verified on STM32 hardware. See [doc/mcuboot_integration.md](doc/mcuboot_integration.md). |
+| **Diagnostic Trouble Codes** | FaultManager with DTCs B1001–B1005 (one per lamp). Fault injection via UDS 0x31 RoutineControl. Implementation at [src/application/fault_manager.cpp](src/application/fault_manager.cpp). |
+| **Zephyr RTOS** | Multi-threaded application with msgq IPC, devicetree GPIO, NET_IF_RUNNING gating, MCUboot integration, BSD sockets. See [app/zephyr_nucleo_h753zi/](app/zephyr_nucleo_h753zi/). |
+| **STM32 bare-metal** | LwIP raw API TCP server, HAL GPIO, custom linker script with MCUboot-compatible offsets, USART3 retarget. See [app/stm32_nucleo_h753zi/](app/stm32_nucleo_h753zi/). |
+| **HMI / Qt6** | QML-based control panel with atomic state and 80ms poll timer. Drives all three backends interchangeably. See [app/hmi_control_panel/](app/hmi_control_panel/). |
+| **Build systems** | CMake for Linux + STM32 bare-metal cross-compilation. Zephyr west sysbuild for MCUboot child image build. CI/CD with GitHub Actions. |
+| **Testing** | 12 GoogleTest unit tests covering arbitrator, function manager, fault manager, UDS handler, OTA handler, payload codec. Runs in CI on every push. |
+| **Tooling** | Python UDS client, Python OTA client, Wireshark dissector, sysbuild, west, STM32CubeProgrammer integration, Lauterbach-friendly elf output. |
+
+### Hardware platforms
+
+- **Linux x86_64** — full simulator with vsomeip 3.4.10
+- **STM32 NUCLEO-H753ZI** bare-metal — LwIP raw API
+- **STM32 NUCLEO-H753ZI** Zephyr RTOS — BSD sockets, MCUboot
+
+### Wire protocols verified
+
+- SOME/IP-shaped UDP on ports 41000/41001 (custom framing)
+- DoIP over TCP port 13400 (ISO 13400-2)
+- UDS over DoIP (ISO 14229-1)
+
+Wireshark captures with screenshots in [doc/captures/](doc/captures/).
+
+### Documentation
+
+- [arxml/README.md](arxml/README.md) — AUTOSAR ARXML mapping to C++
+- [doc/captures/README.md](doc/captures/README.md) — Wire-level evidence
+- [doc/mcuboot_integration.md](doc/mcuboot_integration.md) — Bootloader integration
+- [doc/ota_specification.md](doc/ota_specification.md) — UDS OTA flow
+
+---
+
 ## Why this project exists
 
 A small, familiar feature rebuilt as if it were part of a modern automotive
