@@ -18,6 +18,7 @@ export VSOMEIP_APPLICATION_NAME="central_zone_controller"
 _IFACE=$(ip -4 route show 192.168.0.0/24 2>/dev/null | awk '/dev/{for(i=1;i<=NF;i++) if($i=="dev") print $(i+1); exit}')
 if [[ -n "${_IFACE}" ]]; then
     sudo ip route replace 224.224.224.245/32 dev "${_IFACE}" 2>/dev/null || true
+    sudo ip route replace 224.244.224.245/32 dev "${_IFACE}" 2>/dev/null || true
 else
     echo "WARNING: no interface on 192.168.0.0/24 — board unreachable. Did you run 'wsl --shutdown' after enabling mirrored networking?" >&2
 fi

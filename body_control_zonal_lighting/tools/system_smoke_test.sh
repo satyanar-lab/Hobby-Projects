@@ -2,7 +2,7 @@
 # system_smoke_test.sh
 #
 # Smoke-tests the Linux simulation layer end-to-end:
-#   1. Spawns rear_lighting_node_simulator in the background.
+#   1. Spawns exterior_lighting_node_simulator in the background.
 #   2. Waits for it to be ready, then runs diagnostic_console with a
 #      pre-canned input that activates the park lamp and exits.
 #   3. Verifies the diagnostic console output contains "ParkLamp -> On".
@@ -22,10 +22,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 BUILD_DIR="${PROJECT_ROOT}/build"
 
-SIM_BIN="${BUILD_DIR}/app/rear_lighting_node_simulator"
+SIM_BIN="${BUILD_DIR}/app/exterior_lighting_node_simulator"
 DIAG_BIN="${BUILD_DIR}/app/diagnostic_console"
 
-SIM_CONFIG="${PROJECT_ROOT}/config/vsomeip/rear_lighting_node_simulator.json"
+SIM_CONFIG="${PROJECT_ROOT}/config/vsomeip/exterior_lighting_node_simulator.json"
 CLIENT_CONFIG="${PROJECT_ROOT}/config/vsomeip/central_zone_controller.json"
 
 LOG_DIR="$(mktemp -d)"
@@ -55,9 +55,9 @@ for bin in "${SIM_BIN}" "${DIAG_BIN}"; do
 done
 
 # ── start simulator ───────────────────────────────────────────────────────────
-echo "[smoke] Starting rear_lighting_node_simulator..."
+echo "[smoke] Starting exterior_lighting_node_simulator..."
 VSOMEIP_CONFIGURATION="${SIM_CONFIG}" \
-VSOMEIP_APPLICATION_NAME="rear_lighting_node_simulator" \
+VSOMEIP_APPLICATION_NAME="exterior_lighting_node_simulator" \
     "${SIM_BIN}" >"${SIM_LOG}" 2>&1 &
 SIM_PID=$!
 
