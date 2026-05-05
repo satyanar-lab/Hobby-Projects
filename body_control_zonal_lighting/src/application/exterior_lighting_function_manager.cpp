@@ -1,4 +1,4 @@
-#include "body_control/lighting/application/rear_lighting_function_manager.hpp"
+#include "body_control/lighting/application/exterior_lighting_function_manager.hpp"
 
 namespace body_control
 {
@@ -7,7 +7,7 @@ namespace lighting
 namespace application
 {
 
-RearLightingFunctionManager::RearLightingFunctionManager() noexcept
+ExteriorLightingFunctionManager::ExteriorLightingFunctionManager() noexcept
     : lamp_statuses_ {}
 {
     // Initialise to kOff (not kUnknown) because the GPIO driver starts with
@@ -28,7 +28,7 @@ RearLightingFunctionManager::RearLightingFunctionManager() noexcept
     lamp_statuses_[4U].output_state = domain::LampOutputState::kOff;
 }
 
-bool RearLightingFunctionManager::ApplyCommand(
+bool ExteriorLightingFunctionManager::ApplyCommand(
     const domain::LampCommand& lamp_command) noexcept
 {
     const std::size_t index = LampFunctionToIndex(lamp_command.function);
@@ -83,7 +83,7 @@ bool RearLightingFunctionManager::ApplyCommand(
     return true;
 }
 
-bool RearLightingFunctionManager::GetLampStatus(
+bool ExteriorLightingFunctionManager::GetLampStatus(
     const domain::LampFunction lamp_function,
     domain::LampStatus& lamp_status) const noexcept
 {
@@ -98,7 +98,7 @@ bool RearLightingFunctionManager::GetLampStatus(
     return true;
 }
 
-bool RearLightingFunctionManager::HandleFaultInjection(
+bool ExteriorLightingFunctionManager::HandleFaultInjection(
     const domain::LampFunction function) noexcept
 {
     const std::size_t index = LampFunctionToIndex(function);
@@ -121,7 +121,7 @@ bool RearLightingFunctionManager::HandleFaultInjection(
     return true;
 }
 
-bool RearLightingFunctionManager::HandleFaultClear(
+bool ExteriorLightingFunctionManager::HandleFaultClear(
     const domain::LampFunction function) noexcept
 {
     const std::size_t index = LampFunctionToIndex(function);
@@ -135,17 +135,17 @@ bool RearLightingFunctionManager::HandleFaultClear(
     return true;
 }
 
-void RearLightingFunctionManager::HandleClearAllFaults() noexcept
+void ExteriorLightingFunctionManager::HandleClearAllFaults() noexcept
 {
     fault_manager_.ClearAllFaults();
 }
 
-domain::LampFaultStatus RearLightingFunctionManager::GetFaultStatus() const noexcept
+domain::LampFaultStatus ExteriorLightingFunctionManager::GetFaultStatus() const noexcept
 {
     return fault_manager_.GetFaultStatus();
 }
 
-std::size_t RearLightingFunctionManager::LampFunctionToIndex(
+std::size_t ExteriorLightingFunctionManager::LampFunctionToIndex(
     const domain::LampFunction lamp_function) noexcept
 {
     // Sentinel value: SIZE_MAX (wraps from -1) is always >= lamp_statuses_.size(),

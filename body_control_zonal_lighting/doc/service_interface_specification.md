@@ -9,7 +9,7 @@ This document covers both service paths in the system.
 **Service ID:** `0x5100`
 **Instance ID:** `0x0001`
 **Scope:** the contract between the Central Zone Controller (consumer) and
-the rear lighting node (provider — Linux simulator or STM32 target).
+the exterior lighting node (provider — Linux simulator or STM32 target).
 
 IDs and layouts in this document are the authoritative contract. Any
 change here **must** be reflected in
@@ -24,7 +24,7 @@ the corresponding test in `test/unit/test_lighting_payload_codec.cpp`.
 | Application | Application ID | Role |
 |---|---|---|
 | Central zone controller | `0x1001` | Service consumer |
-| Rear lighting node simulator / STM32 target | `0x2001` | Service provider |
+| Exterior lighting node simulator / STM32 target | `0x2001` | Service provider |
 
 The HMI and diagnostic console do not consume the rear lighting service
 directly. They connect through the operator service (Part B) and the
@@ -188,7 +188,7 @@ accepting a payload.
 
 # Common — Availability and liveness
 
-- `RearLightingServiceConsumer` treats the service as **available** once
+- `ExteriorLightingServiceConsumer` treats the service as **available** once
   the transport adapter has reported availability and `Initialize` has
   succeeded.
 - `OperatorServiceConsumer` treats the controller as **available** after

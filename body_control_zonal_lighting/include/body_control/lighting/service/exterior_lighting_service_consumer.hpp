@@ -1,9 +1,9 @@
-#ifndef BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_CONSUMER_HPP
-#define BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_CONSUMER_HPP
+#ifndef BODY_CONTROL_LIGHTING_SERVICE_EXTERIOR_LIGHTING_SERVICE_CONSUMER_HPP
+#define BODY_CONTROL_LIGHTING_SERVICE_EXTERIOR_LIGHTING_SERVICE_CONSUMER_HPP
 
 #include <cstdint>
 
-#include "body_control/lighting/service/rear_lighting_service_interface.hpp"
+#include "body_control/lighting/service/exterior_lighting_service_interface.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
 namespace body_control
@@ -25,8 +25,8 @@ namespace service
  * adapter can call back on the same object when a message arrives, keeping
  * the call path symmetric and avoiding a separate dispatcher object.
  */
-class RearLightingServiceConsumer final
-    : public RearLightingServiceConsumerInterface
+class ExteriorLightingServiceConsumer final
+    : public ExteriorLightingServiceConsumerInterface
     , public transport::TransportMessageHandlerInterface
 {
 public:
@@ -35,7 +35,7 @@ public:
      *
      * @param transport_adapter  Must outlive the consumer; used for all sends and receives.
      */
-    explicit RearLightingServiceConsumer(
+    explicit ExteriorLightingServiceConsumer(
         transport::TransportAdapterInterface& transport_adapter) noexcept;
 
     /** Starts the transport and subscribes to lamp-status and health events. */
@@ -68,7 +68,7 @@ public:
 
     /** Registers the listener that receives decoded event callbacks. */
     void SetEventListener(
-        RearLightingServiceEventListenerInterface* event_listener) noexcept override;
+        ExteriorLightingServiceEventListenerInterface* event_listener) noexcept override;
 
     /** Returns true when the rear-lighting service is offered on the transport. */
     bool IsServiceAvailable() const noexcept override;
@@ -106,7 +106,7 @@ private:
     transport::TransportAdapterInterface& transport_adapter_;
 
     /// Non-owning pointer; may be nullptr if no listener is registered.
-    RearLightingServiceEventListenerInterface* event_listener_;
+    ExteriorLightingServiceEventListenerInterface* event_listener_;
 
     bool is_initialized_;
     bool is_service_available_;
@@ -122,4 +122,4 @@ private:
 }  // namespace lighting
 }  // namespace body_control
 
-#endif  // BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_CONSUMER_HPP
+#endif  // BODY_CONTROL_LIGHTING_SERVICE_EXTERIOR_LIGHTING_SERVICE_CONSUMER_HPP

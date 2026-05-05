@@ -19,7 +19,7 @@ AUTOSAR / SDV concepts that informed each choice.
    __linux__` scattered through application code. CMake selects Linux or
    STM32 platform sources behind the same public headers.
 4. **The service interface is the public contract, not the transport.**
-   Callers talk to `RearLightingServiceConsumerInterface`, not to UDP or
+   Callers talk to `ExteriorLightingServiceConsumerInterface`, not to UDP or
    vsomeip. Transport is an implementation detail that can be replaced.
 5. **Honest failure, not silent success.** Every cross-component call
    returns a status code. When the provider cannot observe a health
@@ -30,7 +30,7 @@ AUTOSAR / SDV concepts that informed each choice.
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │ app/                                                                 │
-│   central_zone_controller_app   rear_lighting_node_simulator         │
+│   central_zone_controller_app   exterior_lighting_node_simulator         │
 │   hmi_control_panel_qt          hmi_control_panel_terminal           │
 │   diagnostic_console            stm32_nucleo_h753zi (bare-metal)     │
 └──────────────────────────────────────────────────────────────────────┘
@@ -43,16 +43,16 @@ AUTOSAR / SDV concepts that informed each choice.
 │   MainWindow               LampStateManager                          │
 │   QmlHmiBridge (Qt6)       NodeHealthMonitor                         │
 │                            NodeHealthSourceInterface (abstract)      │
-│                            RearLightingFunctionManager               │
+│                            ExteriorLightingFunctionManager               │
 └──────────────────────────────────────────────────────────────────────┘
                                ▲
                                │ consumes service interface, not transport
 ┌──────────────────────────────┴───────────────────────────────────────┐
 │ service/                                                             │
-│   RearLightingServiceConsumerInterface   (rear node contract)        │
-│   RearLightingServiceConsumer            (controller-side facade)    │
-│   RearLightingServiceProvider            (node-side facade)          │
-│   RearLightingServiceEventListenerInterface                          │
+│   ExteriorLightingServiceConsumerInterface   (rear node contract)        │
+│   ExteriorLightingServiceConsumer            (controller-side facade)    │
+│   ExteriorLightingServiceProvider            (node-side facade)          │
+│   ExteriorLightingServiceEventListenerInterface                          │
 │   OperatorServiceProviderInterface       (HMI ↔ controller contract) │
 │   OperatorServiceConsumer                (HMI-side facade)           │
 │   OperatorServiceProvider                (controller-side facade)    │
@@ -114,15 +114,15 @@ rear node directly.
   │    ├─ OperatorServiceProvider  (recv :41002, reply :41003) │
   │    ├─ CommandArbitrator                                     │
   │    ├─ LampStateManager / NodeHealthMonitor                  │
-  │    └─ RearLightingServiceConsumer  (send :41001)           │
+  │    └─ ExteriorLightingServiceConsumer  (send :41001)           │
   └───────────────────────────┬────────────────────────────────┘
                               │  UDP :41001  (rear-node client port)
                               ▼  UDP :41000  (rear-node server port)
   ┌────────────────────────────────────────────────────────────┐
-  │  rear_lighting_node_simulator  (Linux)  OR                 │
+  │  exterior_lighting_node_simulator  (Linux)  OR                 │
   │  NUCLEO-H753ZI (bare-metal, 192.168.0.20)                  │
-  │    ├─ RearLightingServiceProvider  (recv :41000)           │
-  │    ├─ RearLightingFunctionManager                          │
+  │    ├─ ExteriorLightingServiceProvider  (recv :41000)           │
+  │    ├─ ExteriorLightingFunctionManager                          │
   │    └─ (STM32 only) BlinkManager, GpioOutputDriver          │
   └────────────────────────────────────────────────────────────┘
 ```
@@ -131,7 +131,7 @@ rear node directly.
 deactivate requests from operator clients to the controller, and
 `LampStatus` + `NodeHealth` events back.
 
-**Rear lighting service** (ports 41000 / 41001) carries `SetLampCommand`
+**Exterior lighting service** (ports 41000 / 41001) carries `SetLampCommand`
 requests from the controller to the rear node, and `LampStatus` /
 `NodeHealth` events back.  This path is internal to the controller
 subsystem and is never exposed to operator clients.
@@ -149,7 +149,7 @@ first request.
 
 | Layer | Linux simulation | Linux hardware demo | STM32 node |
 |---|---|---|---|
-| Application code | `RearLightingServiceConsumer/Provider` | Unchanged | Unchanged |
+| Application code | `ExteriorLightingServiceConsumer/Provider` | Unchanged | Unchanged |
 | Transport interface | `TransportAdapterInterface` | Unchanged | Unchanged |
 | Wire format | SOME/IP-shaped framing, big-endian, fixed layouts | Same | Same framing over LwIP |
 | Linux backend | vsomeip 3.4.10 (rear lighting) + Berkeley-sockets UDP (operator) | Same + DirectUdpTransportAdapter to NUCLEO | LwIP raw UDP |
@@ -167,7 +167,7 @@ echoes it:
 | Concept | Where it lives here |
 |---|---|
 | Service-oriented communication | `service/` facades on top of `transport/` |
-| Proxy / Skeleton | `RearLightingServiceConsumer` / `...Provider`; same pattern for `OperatorService` |
+| Proxy / Skeleton | `ExteriorLightingServiceConsumer` / `...Provider`; same pattern for `OperatorService` |
 | Event / field subscription | Provider → consumer publishes via `TransportAdapter::SendEvent`, consumer dispatches through `*EventListenerInterface` |
 | Method call (R/R) | `SendLampCommand`, `RequestLampStatus`, `RequestNodeHealth`, `RequestLampToggle` |
 | E2E / determinism concerns | Explicit sequence counters on commands and status |
@@ -176,7 +176,7 @@ echoes it:
 | Platform health | `NodeHealthSourceInterface` + `NodeHealthMonitor` + `EthernetLinkSupervisor` |
 | HMI layer | `QmlHmiBridge` marshals vsomeip callbacks to Qt main thread; `MainWindow` + `HmiViewModel` remain transport-agnostic |
 
-The service consumer/provider pattern in this project mirrors ara::com proxy/skeleton semantics from Adaptive AUTOSAR. `RearLightingServiceConsumer` maps to a proxy, `RearLightingServiceProvider` maps to a skeleton, and the `LampStatusEvent`/`NodeHealthStatusEvent` map to ara::com events. In a production Adaptive AUTOSAR system, these facades would be generated from ARXML service descriptions and the transport binding would be an ara::com-compliant middleware such as Vector MICROSAR or ETAS RTA-CAR. This project uses vsomeip directly as the SOME/IP transport, which is one of the allowed bindings under the Adaptive AUTOSAR specification.
+The service consumer/provider pattern in this project mirrors ara::com proxy/skeleton semantics from Adaptive AUTOSAR. `ExteriorLightingServiceConsumer` maps to a proxy, `ExteriorLightingServiceProvider` maps to a skeleton, and the `LampStatusEvent`/`NodeHealthStatusEvent` map to ara::com events. In a production Adaptive AUTOSAR system, these facades would be generated from ARXML service descriptions and the transport binding would be an ara::com-compliant middleware such as Vector MICROSAR or ETAS RTA-CAR. This project uses vsomeip directly as the SOME/IP transport, which is one of the allowed bindings under the Adaptive AUTOSAR specification.
 
 ## 6. Portability contract
 
@@ -206,6 +206,6 @@ are compiled for bare-metal.
   `central_zone_controller`, but the vsomeip JSON configs do not yet exercise
   SD-based service advertisement and find. Static endpoints are the
   current fallback.
-- `RearLightingServiceConsumer` uses `client_id_` and `next_session_id_`
+- `ExteriorLightingServiceConsumer` uses `client_id_` and `next_session_id_`
   members that are wired but not yet verified end-to-end for request/response
   correlation with the real vsomeip response path.

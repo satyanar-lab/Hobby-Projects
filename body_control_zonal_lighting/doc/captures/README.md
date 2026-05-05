@@ -3,7 +3,7 @@
 This folder contains real packet captures from the running Body Control
 Zonal Lighting system showing SOME/IP-shaped UDP traffic and UDS over DoIP
 between the Linux controller (192.168.0.10) and the STM32 NUCLEO-H753ZI
-rear lighting node (192.168.0.20).
+exterior lighting node (192.168.0.20).
 
 ## Screenshots
 

@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
 
-#include "body_control/lighting/application/rear_lighting_function_manager.hpp"
+#include "body_control/lighting/application/exterior_lighting_function_manager.hpp"
 #include "body_control/lighting/application/uds_request_handler.hpp"
 #include "body_control/lighting/domain/fault_types.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/uds_service_ids.hpp"
 
-using body_control::lighting::application::RearLightingFunctionManager;
+using body_control::lighting::application::ExteriorLightingFunctionManager;
 using body_control::lighting::application::UdsRequestHandler;
 using body_control::lighting::domain::LampCommand;
 using body_control::lighting::domain::LampCommandAction;
@@ -22,7 +22,7 @@ using body_control::lighting::domain::uds::kPositiveResponseOffset;
 class UdsHandlerTest : public ::testing::Test
 {
 protected:
-    RearLightingFunctionManager fm {};
+    ExteriorLightingFunctionManager fm {};
     UdsRequestHandler           handler {fm};
 
     // Helper: activate a lamp via the function manager.

@@ -50,7 +50,7 @@ constexpr std::uint16_t kEventMessageKind {3U};
 // Port layout:  41000 = CZC (consumer side), 41001 = rear node (provider side),
 //               41002 = controller operator server, 41003 = operator client.
 constexpr std::uint16_t kCentralZoneControllerPort {41000U};
-constexpr std::uint16_t kRearLightingNodePort {41001U};
+constexpr std::uint16_t kExteriorLightingNodePort {41001U};
 constexpr std::uint16_t kControllerOperatorPort {41002U};
 constexpr std::uint16_t kOperatorClientPort {41003U};
 
@@ -295,16 +295,16 @@ CreateCentralZoneControllerUdpTransportAdapter()
 {
     const UdpEndpointConfig endpoint_config {
         kCentralZoneControllerPort,
-        kRearLightingNodePort};
+        kExteriorLightingNodePort};
 
     return std::make_unique<UdpTransportAdapter>(endpoint_config);
 }
 
 std::unique_ptr<TransportAdapterInterface>
-CreateRearLightingNodeUdpTransportAdapter()
+CreateExteriorLightingNodeUdpTransportAdapter()
 {
     const UdpEndpointConfig endpoint_config {
-        kRearLightingNodePort,
+        kExteriorLightingNodePort,
         kCentralZoneControllerPort};
 
     return std::make_unique<UdpTransportAdapter>(endpoint_config);

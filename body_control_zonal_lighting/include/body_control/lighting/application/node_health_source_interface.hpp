@@ -9,7 +9,7 @@ namespace body_control::lighting::application
 /**
  * Abstract source of node-side health information for the rear-lighting service.
  *
- * The RearLightingServiceProvider queries an implementation of this interface
+ * The ExteriorLightingServiceProvider queries an implementation of this interface
  * whenever it builds a GetNodeHealth response or fires a node-health event.
  * Depending on the runtime context, the concrete implementation is either
  * the live NodeHealthMonitor (on the controller) or a stub that generates

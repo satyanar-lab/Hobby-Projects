@@ -1,4 +1,4 @@
-#include "body_control/lighting/service/rear_lighting_service_provider.hpp"
+#include "body_control/lighting/service/exterior_lighting_service_provider.hpp"
 
 #include <array>
 
@@ -10,10 +10,10 @@ namespace body_control::lighting::service
 {
 
 // No-source constructor: synthesised health snapshot will be used.
-RearLightingServiceProvider::RearLightingServiceProvider(
-    application::RearLightingFunctionManager& rear_lighting_function_manager,
+ExteriorLightingServiceProvider::ExteriorLightingServiceProvider(
+    application::ExteriorLightingFunctionManager& exterior_lighting_function_manager,
     transport::TransportAdapterInterface& transport_adapter) noexcept
-    : rear_lighting_function_manager_(rear_lighting_function_manager)
+    : exterior_lighting_function_manager_(exterior_lighting_function_manager)
     , transport_adapter_(transport_adapter)
     , node_health_source_(nullptr)
     , is_initialized_(false)
@@ -22,11 +22,11 @@ RearLightingServiceProvider::RearLightingServiceProvider(
 }
 
 // Health-source constructor: real node health will be read from source.
-RearLightingServiceProvider::RearLightingServiceProvider(
-    application::RearLightingFunctionManager& rear_lighting_function_manager,
+ExteriorLightingServiceProvider::ExteriorLightingServiceProvider(
+    application::ExteriorLightingFunctionManager& exterior_lighting_function_manager,
     transport::TransportAdapterInterface& transport_adapter,
     application::NodeHealthSourceInterface& node_health_source) noexcept
-    : rear_lighting_function_manager_(rear_lighting_function_manager)
+    : exterior_lighting_function_manager_(exterior_lighting_function_manager)
     , transport_adapter_(transport_adapter)
     , node_health_source_(&node_health_source)
     , is_initialized_(false)
@@ -34,7 +34,7 @@ RearLightingServiceProvider::RearLightingServiceProvider(
 {
 }
 
-ServiceStatus RearLightingServiceProvider::Initialize()
+ServiceStatus ExteriorLightingServiceProvider::Initialize()
 {
     const transport::TransportStatus transport_status =
         transport_adapter_.Initialize();
@@ -54,7 +54,7 @@ ServiceStatus RearLightingServiceProvider::Initialize()
     return ServiceStatus::kSuccess;
 }
 
-ServiceStatus RearLightingServiceProvider::Shutdown()
+ServiceStatus ExteriorLightingServiceProvider::Shutdown()
 {
     transport_adapter_.SetMessageHandler(nullptr);
 
@@ -67,7 +67,7 @@ ServiceStatus RearLightingServiceProvider::Shutdown()
     return ConvertTransportStatus(transport_status);
 }
 
-void RearLightingServiceProvider::BroadcastAllLampStatuses()
+void ExteriorLightingServiceProvider::BroadcastAllLampStatuses()
 {
     // Iterate in a fixed order so subscribers receive statuses in a consistent
     // sequence regardless of which functions have been commanded.
@@ -82,19 +82,19 @@ void RearLightingServiceProvider::BroadcastAllLampStatuses()
     for (const domain::LampFunction func : kAllFunctions)
     {
         domain::LampStatus lamp_status {};
-        if (rear_lighting_function_manager_.GetLampStatus(func, lamp_status))
+        if (exterior_lighting_function_manager_.GetLampStatus(func, lamp_status))
         {
             PublishLampStatusEvent(lamp_status);
         }
     }
 }
 
-void RearLightingServiceProvider::BroadcastNodeHealth()
+void ExteriorLightingServiceProvider::BroadcastNodeHealth()
 {
     PublishNodeHealthEvent(BuildCurrentNodeHealthStatus());
 }
 
-void RearLightingServiceProvider::OnTransportMessageReceived(
+void ExteriorLightingServiceProvider::OnTransportMessageReceived(
     const transport::TransportMessage& transport_message)
 {
     if (!is_initialized_)
@@ -140,20 +140,20 @@ void RearLightingServiceProvider::OnTransportMessageReceived(
     }
 }
 
-void RearLightingServiceProvider::OnTransportAvailabilityChanged(
+void ExteriorLightingServiceProvider::OnTransportAvailabilityChanged(
     const bool is_available)
 {
     is_transport_available_ = is_available;
 }
 
-void RearLightingServiceProvider::HandleSetLampCommand(
+void ExteriorLightingServiceProvider::HandleSetLampCommand(
     const transport::TransportMessage& transport_message)
 {
     const domain::LampCommand lamp_command =
         transport::SomeipMessageParser::ParseLampCommand(transport_message);
 
     const bool command_applied =
-        rear_lighting_function_manager_.ApplyCommand(lamp_command);
+        exterior_lighting_function_manager_.ApplyCommand(lamp_command);
 
     if (!command_applied)
     {
@@ -165,7 +165,7 @@ void RearLightingServiceProvider::HandleSetLampCommand(
     // the next scheduled broadcast cycle.
     domain::LampStatus lamp_status {};
     const bool lamp_status_available =
-        rear_lighting_function_manager_.GetLampStatus(
+        exterior_lighting_function_manager_.GetLampStatus(
             lamp_command.function,
             lamp_status);
 
@@ -175,7 +175,7 @@ void RearLightingServiceProvider::HandleSetLampCommand(
     }
 }
 
-void RearLightingServiceProvider::HandleGetLampStatus(
+void ExteriorLightingServiceProvider::HandleGetLampStatus(
     const transport::TransportMessage& transport_message)
 {
     const domain::LampFunction lamp_function =
@@ -183,7 +183,7 @@ void RearLightingServiceProvider::HandleGetLampStatus(
 
     domain::LampStatus lamp_status {};
     const bool lamp_status_available =
-        rear_lighting_function_manager_.GetLampStatus(
+        exterior_lighting_function_manager_.GetLampStatus(
             lamp_function,
             lamp_status);
 
@@ -193,7 +193,7 @@ void RearLightingServiceProvider::HandleGetLampStatus(
     }
 }
 
-void RearLightingServiceProvider::HandleGetNodeHealth(
+void ExteriorLightingServiceProvider::HandleGetNodeHealth(
     const transport::TransportMessage& transport_message)
 {
     // The request payload carries no data — only the method ID matters for
@@ -203,7 +203,7 @@ void RearLightingServiceProvider::HandleGetNodeHealth(
     PublishNodeHealthEvent(BuildCurrentNodeHealthStatus());
 }
 
-void RearLightingServiceProvider::HandleInjectFault(
+void ExteriorLightingServiceProvider::HandleInjectFault(
     const transport::TransportMessage& transport_message)
 {
     const domain::FaultCommand cmd =
@@ -214,22 +214,22 @@ void RearLightingServiceProvider::HandleInjectFault(
         return;
     }
 
-    const bool applied = rear_lighting_function_manager_.HandleFaultInjection(cmd.function);
+    const bool applied = exterior_lighting_function_manager_.HandleFaultInjection(cmd.function);
 
     if (applied)
     {
         // Push updated lamp status (now forced off) and updated health.
         domain::LampStatus lamp_status {};
-        if (rear_lighting_function_manager_.GetLampStatus(cmd.function, lamp_status))
+        if (exterior_lighting_function_manager_.GetLampStatus(cmd.function, lamp_status))
         {
             PublishLampStatusEvent(lamp_status);
         }
-        PublishFaultStatusEvent(rear_lighting_function_manager_.GetFaultStatus());
+        PublishFaultStatusEvent(exterior_lighting_function_manager_.GetFaultStatus());
         PublishNodeHealthEvent(BuildCurrentNodeHealthStatus());
     }
 }
 
-void RearLightingServiceProvider::HandleClearFault(
+void ExteriorLightingServiceProvider::HandleClearFault(
     const transport::TransportMessage& transport_message)
 {
     const domain::FaultCommand cmd =
@@ -240,23 +240,23 @@ void RearLightingServiceProvider::HandleClearFault(
         return;
     }
 
-    const bool applied = rear_lighting_function_manager_.HandleFaultClear(cmd.function);
+    const bool applied = exterior_lighting_function_manager_.HandleFaultClear(cmd.function);
 
     if (applied)
     {
-        PublishFaultStatusEvent(rear_lighting_function_manager_.GetFaultStatus());
+        PublishFaultStatusEvent(exterior_lighting_function_manager_.GetFaultStatus());
         PublishNodeHealthEvent(BuildCurrentNodeHealthStatus());
     }
 }
 
-void RearLightingServiceProvider::HandleGetFaultStatus(
+void ExteriorLightingServiceProvider::HandleGetFaultStatus(
     const transport::TransportMessage& transport_message)
 {
     static_cast<void>(transport_message);
-    PublishFaultStatusEvent(rear_lighting_function_manager_.GetFaultStatus());
+    PublishFaultStatusEvent(exterior_lighting_function_manager_.GetFaultStatus());
 }
 
-void RearLightingServiceProvider::PublishLampStatusEvent(
+void ExteriorLightingServiceProvider::PublishLampStatusEvent(
     const domain::LampStatus& lamp_status)
 {
     const transport::TransportMessage transport_message =
@@ -267,7 +267,7 @@ void RearLightingServiceProvider::PublishLampStatusEvent(
     static_cast<void>(transport_adapter_.SendEvent(transport_message));
 }
 
-void RearLightingServiceProvider::PublishNodeHealthEvent(
+void ExteriorLightingServiceProvider::PublishNodeHealthEvent(
     const domain::NodeHealthStatus& node_health_status)
 {
     const transport::TransportMessage transport_message =
@@ -277,7 +277,7 @@ void RearLightingServiceProvider::PublishNodeHealthEvent(
     static_cast<void>(transport_adapter_.SendEvent(transport_message));
 }
 
-void RearLightingServiceProvider::PublishFaultStatusEvent(
+void ExteriorLightingServiceProvider::PublishFaultStatusEvent(
     const domain::LampFaultStatus& fault_status)
 {
     const transport::TransportMessage transport_message =
@@ -286,26 +286,26 @@ void RearLightingServiceProvider::PublishFaultStatusEvent(
 }
 
 domain::NodeHealthStatus
-RearLightingServiceProvider::BuildCurrentNodeHealthStatus() const noexcept
+ExteriorLightingServiceProvider::BuildCurrentNodeHealthStatus() const noexcept
 {
     // Authoritative source: the injected NodeHealthSource if any.
     if (node_health_source_ != nullptr)
     {
         domain::NodeHealthStatus health = node_health_source_->GetNodeHealthSnapshot();
         // Overlay fault data from FaultManager (which the health source cannot see).
-        rear_lighting_function_manager_.GetFaultStatus().fault_present
+        exterior_lighting_function_manager_.GetFaultStatus().fault_present
             ? (health.lamp_driver_fault_present = true)
             : (health.lamp_driver_fault_present =
-                   rear_lighting_function_manager_.GetFaultStatus().fault_present);
+                   exterior_lighting_function_manager_.GetFaultStatus().fault_present);
         health.active_fault_count =
-            rear_lighting_function_manager_.GetFaultStatus().active_fault_count;
+            exterior_lighting_function_manager_.GetFaultStatus().active_fault_count;
         return health;
     }
 
     // Synthesised fallback for the Linux simulator.
     domain::NodeHealthStatus synthesised {};
     const domain::LampFaultStatus fault_status =
-        rear_lighting_function_manager_.GetFaultStatus();
+        exterior_lighting_function_manager_.GetFaultStatus();
 
     synthesised.ethernet_link_available   = is_transport_available_;
     synthesised.service_available         = is_initialized_;
@@ -329,7 +329,7 @@ RearLightingServiceProvider::BuildCurrentNodeHealthStatus() const noexcept
     return synthesised;
 }
 
-ServiceStatus RearLightingServiceProvider::ConvertTransportStatus(
+ServiceStatus ExteriorLightingServiceProvider::ConvertTransportStatus(
     const transport::TransportStatus transport_status) noexcept
 {
     ServiceStatus service_status {ServiceStatus::kTransportError};

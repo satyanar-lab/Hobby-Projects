@@ -43,13 +43,13 @@ namespace
 
 // Pre-check shared by all rear-lighting predicates; avoids repeating the
 // service_id/instance_id test in every Is* function.
-[[nodiscard]] bool IsRearLightingMessage(
+[[nodiscard]] bool IsExteriorLightingMessage(
     const TransportMessage& transport_message) noexcept
 {
     return (transport_message.service_id ==
-            domain::rear_lighting_service::kServiceId) &&
+            domain::exterior_lighting_service::kServiceId) &&
            (transport_message.instance_id ==
-            domain::rear_lighting_service::kInstanceId);
+            domain::exterior_lighting_service::kInstanceId);
 }
 
 }  // namespace
@@ -57,46 +57,46 @@ namespace
 bool SomeipMessageParser::IsSetLampCommandRequest(
     const TransportMessage& transport_message) noexcept
 {
-    return IsRearLightingMessage(transport_message) &&
+    return IsExteriorLightingMessage(transport_message) &&
            (!transport_message.is_event) &&
            (transport_message.method_or_event_id ==
-            domain::rear_lighting_service::kSetLampCommandMethodId);
+            domain::exterior_lighting_service::kSetLampCommandMethodId);
 }
 
 bool SomeipMessageParser::IsGetLampStatusRequest(
     const TransportMessage& transport_message) noexcept
 {
-    return IsRearLightingMessage(transport_message) &&
+    return IsExteriorLightingMessage(transport_message) &&
            (!transport_message.is_event) &&
            (transport_message.method_or_event_id ==
-            domain::rear_lighting_service::kGetLampStatusMethodId);
+            domain::exterior_lighting_service::kGetLampStatusMethodId);
 }
 
 bool SomeipMessageParser::IsGetNodeHealthRequest(
     const TransportMessage& transport_message) noexcept
 {
-    return IsRearLightingMessage(transport_message) &&
+    return IsExteriorLightingMessage(transport_message) &&
            (!transport_message.is_event) &&
            (transport_message.method_or_event_id ==
-            domain::rear_lighting_service::kGetNodeHealthMethodId);
+            domain::exterior_lighting_service::kGetNodeHealthMethodId);
 }
 
 bool SomeipMessageParser::IsLampStatusEvent(
     const TransportMessage& transport_message) noexcept
 {
-    return IsRearLightingMessage(transport_message) &&
+    return IsExteriorLightingMessage(transport_message) &&
            transport_message.is_event &&
            (transport_message.method_or_event_id ==
-            domain::rear_lighting_service::kLampStatusEventId);
+            domain::exterior_lighting_service::kLampStatusEventId);
 }
 
 bool SomeipMessageParser::IsNodeHealthEvent(
     const TransportMessage& transport_message) noexcept
 {
-    return IsRearLightingMessage(transport_message) &&
+    return IsExteriorLightingMessage(transport_message) &&
            transport_message.is_event &&
            (transport_message.method_or_event_id ==
-            domain::rear_lighting_service::kNodeHealthEventId);
+            domain::exterior_lighting_service::kNodeHealthEventId);
 }
 
 domain::LampCommand SomeipMessageParser::ParseLampCommand(
@@ -163,7 +163,7 @@ domain::NodeHealthStatus SomeipMessageParser::ParseNodeHealthStatus(
 namespace
 {
 
-// Same shared guard as IsRearLightingMessage, but for the operator service
+// Same shared guard as IsExteriorLightingMessage, but for the operator service
 // (HMI → CZC). Defined in a second anonymous namespace block so it is
 // textually close to the operator-service predicates it serves.
 [[nodiscard]] bool IsOperatorServiceMessage(
@@ -234,37 +234,37 @@ bool SomeipMessageParser::IsOperatorNodeHealthEvent(
 bool SomeipMessageParser::IsInjectFaultRequest(
     const TransportMessage& transport_message) noexcept
 {
-    return IsRearLightingMessage(transport_message) &&
+    return IsExteriorLightingMessage(transport_message) &&
            (!transport_message.is_event) &&
            (transport_message.method_or_event_id ==
-            domain::rear_lighting_service::kInjectLampFaultMethodId);
+            domain::exterior_lighting_service::kInjectLampFaultMethodId);
 }
 
 bool SomeipMessageParser::IsClearFaultRequest(
     const TransportMessage& transport_message) noexcept
 {
-    return IsRearLightingMessage(transport_message) &&
+    return IsExteriorLightingMessage(transport_message) &&
            (!transport_message.is_event) &&
            (transport_message.method_or_event_id ==
-            domain::rear_lighting_service::kClearLampFaultMethodId);
+            domain::exterior_lighting_service::kClearLampFaultMethodId);
 }
 
 bool SomeipMessageParser::IsGetFaultStatusRequest(
     const TransportMessage& transport_message) noexcept
 {
-    return IsRearLightingMessage(transport_message) &&
+    return IsExteriorLightingMessage(transport_message) &&
            (!transport_message.is_event) &&
            (transport_message.method_or_event_id ==
-            domain::rear_lighting_service::kGetFaultStatusMethodId);
+            domain::exterior_lighting_service::kGetFaultStatusMethodId);
 }
 
 bool SomeipMessageParser::IsFaultStatusEvent(
     const TransportMessage& transport_message) noexcept
 {
-    return IsRearLightingMessage(transport_message) &&
+    return IsExteriorLightingMessage(transport_message) &&
            transport_message.is_event &&
            (transport_message.method_or_event_id ==
-            domain::rear_lighting_service::kFaultStatusEventId);
+            domain::exterior_lighting_service::kFaultStatusEventId);
 }
 
 domain::FaultCommand SomeipMessageParser::ParseFaultCommand(

@@ -33,7 +33,7 @@ Five executables, each a thin `main()` over the shared core library:
 | Executable | Role |
 |---|---|
 | `central_zone_controller_app` | Decision-making controller. Arbitrates commands, talks to the rear node, caches state and health, fans events to all connected operator clients. |
-| `rear_lighting_node_simulator` | Rear-node service provider (Linux). Applies lamp commands, publishes status + health events. Replaced by the STM32 firmware on hardware. |
+| `exterior_lighting_node_simulator` | Rear-node service provider (Linux). Applies lamp commands, publishes status + health events. Replaced by the STM32 firmware on hardware. |
 | `hmi_control_panel_qt` | Qt6 QML GUI operator panel. Sends user intents to the controller and reflects live lamp state with an automotive-style dark dashboard. Requires Qt6. |
 | `hmi_control_panel_terminal` | Terminal-menu HMI fallback. Same operator service path as the Qt HMI; used when Qt6 is not available. |
 | `diagnostic_console` | Engineering console. Lets you poke the service path and inspect node health directly. |
@@ -99,7 +99,7 @@ In four terminals:
 
 ```bash
 # Terminal 1 — rear node (must be first)
-./build/app/rear_lighting_node_simulator
+./build/app/exterior_lighting_node_simulator
 
 # Terminal 2 — controller (must start before HMI / diagnostic console)
 ./build/app/central_zone_controller_app

@@ -12,7 +12,7 @@
 #include "body_control/lighting/application/lamp_state_manager.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
-#include "body_control/lighting/service/rear_lighting_service_interface.hpp"
+#include "body_control/lighting/service/exterior_lighting_service_interface.hpp"
 
 namespace body_control
 {
@@ -31,7 +31,7 @@ enum class ControllerStatus : std::uint8_t
 {
     kSuccess         = 0U,  ///< Operation completed without error.
     kNotInitialized  = 1U,  ///< Initialize() has not been called yet.
-    kNotAvailable    = 2U,  ///< The rear lighting node is unreachable.
+    kNotAvailable    = 2U,  ///< The exterior lighting node is unreachable.
     kInvalidArgument = 3U,  ///< A parameter (e.g. LampFunction) is out of range.
     kRejected        = 4U,  ///< Arbitration blocked the command (e.g. indicator during hazard).
     kServiceError    = 5U   ///< The underlying transport or vsomeip service reported a failure.
@@ -52,7 +52,7 @@ enum class ControllerStatus : std::uint8_t
  * service-consumer methods and is joined on Shutdown().
  */
 class CentralZoneController final
-    : public service::RearLightingServiceEventListenerInterface
+    : public service::ExteriorLightingServiceEventListenerInterface
 {
 public:
     /**
@@ -60,7 +60,7 @@ public:
      * commands and subscribe to events.  Does not start any threads.
      */
     explicit CentralZoneController(
-        service::RearLightingServiceConsumerInterface& rear_lighting_service_consumer) noexcept;
+        service::ExteriorLightingServiceConsumerInterface& exterior_lighting_service_consumer) noexcept;
 
     /**
      * Subscribes to the rear-lighting service, resets the state cache, and
@@ -81,7 +81,7 @@ public:
 
     /**
      * Passes a lamp command through arbitration and, if accepted, serialises
-     * and sends it to the rear lighting node.
+     * and sends it to the exterior lighting node.
      *
      * The sequence counter is incremented automatically.  If arbitration
      * expands the command (e.g. hazard → three commands) all expanded
@@ -167,7 +167,7 @@ public:
     domain::NodeHealthStatus GetCachedNodeHealthStatus() const noexcept;
 
     /**
-     * Returns true if the rear lighting node is currently reachable and
+     * Returns true if the exterior lighting node is currently reachable and
      * its service is offered on the network.
      */
     bool IsRearNodeAvailable() const noexcept;
@@ -181,7 +181,7 @@ public:
      * to deregister.  Only one observer is supported at a time.
      */
     void SetStatusObserver(
-        service::RearLightingServiceEventListenerInterface* observer) noexcept;
+        service::ExteriorLightingServiceEventListenerInterface* observer) noexcept;
 
     /** Callback from the rear-lighting service — updates cache and notifies observer. */
     void OnLampStatusReceived(
@@ -211,10 +211,10 @@ private:
      */
     void RunHealthPollLoop();
 
-    service::RearLightingServiceConsumerInterface& rear_lighting_service_consumer_;
+    service::ExteriorLightingServiceConsumerInterface& exterior_lighting_service_consumer_;
 
     bool is_initialized_;
-    bool is_rear_node_available_;
+    bool is_exterior_node_available_;
 
     /// Monotonically increasing command identifier; wraps at uint16 max.
     std::uint16_t next_sequence_counter_;
@@ -223,13 +223,13 @@ private:
     LampStateManager lamp_state_manager_;
 
     /// Protects cached_lamp_statuses_, cached_node_health_status_, and
-    /// is_rear_node_available_ against concurrent reads and callback writes.
+    /// is_exterior_node_available_ against concurrent reads and callback writes.
     mutable std::mutex cache_mutex_;
     std::array<domain::LampStatus, 5U> cached_lamp_statuses_;
     domain::NodeHealthStatus cached_node_health_status_;
 
     /// Optional observer; notified after every successful cache update.
-    service::RearLightingServiceEventListenerInterface* status_observer_;
+    service::ExteriorLightingServiceEventListenerInterface* status_observer_;
 
     std::atomic<bool> health_poll_active_;
     std::mutex        health_poll_mutex_;

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """BCL diagnostic client — UDS over DoIP (ISO 14229-1 + ISO 13400-2).
 
-Connects to the body control rear lighting node simulator (or hardware)
+Connects to the body control exterior lighting node simulator (or hardware)
 over a raw TCP socket and sends UDS diagnostic requests.
 
 DoIP logical addresses used:
@@ -303,7 +303,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description='BCL UDS diagnostic client (DoIP over TCP)')
     parser.add_argument('--host', default='127.0.0.1',
-                        help='IP address of the rear lighting node (default: 127.0.0.1)')
+                        help='IP address of the exterior lighting node (default: 127.0.0.1)')
     parser.add_argument('--port', type=int, default=DOIP_PORT,
                         help=f'DoIP TCP port (default: {DOIP_PORT})')
     parser.add_argument('--timeout', type=float, default=5.0,
@@ -373,7 +373,7 @@ def main() -> int:
 
     except (ConnectionRefusedError, ConnectionError) as exc:
         print(f'Connection failed: {exc}', file=sys.stderr)
-        print(f'Is rear_lighting_node_simulator running at {args.host}:{args.port}?',
+        print(f'Is exterior_lighting_node_simulator running at {args.host}:{args.port}?',
               file=sys.stderr)
         return 1
     except Exception as exc:  # pylint: disable=broad-except

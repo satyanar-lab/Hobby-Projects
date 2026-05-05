@@ -32,7 +32,7 @@ struct ArbitrationContext
  * node can restore it when hazard deactivates.
  *
  * Owned and mutated by the BCM node's indicator/hazard handlers (a member of
- * RearLightingNodeHandler on STM32, a file-scope variable on Zephyr).
+ * ExteriorLightingNodeHandler on STM32, a file-scope variable on Zephyr).
  * CommandArbitrator on the CZC side remains stateless and never touches this.
  */
 struct IndicatorInputRegistry

@@ -7,7 +7,7 @@ behaviour. Each state diagram lives next to the component that owns it.
 
 ## 1. Lamp output state (per function)
 
-Owned by: `RearLightingFunctionManager` on the node side, cached by
+Owned by: `ExteriorLightingFunctionManager` on the node side, cached by
 `LampStateManager` on the controller side.
 
 ```
@@ -131,7 +131,7 @@ Transitions into `kUnavailable`:
 
 ## 4. Service consumer availability (controller side)
 
-Owned by: `RearLightingServiceConsumer`. Reflects transport reachability.
+Owned by: `ExteriorLightingServiceConsumer`. Reflects transport reachability.
 
 ```
          Initialize() success          transport up
@@ -171,13 +171,13 @@ Owned by: `RearLightingServiceConsumer`. Reflects transport reachability.
    CommandArbitrator::Arbitrate()
      │  expands to 3 commands: kHazardLamp, kLeftIndicator, kRightIndicator
      ▼
-   RearLightingServiceConsumer::SendLampCommand() × 3
+   ExteriorLightingServiceConsumer::SendLampCommand() × 3
      │  sends SetLampCommand messages → UDP :41001
      ▼
-   RearLightingFunctionManager::ApplyCommand() × 3
+   ExteriorLightingFunctionManager::ApplyCommand() × 3
      │  updates GPIO / output state
      ▼
-   RearLightingServiceProvider publishes LampStatusEvent × 3
+   ExteriorLightingServiceProvider publishes LampStatusEvent × 3
      │  → UDP :41000
      ▼
    CentralZoneController::OnLampStatusReceived() × 3

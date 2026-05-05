@@ -31,7 +31,7 @@ namespace transport
 class SomeipMessageParser
 {
 public:
-    // ── Rear lighting service predicates ────────────────────────────────────
+    // ── Exterior lighting service predicates ────────────────────────────────────
 
     /** Returns true if the message is a SetLampCommand method call. */
     static bool IsSetLampCommandRequest(
@@ -53,7 +53,7 @@ public:
     static bool IsNodeHealthEvent(
         const TransportMessage& transport_message) noexcept;
 
-    // ── Rear lighting service parsers ────────────────────────────────────────
+    // ── Exterior lighting service parsers ────────────────────────────────────────
 
     /**
      * Decodes the payload of a SetLampCommand request into a LampCommand.
@@ -119,7 +119,7 @@ public:
     // ParseNodeHealthStatus — the payload layout is identical to the rear
     // lighting service; only the service_id and method/event IDs differ.
 
-    // ── Rear lighting service — fault predicates ─────────────────────────────
+    // ── Exterior lighting service — fault predicates ─────────────────────────────
 
     /** Returns true if the message is an InjectFault method call on the rear lighting service. */
     [[nodiscard]] static bool IsInjectFaultRequest(

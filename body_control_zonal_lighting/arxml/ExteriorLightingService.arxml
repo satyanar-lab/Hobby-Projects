@@ -15,7 +15,7 @@
               <ELEMENTS>
 
                 <!-- ============================================================== -->
-                <!-- RearLightingService                                             -->
+                <!-- ExteriorLightingService                                             -->
                 <!--   SOME/IP Service ID : 0x5100                                   -->
                 <!--   Provider          : Rear Lighting Node (STM32 / Linux sim)   -->
                 <!--   Consumer          : Central Zone Controller                  -->
@@ -27,7 +27,7 @@
                 <!-- semantics on the wire is a binding choice, not a model choice. -->
                 <!-- ============================================================== -->
                 <SERVICE-INTERFACE>
-                  <SHORT-NAME>RearLightingService</SHORT-NAME>
+                  <SHORT-NAME>ExteriorLightingService</SHORT-NAME>
                   <CATEGORY>0x5100</CATEGORY>
 
                   <METHODS>

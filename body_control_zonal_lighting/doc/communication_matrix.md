@@ -11,7 +11,7 @@ it, who receives it, when, and over what endpoint.
 
 | Process | Binds (recv) | Sends to |
 |---|---|---|
-| `rear_lighting_node_simulator` | :41001 | :41000 |
+| `exterior_lighting_node_simulator` | :41001 | :41000 |
 | `central_zone_controller_app` | :41000 (rear), :41002 (operator) | :41001 (rear), :41003 (operator) |
 | `hmi_control_panel_qt` / `hmi_control_panel_terminal` | :41003 | :41002 |
 | `diagnostic_console` | :41003 | :41002 |
@@ -29,7 +29,7 @@ Port constants are defined in
 
 ---
 
-## 2. Rear lighting service messages (`0x5100`)
+## 2. Exterior lighting service messages (`0x5100`)
 
 | # | Message | Producer | Consumer | Trigger | Cycle | Payload | Reliability |
 |---|---|---|---|---|---|---|---|
@@ -70,7 +70,7 @@ Port constants are defined in
          │    ├─ CommandArbitrator                 │
          │    ├─ LampStateManager                  │
          │    ├─ NodeHealthMonitor                 │
-         │    └─ RearLightingServiceConsumer       │
+         │    └─ ExteriorLightingServiceConsumer       │
          └──────────────┬─────────────────────────┘
                         │
               ┌─────────┴─────────┐
@@ -78,7 +78,7 @@ Port constants are defined in
               │                   │
               ▼  UDP :41001       ▼  UDP :41001 → 192.168.0.20
   ┌──────────────────────┐  ┌─────────────────────┐
-  │  rear_lighting_node_ │  │  NUCLEO-H753ZI       │
+  │  exterior_lighting_node_ │  │  NUCLEO-H753ZI       │
   │  simulator (Linux)   │  │  (STM32 bare-metal)  │
   └──────────────────────┘  └─────────────────────┘
 ```

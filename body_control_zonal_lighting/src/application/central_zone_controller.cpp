@@ -10,10 +10,10 @@ namespace application
 {
 
 CentralZoneController::CentralZoneController(
-    service::RearLightingServiceConsumerInterface& rear_lighting_service_consumer) noexcept
-    : rear_lighting_service_consumer_(rear_lighting_service_consumer)
+    service::ExteriorLightingServiceConsumerInterface& exterior_lighting_service_consumer) noexcept
+    : exterior_lighting_service_consumer_(exterior_lighting_service_consumer)
     , is_initialized_(false)
-    , is_rear_node_available_(false)
+    , is_exterior_node_available_(false)
     , next_sequence_counter_(1U)  // Start at 1; 0 is kInvalidValue and must never be sent.
     , arbitrator_ {}
     , lamp_state_manager_ {}
@@ -39,14 +39,14 @@ ControllerStatus CentralZoneController::Initialize()
 {
     // Register as the event listener before calling Initialize() so no events
     // are lost if the transport delivers a callback during initialisation.
-    rear_lighting_service_consumer_.SetEventListener(this);
+    exterior_lighting_service_consumer_.SetEventListener(this);
 
     const service::ServiceStatus service_status =
-        rear_lighting_service_consumer_.Initialize();
+        exterior_lighting_service_consumer_.Initialize();
 
     is_initialized_ = (service_status == service::ServiceStatus::kSuccess);
-    is_rear_node_available_ =
-        rear_lighting_service_consumer_.IsServiceAvailable();
+    is_exterior_node_available_ =
+        exterior_lighting_service_consumer_.IsServiceAvailable();
 
     if (is_initialized_)
     {
@@ -69,13 +69,13 @@ ControllerStatus CentralZoneController::Shutdown()
         health_poll_thread_.join();
     }
 
-    rear_lighting_service_consumer_.SetEventListener(nullptr);
+    exterior_lighting_service_consumer_.SetEventListener(nullptr);
 
     const service::ServiceStatus service_status =
-        rear_lighting_service_consumer_.Shutdown();
+        exterior_lighting_service_consumer_.Shutdown();
 
     is_initialized_ = false;
-    is_rear_node_available_ = false;
+    is_exterior_node_available_ = false;
 
     return ConvertServiceStatus(service_status);
 }
@@ -120,7 +120,7 @@ ControllerStatus CentralZoneController::SendLampCommand(
     for (std::uint8_t i {0U}; i < decision.command_count; ++i)
     {
         service_status =
-            rear_lighting_service_consumer_.SendLampCommand(decision.commands[i]);
+            exterior_lighting_service_consumer_.SendLampCommand(decision.commands[i]);
         if (service_status != service::ServiceStatus::kSuccess)
         {
             break;
@@ -144,7 +144,7 @@ ControllerStatus CentralZoneController::RequestLampStatus(
     }
 
     const service::ServiceStatus service_status =
-        rear_lighting_service_consumer_.RequestLampStatus(lamp_function);
+        exterior_lighting_service_consumer_.RequestLampStatus(lamp_function);
 
     return ConvertServiceStatus(service_status);
 }
@@ -157,7 +157,7 @@ ControllerStatus CentralZoneController::RequestNodeHealth()
     }
 
     const service::ServiceStatus service_status =
-        rear_lighting_service_consumer_.RequestNodeHealth();
+        exterior_lighting_service_consumer_.RequestNodeHealth();
 
     return ConvertServiceStatus(service_status);
 }
@@ -171,7 +171,7 @@ ControllerStatus CentralZoneController::SendInjectFault(
     }
 
     const service::ServiceStatus service_status =
-        rear_lighting_service_consumer_.SendInjectFault(lamp_function);
+        exterior_lighting_service_consumer_.SendInjectFault(lamp_function);
 
     return ConvertServiceStatus(service_status);
 }
@@ -185,7 +185,7 @@ ControllerStatus CentralZoneController::SendClearFault(
     }
 
     const service::ServiceStatus service_status =
-        rear_lighting_service_consumer_.SendClearFault(lamp_function);
+        exterior_lighting_service_consumer_.SendClearFault(lamp_function);
 
     return ConvertServiceStatus(service_status);
 }
@@ -198,7 +198,7 @@ ControllerStatus CentralZoneController::SendGetFaultStatus()
     }
 
     const service::ServiceStatus service_status =
-        rear_lighting_service_consumer_.SendGetFaultStatus();
+        exterior_lighting_service_consumer_.SendGetFaultStatus();
 
     return ConvertServiceStatus(service_status);
 }
@@ -228,11 +228,11 @@ domain::NodeHealthStatus CentralZoneController::GetCachedNodeHealthStatus() cons
 bool CentralZoneController::IsRearNodeAvailable() const noexcept
 {
     const std::lock_guard<std::mutex> lock(cache_mutex_);
-    return is_rear_node_available_;
+    return is_exterior_node_available_;
 }
 
 void CentralZoneController::SetStatusObserver(
-    service::RearLightingServiceEventListenerInterface* const observer) noexcept
+    service::ExteriorLightingServiceEventListenerInterface* const observer) noexcept
 {
     status_observer_ = observer;
 }
@@ -280,7 +280,7 @@ void CentralZoneController::OnServiceAvailabilityChanged(
 {
     {
         const std::lock_guard<std::mutex> lock(cache_mutex_);
-        is_rear_node_available_ = is_service_available;
+        is_exterior_node_available_ = is_service_available;
         cached_node_health_status_.service_available = is_service_available;
     }
 

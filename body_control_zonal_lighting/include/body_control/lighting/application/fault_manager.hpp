@@ -30,11 +30,11 @@ enum class FaultManagerStatus : std::uint8_t
 };
 
 /**
- * Tracks simulated per-lamp driver faults for the rear lighting node.
+ * Tracks simulated per-lamp driver faults for the exterior lighting node.
  *
  * This class owns the runtime fault table (one bool per LampFunction) and the
  * active DTC array (one FaultCode per slot).  It is owned by
- * RearLightingFunctionManager and has no dependencies on GPIO, transport, or
+ * ExteriorLightingFunctionManager and has no dependencies on GPIO, transport, or
  * service layers.
  *
  * Threading contract: must be called only from the rear-node control task
@@ -71,7 +71,7 @@ public:
     /**
      * Returns true when the given function has an active fault.
      *
-     * Called by RearLightingFunctionManager::ApplyCommand to block lamp
+     * Called by ExteriorLightingFunctionManager::ApplyCommand to block lamp
      * activation while a fault is injected.
      */
     [[nodiscard]] bool IsFaulted(
@@ -83,7 +83,7 @@ public:
     /**
      * Assembles the current fault snapshot for external consumption.
      *
-     * Called by RearLightingFunctionManager::GetFaultStatus().
+     * Called by ExteriorLightingFunctionManager::GetFaultStatus().
      */
     [[nodiscard]] domain::LampFaultStatus GetFaultStatus() const noexcept;
 

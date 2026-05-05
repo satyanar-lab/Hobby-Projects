@@ -1,17 +1,17 @@
-#ifndef BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_PROVIDER_HPP_
-#define BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_PROVIDER_HPP_
+#ifndef BODY_CONTROL_LIGHTING_SERVICE_EXTERIOR_LIGHTING_SERVICE_PROVIDER_HPP_
+#define BODY_CONTROL_LIGHTING_SERVICE_EXTERIOR_LIGHTING_SERVICE_PROVIDER_HPP_
 
 #include "body_control/lighting/application/node_health_source_interface.hpp"
-#include "body_control/lighting/application/rear_lighting_function_manager.hpp"
+#include "body_control/lighting/application/exterior_lighting_function_manager.hpp"
 #include "body_control/lighting/domain/fault_types.hpp"
-#include "body_control/lighting/service/rear_lighting_service_interface.hpp"
+#include "body_control/lighting/service/exterior_lighting_service_interface.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
 namespace body_control::lighting::service
 {
 
 /**
- * Rear-lighting service provider, hosted inside the rear lighting node.
+ * Rear-lighting service provider, hosted inside the exterior lighting node.
  *
  * Handles incoming SOME/IP method calls from the Central Zone Controller
  * and publishes lamp-state and health events back to it.  Three responsibilities:
@@ -19,7 +19,7 @@ namespace body_control::lighting::service
  *   1. Receives SetLampCommand / GetLampStatus / GetNodeHealth requests via
  *      OnTransportMessageReceived() and dispatches to the appropriate handler.
  *
- *   2. Delegates all lamp-state changes to RearLightingFunctionManager, which
+ *   2. Delegates all lamp-state changes to ExteriorLightingFunctionManager, which
  *      tracks logical on/off state for each function.
  *
  *   3. Publishes LampStatus and NodeHealthStatus events to the transport
@@ -30,7 +30,7 @@ namespace body_control::lighting::service
  * used for health events.  Otherwise the provider synthesises a minimal
  * snapshot from its own initialised and transport-available flags.
  */
-class RearLightingServiceProvider final
+class ExteriorLightingServiceProvider final
     : public transport::TransportMessageHandlerInterface
 {
 public:
@@ -40,11 +40,11 @@ public:
      * Use this constructor in the Linux simulator where the health source
      * is not separately modelled.
      *
-     * @param rear_lighting_function_manager  Manages lamp on/off state.
+     * @param exterior_lighting_function_manager  Manages lamp on/off state.
      * @param transport_adapter               Sends and receives SOME/IP messages.
      */
-    RearLightingServiceProvider(
-        application::RearLightingFunctionManager& rear_lighting_function_manager,
+    ExteriorLightingServiceProvider(
+        application::ExteriorLightingFunctionManager& exterior_lighting_function_manager,
         transport::TransportAdapterInterface& transport_adapter) noexcept;
 
     /**
@@ -55,8 +55,8 @@ public:
      *
      * @param node_health_source  Non-owning reference; must outlive the provider.
      */
-    RearLightingServiceProvider(
-        application::RearLightingFunctionManager& rear_lighting_function_manager,
+    ExteriorLightingServiceProvider(
+        application::ExteriorLightingFunctionManager& exterior_lighting_function_manager,
         transport::TransportAdapterInterface& transport_adapter,
         application::NodeHealthSourceInterface& node_health_source) noexcept;
 
@@ -152,7 +152,7 @@ private:
     static ServiceStatus ConvertTransportStatus(
         transport::TransportStatus transport_status) noexcept;
 
-    application::RearLightingFunctionManager& rear_lighting_function_manager_;
+    application::ExteriorLightingFunctionManager& exterior_lighting_function_manager_;
     transport::TransportAdapterInterface& transport_adapter_;
 
     /// Optional external health source; nullptr when using synthesised health.
@@ -164,4 +164,4 @@ private:
 
 }  // namespace body_control::lighting::service
 
-#endif  // BODY_CONTROL_LIGHTING_SERVICE_REAR_LIGHTING_SERVICE_PROVIDER_HPP_
+#endif  // BODY_CONTROL_LIGHTING_SERVICE_EXTERIOR_LIGHTING_SERVICE_PROVIDER_HPP_

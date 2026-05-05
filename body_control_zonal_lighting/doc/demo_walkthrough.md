@@ -10,7 +10,7 @@ optionally Qt6 (for the GUI HMI).
 
 | Process | Binds (recv) | Sends to | Role |
 |---|---|---|---|
-| `rear_lighting_node_simulator` | :41001 | :41000 | Rear lighting service provider |
+| `exterior_lighting_node_simulator` | :41001 | :41000 | Exterior lighting service provider |
 | `central_zone_controller_app` | :41000 (rear), :41002 (operator) | :41001 (rear), :41003 (operator) | Decision-maker |
 | `hmi_control_panel_qt` or `hmi_control_panel_terminal` | :41003 | :41002 | Operator client |
 | `diagnostic_console` | :41003 | :41002 | Operator client |
@@ -19,16 +19,16 @@ The HMI and diagnostic console communicate exclusively with the CZC over the
 operator service path (:41003 ↔ :41002).  Neither client speaks directly to
 the rear node.
 
-## Step 1 — Start the rear lighting node simulator
+## Step 1 — Start the exterior lighting node simulator
 
 ```
-Terminal A:  ./build/app/rear_lighting_node_simulator
+Terminal A:  ./build/app/exterior_lighting_node_simulator
 ```
 
 Expected output:
 
 ```
-Rear lighting node simulator is running.
+Exterior lighting node simulator is running.
 Press Ctrl+C to shut down.
 ```
 

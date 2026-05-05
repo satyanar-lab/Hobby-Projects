@@ -28,7 +28,7 @@ real time.
 
 ### Updated: `lighting_service_ids.hpp`
 
-`rear_lighting_service` namespace:
+`exterior_lighting_service` namespace:
 - `kInjectLampFaultMethodId = 0x0004`
 - `kClearLampFaultMethodId  = 0x0005`
 - `kGetFaultStatusMethodId  = 0x0006`
@@ -58,13 +58,13 @@ Owns the per-lamp fault flag array and the active DTC list.
 | `InjectFault(LampFunction)` | Sets fault flag, appends DTC; returns kAlreadyFaulted if no-op |
 | `ClearFault(LampFunction)` | Clears flag, removes DTC (compacted); returns kNotFaulted if no-op |
 | `ClearAllFaults()` | Resets all flags and DTC slots |
-| `IsFaulted(LampFunction)` | Queried by RearLightingFunctionManager::ApplyCommand |
+| `IsFaulted(LampFunction)` | Queried by ExteriorLightingFunctionManager::ApplyCommand |
 | `GetFaultStatus()` | Returns LampFaultStatus snapshot |
 | `PopulateHealth(NodeHealthStatus&)` | Writes lamp_driver_fault_present + active_fault_count; promotes health_state to kFaulted when faults present |
 
 No synchronisation primitives — single-thread affinity contract documented in the header.  Compiles unchanged on Linux, STM32, and Zephyr.
 
-### Updated: `rear_lighting_function_manager.hpp` / `.cpp`
+### Updated: `exterior_lighting_function_manager.hpp` / `.cpp`
 
 - Owns an internal `FaultManager fault_manager_`.
 - `ApplyCommand`: guard at the top — kActivate (or kToggle from off) blocked when the target function is faulted.
@@ -106,14 +106,14 @@ New predicates and parsers:
 
 ## 4 — Service Layer
 
-### Updated: `rear_lighting_service_interface.hpp`
+### Updated: `exterior_lighting_service_interface.hpp`
 
-Three new pure-virtual methods on `RearLightingServiceConsumerInterface`:
+Three new pure-virtual methods on `ExteriorLightingServiceConsumerInterface`:
 - `SendInjectFault(LampFunction)`
 - `SendClearFault(LampFunction)`
 - `SendGetFaultStatus()`
 
-### Updated: `rear_lighting_service_provider.hpp` / `.cpp`
+### Updated: `exterior_lighting_service_provider.hpp` / `.cpp`
 
 New message handlers dispatched from `OnTransportMessageReceived`:
 - `HandleInjectFault` — injects fault via function manager, publishes updated lamp status + fault status event + node health event
@@ -121,7 +121,7 @@ New message handlers dispatched from `OnTransportMessageReceived`:
 - `HandleGetFaultStatus` — publishes current fault status event
 - `BuildCurrentNodeHealthStatus` — now reads FaultManager state via `GetFaultStatus()` for both synthesised and source-backed paths
 
-### Updated: `rear_lighting_service_consumer.hpp` / `.cpp`
+### Updated: `exterior_lighting_service_consumer.hpp` / `.cpp`
 
 Implements the three new interface methods by building and sending the appropriate SOME/IP request datagrams.
 

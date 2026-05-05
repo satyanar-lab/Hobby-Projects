@@ -3,7 +3,7 @@
 ## Summary
 
 Phase 11 adds a standards-based diagnostic channel running in parallel with
-the SOME/IP operational path.  The rear lighting node simulator listens on
+the SOME/IP operational path.  The exterior lighting node simulator listens on
 TCP port 13400 (DoIP) and responds to UDS service requests.  A Python
 diagnostic client provides a command-line tester interface.  Unit tests
 cover all implemented UDS services.
@@ -48,7 +48,7 @@ cover all implemented UDS services.
 ### New file: `src/application/uds_request_handler.cpp`
 
 `UdsRequestHandler` owns no state beyond a reference to
-`RearLightingFunctionManager`.  All methods are `noexcept`.
+`ExteriorLightingFunctionManager`.  All methods are `noexcept`.
 
 **Implemented services:**
 
@@ -98,10 +98,10 @@ connection at a time on the DoIP port (default 13400).
 
 ## 4 — Simulator Integration
 
-### Modified: `app/rear_lighting_node_simulator/main.cpp`
+### Modified: `app/exterior_lighting_node_simulator/main.cpp`
 
 ```
-UdsRequestHandler uds_handler {rear_lighting_function_manager};
+UdsRequestHandler uds_handler {exterior_lighting_function_manager};
 DoipServer        doip_server  {uds_handler};
 // ...
 doip_server.Start();   // after SOME/IP init
@@ -109,7 +109,7 @@ doip_server.Start();   // after SOME/IP init
 doip_server.Stop();    // before SOME/IP shutdown
 ```
 
-The DoIP server shares `rear_lighting_function_manager` with the SOME/IP
+The DoIP server shares `exterior_lighting_function_manager` with the SOME/IP
 service provider.  Access is not mutex-guarded; concurrent access is an
 acceptable limitation for a portfolio demo.
 

@@ -26,7 +26,7 @@ namespace domain
  *   0x1xxx  — application (client) IDs
  *   0x2xxx  — application IDs for simulated ECU nodes
  */
-namespace rear_lighting_service
+namespace exterior_lighting_service
 {
 
 /// SOME/IP service identifier for the rear lighting service.
@@ -78,9 +78,9 @@ constexpr std::uint16_t kCentralZoneControllerApplicationId {0x1001U};
 constexpr std::uint16_t kHmiControlPanelApplicationId {0x1002U};
 
 /// vsomeip application ID for the Rear Lighting Node simulator process.
-constexpr std::uint16_t kRearLightingNodeSimulatorApplicationId {0x2001U};
+constexpr std::uint16_t kExteriorLightingNodeSimulatorApplicationId {0x2001U};
 
-}  // namespace rear_lighting_service
+}  // namespace exterior_lighting_service
 
 /**
  * SOME/IP identifiers for the Operator Service.

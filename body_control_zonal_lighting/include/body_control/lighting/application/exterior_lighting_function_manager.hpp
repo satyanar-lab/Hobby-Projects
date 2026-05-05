@@ -1,5 +1,5 @@
-#ifndef BODY_CONTROL_LIGHTING_APPLICATION_REAR_LIGHTING_FUNCTION_MANAGER_HPP
-#define BODY_CONTROL_LIGHTING_APPLICATION_REAR_LIGHTING_FUNCTION_MANAGER_HPP
+#ifndef BODY_CONTROL_LIGHTING_APPLICATION_EXTERIOR_LIGHTING_FUNCTION_MANAGER_HPP
+#define BODY_CONTROL_LIGHTING_APPLICATION_EXTERIOR_LIGHTING_FUNCTION_MANAGER_HPP
 
 #include <array>
 #include <cstddef>
@@ -19,7 +19,7 @@ namespace application
 /**
  * Manages the output state of all rear lamp functions on the node side.
  *
- * This class runs inside the rear lighting node (physical STM32 or Linux
+ * This class runs inside the exterior lighting node (physical STM32 or Linux
  * simulator).  It receives LampCommands from the service provider, updates
  * the logical on/off state of the targeted function, and serves the current
  * LampStatus back to the service layer for event publishing.
@@ -27,10 +27,10 @@ namespace application
  * The actual GPIO toggling is performed by the platform GPIO driver; this
  * class tracks logical state only and is platform-independent.
  */
-class RearLightingFunctionManager final
+class ExteriorLightingFunctionManager final
 {
 public:
-    RearLightingFunctionManager() noexcept;
+    ExteriorLightingFunctionManager() noexcept;
 
     /**
      * Applies a received command to the appropriate lamp function.
@@ -101,4 +101,4 @@ private:
 }  // namespace lighting
 }  // namespace body_control
 
-#endif  // BODY_CONTROL_LIGHTING_APPLICATION_REAR_LIGHTING_FUNCTION_MANAGER_HPP
+#endif  // BODY_CONTROL_LIGHTING_APPLICATION_EXTERIOR_LIGHTING_FUNCTION_MANAGER_HPP

@@ -6,9 +6,9 @@
  *
  *   OperatorServiceConsumer
  *     ↕ loopback pair A
- *   OperatorServiceProvider → CentralZoneController → RearLightingServiceConsumer
+ *   OperatorServiceProvider → CentralZoneController → ExteriorLightingServiceConsumer
  *     ↕ loopback pair B
- *   RearLightingServiceProvider → RearLightingFunctionManager
+ *   ExteriorLightingServiceProvider → ExteriorLightingFunctionManager
  *
  * Verifies that after the hazard lamp is activated, a subsequent toggle
  * request for the left indicator is blocked by the CZC arbitrator and never
@@ -21,14 +21,14 @@
 #include <gtest/gtest.h>
 
 #include "body_control/lighting/application/central_zone_controller.hpp"
-#include "body_control/lighting/application/rear_lighting_function_manager.hpp"
+#include "body_control/lighting/application/exterior_lighting_function_manager.hpp"
 #include "body_control/lighting/domain/lamp_status_types.hpp"
 #include "body_control/lighting/domain/lighting_service_ids.hpp"
 #include "body_control/lighting/service/operator_service_consumer.hpp"
 #include "body_control/lighting/service/operator_service_interface.hpp"
 #include "body_control/lighting/service/operator_service_provider.hpp"
-#include "body_control/lighting/service/rear_lighting_service_consumer.hpp"
-#include "body_control/lighting/service/rear_lighting_service_provider.hpp"
+#include "body_control/lighting/service/exterior_lighting_service_consumer.hpp"
+#include "body_control/lighting/service/exterior_lighting_service_provider.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 #include "body_control/lighting/transport/transport_status.hpp"
 
@@ -37,7 +37,7 @@ namespace
 
 using body_control::lighting::application::CentralZoneController;
 using body_control::lighting::application::ControllerStatus;
-using body_control::lighting::application::RearLightingFunctionManager;
+using body_control::lighting::application::ExteriorLightingFunctionManager;
 using body_control::lighting::domain::LampFunction;
 using body_control::lighting::domain::LampOutputState;
 using body_control::lighting::domain::LampStatus;
@@ -47,8 +47,8 @@ using body_control::lighting::service::OperatorServiceConsumer;
 using body_control::lighting::service::OperatorServiceEventListenerInterface;
 using body_control::lighting::service::OperatorServiceProvider;
 using body_control::lighting::service::OperatorServiceStatus;
-using body_control::lighting::service::RearLightingServiceConsumer;
-using body_control::lighting::service::RearLightingServiceProvider;
+using body_control::lighting::service::ExteriorLightingServiceConsumer;
+using body_control::lighting::service::ExteriorLightingServiceProvider;
 using body_control::lighting::service::ServiceStatus;
 using body_control::lighting::transport::TransportAdapterInterface;
 using body_control::lighting::transport::TransportMessage;
@@ -173,9 +173,9 @@ TEST(ControllerArbitrationViaOperator, IndicatorBlockedByActiveHazard)
     rear_consumer_transport.SetPeer(&rear_provider_transport);
     rear_provider_transport.SetPeer(&rear_consumer_transport);
 
-    RearLightingFunctionManager rear_fn_mgr {};
-    RearLightingServiceProvider rear_provider {rear_fn_mgr, rear_provider_transport};
-    RearLightingServiceConsumer rear_consumer {rear_consumer_transport};
+    ExteriorLightingFunctionManager rear_fn_mgr {};
+    ExteriorLightingServiceProvider rear_provider {rear_fn_mgr, rear_provider_transport};
+    ExteriorLightingServiceConsumer rear_consumer {rear_consumer_transport};
     CentralZoneController controller {rear_consumer};
     OperatorServiceProvider op_provider {controller, op_provider_transport};
     OperatorServiceConsumer op_consumer {op_consumer_transport, kHmiControlPanelApplicationId};

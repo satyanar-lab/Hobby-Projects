@@ -63,7 +63,7 @@ public:
     static TransportMessage BuildOperatorNodeHealthEvent(
         const domain::NodeHealthStatus& node_health_status);
 
-    // Rear lighting service — fault inject/clear requests sent by the controller.
+    // Exterior lighting service — fault inject/clear requests sent by the controller.
     static TransportMessage BuildInjectFaultRequest(
         const domain::FaultCommand& fault_command,
         std::uint16_t client_id,
@@ -78,7 +78,7 @@ public:
         std::uint16_t client_id,
         std::uint16_t session_id);
 
-    // Rear lighting service — fault status event sent by the rear node.
+    // Exterior lighting service — fault status event sent by the rear node.
     static TransportMessage BuildFaultStatusEvent(
         const domain::LampFaultStatus& fault_status);
 

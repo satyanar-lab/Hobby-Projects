@@ -4,8 +4,8 @@ cmake_minimum_required(VERSION 3.20)
 # CMake project.  ZEPHYR_BASE is set by west before invoking cmake.
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
-project(rear_lighting_zephyr_node
-    VERSION 1.0.1
+project(exterior_lighting_zephyr_node
+    VERSION 1.0.2
     LANGUAGES C CXX
 )
 
@@ -29,7 +29,7 @@ target_sources(app PRIVATE
     # Only the rear-node subset is included; CentralZoneController (std::thread)
     # and HMI sources are excluded as they were for the bare-metal target.
     ${DOMAIN_SRC_DIR}/application/fault_manager.cpp
-    ${DOMAIN_SRC_DIR}/application/rear_lighting_function_manager.cpp
+    ${DOMAIN_SRC_DIR}/application/exterior_lighting_function_manager.cpp
     ${DOMAIN_SRC_DIR}/application/uds_request_handler.cpp
     # Zephyr OTA implementation: stream_flash + boot_request_upgrade.
     # Replaces ota_session_manager_stm32.cpp (NRC stub) used by the bare-metal build.
