@@ -30,13 +30,14 @@ links to specific evidence in the codebase.
 | **MISRA-oriented discipline** | Explicit interfaces, deterministic behavior, low coupling, clean separation between domain/application/service/transport layers. Static analysis ready. |
 | **Adaptive AUTOSAR communication patterns** | Request-response (UDS), publish-subscribe (LampStatusEvent, NodeHealthStatusEvent), service discovery hooks. Three communication patterns implemented. |
 | **MCUboot OTA** | Full bootloader integration on Zephyr with ECDSA-P256 signing, dual-bank flash, swap-using-move algorithm, automatic rollback. End-to-end OTA verified on STM32 hardware. See [doc/mcuboot_integration.md](doc/mcuboot_integration.md). |
+| **SOME/IP-SD** | AUTOSAR AP_PRS_SOMEIPServiceDiscovery wire protocol. OfferService (56 B) and FindService (44 B) multicast to 224.244.224.245:30490 every 2 s. Verified with Wireshark SOME/IP-SD dissector. Zephyr rear node uses `k_work_delayable`. See [doc/some_ip_service_discovery.md](doc/some_ip_service_discovery.md). |
 | **Security architecture** | Threat model, implemented controls (ECDSA-P256 signing, MPU stack guards, OTA CRC), and production gap analysis (anti-rollback counter, transport TLS, UDS 0x27, RDP, encrypted images). See [doc/security_architecture.md](doc/security_architecture.md). |
 | **Diagnostic Trouble Codes** | FaultManager with DTCs B1001–B1005 (one per lamp). Fault injection via UDS 0x31 RoutineControl. Implementation at [src/application/fault_manager.cpp](src/application/fault_manager.cpp). |
 | **Zephyr RTOS** | Multi-threaded application with msgq IPC, devicetree GPIO, NET_IF_RUNNING gating, MCUboot integration, BSD sockets. See [app/zephyr_nucleo_h753zi/](app/zephyr_nucleo_h753zi/). |
 | **STM32 bare-metal** | LwIP raw API TCP server, HAL GPIO, custom linker script with MCUboot-compatible offsets, USART3 retarget. See [app/stm32_nucleo_h753zi/](app/stm32_nucleo_h753zi/). |
 | **HMI / Qt6** | QML-based control panel with atomic state and 80ms poll timer. Drives all three backends interchangeably. See [app/hmi_control_panel/](app/hmi_control_panel/). |
 | **Build systems** | CMake for Linux + STM32 bare-metal cross-compilation. Zephyr west sysbuild for MCUboot child image build. CI/CD with GitHub Actions. |
-| **Testing** | 12 GoogleTest unit tests covering arbitrator, function manager, fault manager, UDS handler, OTA handler, payload codec. Runs in CI on every push. |
+| **Testing** | 14 GoogleTest unit tests covering arbitrator, function manager, fault manager, UDS handler, OTA handler, payload codec, SOME/IP-SD codec. Runs in CI on every push. |
 | **Tooling** | Python UDS client, Python OTA client, Wireshark dissector, sysbuild, west, STM32CubeProgrammer integration, Lauterbach-friendly elf output. |
 
 ### Hardware platforms
@@ -60,6 +61,7 @@ Wireshark captures with screenshots in [doc/captures/](doc/captures/).
 - [doc/mcuboot_integration.md](doc/mcuboot_integration.md) — Bootloader integration
 - [doc/ota_specification.md](doc/ota_specification.md) — UDS OTA flow
 - [doc/security_architecture.md](doc/security_architecture.md) — Threat model and gap analysis
+- [doc/some_ip_service_discovery.md](doc/some_ip_service_discovery.md) — SOME/IP-SD wire format and implementation
 
 ---
 
