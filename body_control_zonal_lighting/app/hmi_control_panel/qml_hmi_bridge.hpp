@@ -82,6 +82,8 @@ signals:
 
 private slots:
     void pollAndUpdate();
+    void onPullTimerExpired();
+    void onAliveTimerExpired();
 
 private:
     // Pending state: latest value received from the vsomeip thread.
@@ -112,6 +114,9 @@ private:
     QMutex       pending_mtx_;
     PendingState pending_;
     QTimer*      update_timer_{nullptr};
+    QTimer*      pull_timer_{nullptr};
+    QTimer*      alive_timer_{nullptr};
+    int          poll_tick_{0};     // incremented every pollAndUpdate(); used for heartbeat cadence
 
     body_control::lighting::hmi::MainWindow& main_window_;
 

@@ -22,7 +22,8 @@ enum class HmiAction : std::uint8_t
     kToggleHazardLamp = 3U,     ///< Toggle hazard (both indicators) on/off.
     kToggleParkLamp = 4U,       ///< Toggle parking lamp on/off.
     kToggleHeadLamp = 5U,       ///< Toggle head lamp on/off.
-    kRequestNodeHealth = 6U     ///< Request a fresh node health snapshot.
+    kRequestNodeHealth = 6U,    ///< Request a fresh node health snapshot.
+    kRequestGetAllLampStates = 7U ///< Pull all 5 lamp states from the controller (2 s timer backstop).
 };
 
 }  // namespace hmi

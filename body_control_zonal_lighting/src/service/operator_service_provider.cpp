@@ -115,6 +115,11 @@ void OperatorServiceProvider::OnTransportMessageReceived(
     {
         HandleGetFaultStatusRequest();
     }
+    else if (transport::SomeipMessageParser::IsOperatorGetAllLampStatesRequest(
+                 transport_message))
+    {
+        HandleGetAllLampStatesRequest();
+    }
     else
     {
         /* Intentionally ignored: unsupported operator service payload. */
@@ -192,6 +197,26 @@ void OperatorServiceProvider::HandleClearFaultRequest(
 void OperatorServiceProvider::HandleGetFaultStatusRequest()
 {
     static_cast<void>(controller_.SendGetFaultStatus());
+}
+
+void OperatorServiceProvider::HandleGetAllLampStatesRequest()
+{
+    constexpr domain::LampFunction kAllFunctions[] = {
+        domain::LampFunction::kLeftIndicator,
+        domain::LampFunction::kRightIndicator,
+        domain::LampFunction::kHazardLamp,
+        domain::LampFunction::kParkLamp,
+        domain::LampFunction::kHeadLamp,
+    };
+
+    for (const domain::LampFunction func : kAllFunctions)
+    {
+        domain::LampStatus lamp_status {};
+        if (controller_.GetCachedLampStatus(func, lamp_status))
+        {
+            PublishLampStatusEvent(lamp_status);
+        }
+    }
 }
 
 void OperatorServiceProvider::PublishLampStatusEvent(

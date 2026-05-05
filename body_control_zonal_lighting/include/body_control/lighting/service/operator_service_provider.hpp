@@ -119,6 +119,13 @@ private:
     /** Calls controller_.SendGetFaultStatus() without decoding a payload. */
     void HandleGetFaultStatusRequest();
 
+    /**
+     * Reads all 5 cached lamp states from the controller and publishes each
+     * as an individual LampStatusEvent so the consumer's cache is refreshed.
+     * No payload to decode — the request carries only the method ID.
+     */
+    void HandleGetAllLampStatesRequest();
+
     /** Encodes lamp_status and sends it as a SOME/IP event on the operator transport. */
     void PublishLampStatusEvent(const domain::LampStatus& lamp_status);
 

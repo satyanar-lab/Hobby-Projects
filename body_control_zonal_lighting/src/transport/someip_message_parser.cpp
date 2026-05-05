@@ -323,4 +323,13 @@ bool SomeipMessageParser::IsOperatorGetFaultStatusRequest(
             domain::operator_service::kRequestGetFaultStatusMethodId);
 }
 
+bool SomeipMessageParser::IsOperatorGetAllLampStatesRequest(
+    const TransportMessage& transport_message) noexcept
+{
+    return IsOperatorServiceMessage(transport_message) &&
+           (!transport_message.is_event) &&
+           (transport_message.method_or_event_id ==
+            domain::operator_service::kRequestGetAllLampStatesMethodId);
+}
+
 }  // namespace body_control::lighting::transport

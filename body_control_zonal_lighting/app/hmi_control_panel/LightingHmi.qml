@@ -31,6 +31,29 @@ ApplicationWindow {
         onTriggered: root.clockTime = Qt.formatDateTime(new Date(), "HH:mm:ss")
     }
 
+    // ── LOG-5: QML-side diagnostic signal handlers ────────────────────────────
+    // Each handler fires only when the corresponding Q_PROPERTY actually changes.
+    // If LOG-4 (C++ emit) fires but LOG-5 never appears for that lamp, the QML
+    // binding or signal connection between the bridge and the QML engine broke.
+    Connections {
+        target: hmi
+        function onLeftOnChanged()  {
+            console.log("[LOG-5-QML-RX]", Date.now(), "lamp=LEFT  state=", hmi.leftOn)
+        }
+        function onRightOnChanged() {
+            console.log("[LOG-5-QML-RX]", Date.now(), "lamp=RIGHT state=", hmi.rightOn)
+        }
+        function onHazardOnChanged() {
+            console.log("[LOG-5-QML-RX]", Date.now(), "lamp=HAZARD state=", hmi.hazardOn)
+        }
+        function onParkOnChanged() {
+            console.log("[LOG-5-QML-RX]", Date.now(), "lamp=PARK  state=", hmi.parkOn)
+        }
+        function onHeadOnChanged() {
+            console.log("[LOG-5-QML-RX]", Date.now(), "lamp=HEAD  state=", hmi.headOn)
+        }
+    }
+
     // ── Carbon dot-grid background ────────────────────────────────────────────
     Canvas {
         anchors.fill: parent; z: -1

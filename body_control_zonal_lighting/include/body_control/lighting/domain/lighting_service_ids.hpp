@@ -129,6 +129,11 @@ constexpr std::uint16_t kRequestClearFaultMethodId {0x0006U};
 /// Method: request a full LampFaultStatus snapshot from the controller.
 constexpr std::uint16_t kRequestGetFaultStatusMethodId {0x0007U};
 
+/// Method: request a snapshot of all 5 lamp states from the controller cache.
+/// Pull-model backup: HMI calls this every 2 s so the display never freezes if
+/// push events are dropped.  Provider replies with 5 × kLampStatusEventId.
+constexpr std::uint16_t kRequestGetAllLampStatesMethodId {0x0008U};
+
 /// Event: controller pushes LampStatus updates to all operator subscribers.
 constexpr std::uint16_t kLampStatusEventId {0x8001U};
 

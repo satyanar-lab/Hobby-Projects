@@ -166,6 +166,10 @@ public:
     /** Returns true if the message is an operator GetFaultStatus request. */
     [[nodiscard]] static bool IsOperatorGetFaultStatusRequest(
         const TransportMessage& transport_message) noexcept;
+
+    /** Returns true if the message is an operator GetAllLampStates request. */
+    [[nodiscard]] static bool IsOperatorGetAllLampStatesRequest(
+        const TransportMessage& transport_message) noexcept;
 };
 
 }  // namespace transport

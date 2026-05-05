@@ -96,6 +96,10 @@ public:
     static TransportMessage BuildOperatorGetFaultStatusRequest(
         std::uint16_t client_id,
         std::uint16_t session_id);
+
+    static TransportMessage BuildOperatorGetAllLampStatesRequest(
+        std::uint16_t client_id,
+        std::uint16_t session_id);
 };
 
 }  // namespace transport

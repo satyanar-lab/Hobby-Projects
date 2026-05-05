@@ -51,6 +51,10 @@ MainWindowStatus MainWindow::ProcessAction(
         operator_status = operator_service_.RequestNodeHealth();
         break;
 
+    case HmiAction::kRequestGetAllLampStates:
+        operator_status = operator_service_.RequestGetAllLampStates();
+        break;
+
     case HmiAction::kUnknown:
     default:
         return MainWindowStatus::kInvalidAction;

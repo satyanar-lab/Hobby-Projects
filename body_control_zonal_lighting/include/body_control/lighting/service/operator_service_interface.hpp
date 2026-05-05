@@ -148,6 +148,17 @@ public:
     [[nodiscard]] virtual OperatorServiceStatus RequestGetFaultStatus() = 0;
 
     /**
+     * Requests the controller to re-publish the current LampStatus for all 5
+     * lamp functions as individual LampStatusEvents.
+     *
+     * Used as a pull-model backstop: the HMI calls this every 2 seconds so
+     * the display never stays frozen if intermittent UDP push events are dropped.
+     * The replies arrive via OnLampStatusUpdated() on the registered listener
+     * — the same code path as the normal push — with no special handling needed.
+     */
+    [[nodiscard]] virtual OperatorServiceStatus RequestGetAllLampStates() = 0;
+
+    /**
      * Reads the most recent cached LampStatus for the given function.
      *
      * Non-blocking; never queries the controller.

@@ -1,5 +1,7 @@
 #include "body_control/lighting/service/operator_service_consumer.hpp"
 
+#include <cstdio>
+
 #include "body_control/lighting/transport/someip_message_builder.hpp"
 #include "body_control/lighting/transport/someip_message_parser.hpp"
 
@@ -122,6 +124,14 @@ OperatorServiceStatus OperatorServiceConsumer::RequestGetFaultStatus()
     return SendRequest(msg);
 }
 
+OperatorServiceStatus OperatorServiceConsumer::RequestGetAllLampStates()
+{
+    const transport::TransportMessage msg =
+        transport::SomeipMessageBuilder::BuildOperatorGetAllLampStatesRequest(
+            client_id_, next_session_id_++);
+    return SendRequest(msg);
+}
+
 bool OperatorServiceConsumer::GetLampStatus(
     const domain::LampFunction lamp_function,
     domain::LampStatus& lamp_status) const noexcept
@@ -155,6 +165,15 @@ void OperatorServiceConsumer::OnTransportMessageReceived(
     {
         const domain::LampStatus lamp_status =
             transport::SomeipMessageParser::ParseLampStatus(transport_message);
+
+        // LOG-1-CONSUMER: vsomeip IO thread delivered a LampStatus event to the
+        // consumer. Printed to stderr because this translation unit has no Qt dep.
+        // If this stops appearing, the vsomeip event delivery thread has stalled.
+        std::fprintf(stderr,
+            "[LOG-1-CONSUMER] LampStatusEvent fn=%d state=%d listener=%s\n",
+            static_cast<int>(lamp_status.function),
+            static_cast<int>(lamp_status.output_state),
+            (listener_ != nullptr) ? "set" : "NULL");
 
         // Update the local cache first so a GetLampStatus() call inside the
         // listener callback already sees the new value.

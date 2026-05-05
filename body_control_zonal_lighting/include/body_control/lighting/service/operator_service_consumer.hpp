@@ -76,6 +76,9 @@ public:
     /** Sends a RequestGetFaultStatus datagram to the controller. */
     [[nodiscard]] OperatorServiceStatus RequestGetFaultStatus() override;
 
+    /** Sends a RequestGetAllLampStates datagram to the controller. */
+    [[nodiscard]] OperatorServiceStatus RequestGetAllLampStates() override;
+
     /** Reads the cached LampStatus for the given function. */
     [[nodiscard]] bool GetLampStatus(
         domain::LampFunction lamp_function,

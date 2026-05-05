@@ -396,4 +396,15 @@ TransportMessage SomeipMessageBuilder::BuildOperatorGetFaultStatusRequest(
         false);
 }
 
+TransportMessage SomeipMessageBuilder::BuildOperatorGetAllLampStatesRequest(
+    const std::uint16_t client_id,
+    const std::uint16_t session_id)
+{
+    return BuildOperatorBaseMessage(
+        domain::operator_service::kRequestGetAllLampStatesMethodId,
+        client_id,
+        session_id,
+        false);
+}
+
 }  // namespace body_control::lighting::transport
