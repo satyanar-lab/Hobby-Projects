@@ -48,6 +48,43 @@ ports 41000/41001. Wireshark does not auto-decode our custom SOME/IP framing,
 so the payload is shown as raw bytes — the codec is documented in
 `include/body_control/lighting/transport/lighting_payload_codec.hpp`.
 
+## Decoded with custom Lua dissector
+
+The five screenshots above show captures using only
+Wireshark's built-in DoIP and UDS dissectors. The custom
+SOME/IP-shaped UDP payload was raw bytes. After loading
+the dissector at doc/captures/wireshark_dissector/bcz_someip.lua,
+the same frames decode into named fields.
+
+### Packet list with decoded protocol
+
+![Packet list with BCZ SOME/IP protocol decoded](screenshots/06_dissector_packet_list.png)
+
+The Protocol column now shows BCZ SOME/IP and the Info
+column resolves service and method names. No more
+guessing what is in the UDP payload — every frame is
+identified by its automotive purpose.
+
+### Request frame decoded
+
+![GetNodeHealth REQUEST with all header fields decoded](screenshots/07_dissector_request_decoded.png)
+
+Every header byte parsed and named. Service ID 0x5100
+shown as ExteriorLightingService, method ID 0x0003 as
+GetNodeHealth. Client and session IDs shown as standard
+SOME/IP fields. Message type and return code resolved
+to enum names.
+
+### Event payload decoded
+
+![NodeHealthEvent with payload fields named](screenshots/08_dissector_event_payload.png)
+
+The 6-byte NodeHealthStatus payload parsed into its
+five fields: HealthState, EthernetLinkAvailable,
+ServiceAvailable, LampDriverFaultPresent,
+ActiveFaultCount. Each field shown by name with its
+runtime value.
+
 ## Capture 1 — automotive_ethernet_capture.pcapng
 
 Controller-to-rear-node periodic communication on ports 41000/41001 over
