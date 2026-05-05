@@ -111,3 +111,19 @@ functionality, restore from this tag:
 
 Always verify against this tag before commits that
 touch STM32 files.
+
+**mcuboot-ota-zephyr-fully-working-v1** — MCUboot OTA
+on Zephyr verified end-to-end on hardware (Phase 13).
+Covers: ECDSA-P256 signing, dual-bank flash partitions,
+swap-using-move, UDS/DoIP transfer, stream_flash write,
+boot_request_upgrade, and boot_write_img_confirmed.
+Pre-OTA: BCL-REAR-NODE 1.0.0 → Post-OTA: 1.0.1.
+If any future change breaks OTA functionality, restore:
+  git checkout mcuboot-ota-zephyr-fully-working-v1 -- \
+    app/zephyr_nucleo_h753zi/ \
+    src/application/ota_session_manager_zephyr.cpp \
+    src/application/uds_request_handler.cpp \
+    src/application/ota_handler.cpp
+
+Always verify against this tag before commits that
+touch OTA or MCUboot files.
