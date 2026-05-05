@@ -29,6 +29,7 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <vector>
 
 #include <zephyr/dfu/mcuboot.h>
 #include <zephyr/kernel.h>
@@ -43,6 +44,9 @@
 #include "body_control/lighting/domain/lamp_status_types.hpp"
 #include "body_control/lighting/domain/lighting_constants.hpp"
 #include "body_control/lighting/domain/lighting_payload_codec.hpp"
+#include "body_control/lighting/domain/lighting_service_ids.hpp"
+#include "body_control/lighting/transport/some_ip_sd_codec.hpp"
+#include "body_control/lighting/transport/some_ip_sd_types.hpp"
 #include "body_control/lighting/transport/someip_message_builder.hpp"
 #include "body_control/lighting/transport/someip_message_parser.hpp"
 #include "zephyr_gpio_driver.hpp"
@@ -118,6 +122,74 @@ static struct k_thread g_doip_thread_data;
 // UDS request handler — accessed only from DoIP thread; no locking needed.
 static body_control::lighting::application::UdsRequestHandler
     g_uds_handler {g_lamp_mgr};
+
+// ---- SOME/IP-SD OfferService (Phase 15) ------------------------------------
+//
+// Periodic SOME/IP-SD OfferService sent to multicast 224.244.224.245:30490
+// every 2 seconds (main-phase only; initial-wait and repetition phases
+// are intentionally omitted per AUTOSAR AP_PRS_SOMEIPServiceDiscovery §4.x).
+// Wireshark's SOME/IP-SD dissector recognises each frame as a valid
+// OfferService for ExteriorLightingService (0x5100).
+
+static int              g_sd_fd      {-1};
+static std::uint16_t    g_sd_session {1U};
+
+static void SdOfferWorkHandler(struct k_work* work) noexcept;
+static K_WORK_DELAYABLE_DEFINE(g_sd_offer_work, SdOfferWorkHandler);
+
+static void SdOfferWorkHandler(struct k_work* /*work*/) noexcept
+{
+    namespace ns = body_control::lighting;
+
+    // Lazy socket creation — deferred until the network stack is up.
+    if (g_sd_fd < 0)
+    {
+        g_sd_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        if (g_sd_fd >= 0)
+        {
+            const int ttl = 1;
+            static_cast<void>(setsockopt(g_sd_fd, IPPROTO_IP,
+                                         IP_MULTICAST_TTL, &ttl, sizeof(ttl)));
+        }
+    }
+
+    if (g_sd_fd >= 0)
+    {
+        ns::transport::ServiceOffer offer {};
+        offer.service_id    = ns::domain::exterior_lighting_service::kServiceId;
+        offer.instance_id   = ns::domain::exterior_lighting_service::kInstanceId;
+        offer.major_version = 1U;
+        offer.ttl_seconds   = 5U;
+        offer.local_port    = kExteriorLightingNodePort;
+        // Advertise the NUCLEO's static unicast IP so the controller can
+        // open a direct data socket to this endpoint.
+        std::strncpy(offer.local_ip,
+                     kCzcIpStr[0] != '\0' ? "192.168.0.20" : "192.168.0.20",
+                     sizeof(offer.local_ip) - 1U);
+
+        const auto frame =
+            ns::transport::SomeIpSdCodec::EncodeOffer(offer, g_sd_session++);
+
+        struct sockaddr_in mcast {};
+        mcast.sin_family = AF_INET;
+        mcast.sin_port   = htons(30490U);
+        inet_pton(AF_INET, "224.244.224.245", &mcast.sin_addr);
+
+        static_cast<void>(sendto(
+            g_sd_fd, frame.data(), frame.size(), 0,
+            reinterpret_cast<const struct sockaddr*>(&mcast),
+            static_cast<socklen_t>(sizeof(mcast))));
+
+        LOG_INF("[SD] OfferService 0x%04x sent (%zu bytes)",
+                static_cast<unsigned>(offer.service_id), frame.size());
+    }
+    else
+    {
+        LOG_WRN("[SD] socket not ready, retrying");
+    }
+
+    k_work_schedule(&g_sd_offer_work, K_MSEC(2000));
+}
 
 // ---- Blink manager ---------------------------------------------------------
 //
@@ -1040,6 +1112,10 @@ int main()
     k_thread_name_set(&g_cmd_thread_data, "cmd");
 
     LOG_INF("Exterior lighting node started");
+
+    // Start SOME/IP-SD OfferService immediately; the work handler retries the
+    // socket creation on every tick until the network is up.
+    k_work_schedule(&g_sd_offer_work, K_MSEC(0));
 
     k_thread_create(&g_doip_thread_data,
                     g_doip_stack,

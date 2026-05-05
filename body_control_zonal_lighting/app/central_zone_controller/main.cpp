@@ -4,9 +4,12 @@
 #include <thread>
 
 #include "body_control/lighting/application/central_zone_controller.hpp"
+#include "body_control/lighting/domain/lighting_service_ids.hpp"
 #include "body_control/lighting/platform/linux/process_signal_handler.hpp"
 #include "body_control/lighting/service/operator_service_provider.hpp"
 #include "body_control/lighting/service/exterior_lighting_service_consumer.hpp"
+#include "body_control/lighting/transport/some_ip_sd_listener.hpp"
+#include "body_control/lighting/transport/some_ip_sd_types.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
 
 namespace body_control
@@ -165,6 +168,9 @@ int main()
     using body_control::lighting::service::OperatorServiceProvider;
     using body_control::lighting::service::OperatorServiceStatus;
     using body_control::lighting::service::ExteriorLightingServiceConsumer;
+    using body_control::lighting::transport::SomeIpSdListener;
+    using body_control::lighting::transport::DiscoveredService;
+    using body_control::lighting::transport::SdStatus;
     using body_control::lighting::transport::TransportAdapterInterface;
 
     ProcessSignalHandler signal_handler {};
@@ -172,6 +178,34 @@ int main()
     {
         std::cerr << "Failed to install signal handler.\n";
         return 1;
+    }
+
+    // SOME/IP-SD listener: discovers ExteriorLightingService providers on the
+    // local network.  The discovered endpoint is logged; in a production system
+    // it would replace the static NUCLEO endpoint in the DirectUdpTransportAdapter.
+    SomeIpSdListener sd_listener {};
+    const SdStatus sd_init = sd_listener.Init(
+        body_control::lighting::domain::exterior_lighting_service::kServiceId,
+        body_control::lighting::domain::exterior_lighting_service::kInstanceId,
+        [](const DiscoveredService& svc)
+        {
+            std::cout << "[SD] OfferService received: svc=0x" << std::hex
+                      << svc.service_id << " inst=0x" << svc.instance_id
+                      << std::dec << " at " << svc.remote_ip
+                      << ":" << svc.remote_port << "\n";
+        });
+
+    if (sd_init == SdStatus::kSuccess)
+    {
+        static_cast<void>(sd_listener.Start());
+        std::cout << "[SD] Listening for ExteriorLightingService (0x"
+                  << std::hex
+                  << body_control::lighting::domain::exterior_lighting_service::kServiceId
+                  << std::dec << ") on 224.244.224.245:30490\n";
+    }
+    else
+    {
+        std::cerr << "[SD] Listener init failed (multicast unavailable?)\n";
     }
 
     std::unique_ptr<TransportAdapterInterface> vsomeip_rear_transport =
@@ -247,6 +281,7 @@ int main()
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
+    static_cast<void>(sd_listener.Stop());
     static_cast<void>(operator_service_provider.Shutdown());
     static_cast<void>(central_zone_controller.Shutdown());
 

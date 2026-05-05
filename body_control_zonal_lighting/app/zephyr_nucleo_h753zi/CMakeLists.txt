@@ -38,6 +38,10 @@ target_sources(app PRIVATE
     ${DOMAIN_SRC_DIR}/domain/lighting_payload_codec.cpp
     ${DOMAIN_SRC_DIR}/transport/someip_message_builder.cpp
     ${DOMAIN_SRC_DIR}/transport/someip_message_parser.cpp
+
+    # SOME/IP-SD codec — platform-agnostic wire format encoder/decoder.
+    # The inline k_work_delayable SD offerer in main.cpp uses EncodeOffer().
+    ${DOMAIN_SRC_DIR}/transport/some_ip_sd/some_ip_sd_codec.cpp
 )
 
 target_include_directories(app PRIVATE

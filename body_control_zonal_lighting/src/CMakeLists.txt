@@ -58,6 +58,10 @@ set(BODY_CONTROL_LIGHTING_CORE_SOURCES_LINUX
     transport/ethernet/udp_transport_adapter.cpp
 
     transport/doip_server.cpp
+
+    transport/some_ip_sd/some_ip_sd_codec.cpp
+    transport/some_ip_sd/some_ip_sd_offerer.cpp
+    transport/some_ip_sd/some_ip_sd_listener.cpp
 )
 
 # STM32 source list is intentionally standalone — it excludes
