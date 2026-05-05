@@ -23,6 +23,21 @@
  * +------------------+------------+--------+---------------------------+
  */
 
+/*
+ * Override the chosen code partition for MCUboot.
+ *
+ * nucleo_h753zi.dts sets zephyr,code-partition = &slot0_partition so the
+ * application links at 0x08040000.  Without this override, MCUboot inherits
+ * that chosen node through the overlay merge and also links at 0x08040000,
+ * producing a hex file with load address 0x08040000 — the bootloader ends up
+ * in slot0 instead of the boot partition at 0x08000000.
+ */
+/ {
+    chosen {
+        zephyr,code-partition = &boot_partition;
+    };
+};
+
 /* Step 1: remove the undersized stock partitions to avoid label conflicts. */
 &flash0 {
     partitions {
