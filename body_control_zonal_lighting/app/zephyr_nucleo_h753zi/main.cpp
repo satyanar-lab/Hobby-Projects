@@ -761,12 +761,27 @@ static void HealthThread(void* /*p1*/, void* /*p2*/, void* /*p3*/)
         // Publish node health every second (every 5th 200 ms tick).
         if ((tick_count % 5U) == 0U)
         {
+            k_mutex_lock(&g_lamp_mgr_mutex, K_FOREVER);
+            const auto fault_status = g_lamp_mgr.GetFaultStatus();
+            k_mutex_unlock(&g_lamp_mgr_mutex);
+
             NHS health {};
-            health.health_state              = NHState::kOperational;
-            health.ethernet_link_available   = true;
-            health.service_available         = true;
-            health.lamp_driver_fault_present = false;
-            health.active_fault_count        = 0U;
+            health.lamp_driver_fault_present = fault_status.fault_present;
+            health.active_fault_count        = fault_status.active_fault_count;
+
+            // OTA-mode (kHealthUpdating) is not visible here — HealthThread has
+            // no access to g_ota_session_manager.  The UDS path (EncodeNodeHealth)
+            // already handles kHealthUpdating correctly; this publisher only needs
+            // to distinguish operational from faulted.
+            health.health_state =
+                (fault_status.active_fault_count > 0U)
+                    ? NHState::kFaulted
+                    : NHState::kOperational;
+
+            // P2: eth_link and svc_avail are left as true until transport-layer
+            // state is injectable into the publisher path (architectural change).
+            health.ethernet_link_available = true;
+            health.service_available       = true;
 
             const auto msg =
                 bld_transport::SomeipMessageBuilder::BuildNodeHealthEvent(health);
