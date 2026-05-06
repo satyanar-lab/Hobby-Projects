@@ -651,6 +651,12 @@ struct LampCommandDispatcher final
         const LC cmd =
             bld_transport::SomeipMessageParser::ParseLampCommand(msg);
 
+        if (!body_control::lighting::domain::IsValidLampCommand(cmd))
+        {
+            LOG_WRN("RX: ParseLampCommand: invalid enum bytes, datagram dropped");
+            return;
+        }
+
         LOG_WRN("RX: SetLampCommand OK func=%d action=%d seq=%u",
                 static_cast<int>(cmd.function),
                 static_cast<int>(cmd.action),
