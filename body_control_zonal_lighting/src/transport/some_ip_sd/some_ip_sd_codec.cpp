@@ -237,6 +237,14 @@ bool DecodeOffer(
 
     if ((entries_len == 0U) || ((8U + entries_len) > sd_len)) { return false; }
 
+    // AUTOSAR PRS: each SD entry is exactly kEntrySize bytes; total
+    // entries_len must be a whole multiple. Reject malformed frames
+    // where the field is non-zero but not aligned to entry size.
+    if ((entries_len % kEntrySize) != 0U)
+    {
+        return false;
+    }
+
     const std::uint32_t num_entries = entries_len / kEntrySize;
 
     for (std::uint32_t i = 0U; i < num_entries; ++i)

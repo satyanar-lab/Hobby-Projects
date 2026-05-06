@@ -166,3 +166,17 @@ TEST(SomeIpSdCodecTest, DecodeOfferWrongServiceIdHeaderReturnsFalse)
     DiscoveredService svc {};
     EXPECT_FALSE(DecodeOffer(frame.data(), frame.size(), 0x5100U, 0x0001U, svc));
 }
+
+TEST(SomeIpSdCodecTest, DecodeOfferUnalignedEntriesLenReturnsFalse)
+{
+    // entries_len = 17 is not a multiple of kEntrySize (16); must be rejected
+    // per AUTOSAR PRS which requires each SD entry to be exactly 16 bytes.
+    // Patch frame[20..23] (sd[4..7] = entries_len field) from 16 to 17.
+    auto frame = EncodeOffer(MakeOffer(), 0x0001U);
+    frame[20] = 0x00U;
+    frame[21] = 0x00U;
+    frame[22] = 0x00U;
+    frame[23] = 0x11U;  // 17 = 0x11
+    DiscoveredService svc {};
+    EXPECT_FALSE(DecodeOffer(frame.data(), frame.size(), 0x5100U, 0x0001U, svc));
+}
