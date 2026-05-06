@@ -245,27 +245,32 @@ std::vector<std::uint8_t> OtaSessionManager::HandleRequestTransferExit(
                                 domain::uds::kNrcConditionsNotCorrect);
     }
 
-    // If the request carries 4 CRC bytes (req size == 5), validate them.
-    if (req.size() == 5U)
+    // Require exactly SID(1) + CRC32(4) = 5 bytes. ISO 14229-1 makes the
+    // parameterRecord optional, but we enforce it as defence-in-depth so
+    // a bare 0x37 cannot bypass CRC validation.
+    if (req.size() != 5U)
     {
-        const std::uint32_t expected_crc =
-            (static_cast<std::uint32_t>(req[1]) << 24U) |
-            (static_cast<std::uint32_t>(req[2]) << 16U) |
-            (static_cast<std::uint32_t>(req[3]) <<  8U) |
-             static_cast<std::uint32_t>(req[4]);
+        return NegativeResponse(domain::uds::kSidRequestTransferExit,
+                                domain::uds::kNrcIncorrectMessageLengthOrInvalidFormat);
+    }
 
-        const std::uint32_t actual_crc = running_crc_ ^ 0xFFFF'FFFFU;
+    const std::uint32_t expected_crc =
+        (static_cast<std::uint32_t>(req[1]) << 24U) |
+        (static_cast<std::uint32_t>(req[2]) << 16U) |
+        (static_cast<std::uint32_t>(req[3]) <<  8U) |
+         static_cast<std::uint32_t>(req[4]);
 
-        if (actual_crc != expected_crc)
-        {
-            LOG_ERR("[OTA] CRC mismatch: got 0x%08X, expected 0x%08X",
-                    actual_crc, expected_crc);
-            state_ = OtaState::kFailed;
-            CloseStaging();
-            Reset();
-            return NegativeResponse(domain::uds::kSidRequestTransferExit,
-                                    domain::uds::kNrcGeneralProgrammingFailure);
-        }
+    const std::uint32_t actual_crc = running_crc_ ^ 0xFFFF'FFFFU;
+
+    if (actual_crc != expected_crc)
+    {
+        LOG_ERR("[OTA] CRC mismatch: got 0x%08X, expected 0x%08X",
+                actual_crc, expected_crc);
+        state_ = OtaState::kFailed;
+        CloseStaging();
+        Reset();
+        return NegativeResponse(domain::uds::kSidRequestTransferExit,
+                                domain::uds::kNrcGeneralProgrammingFailure);
     }
 
     // Flush the remaining bytes in s_stream_buf to flash (flush=true).

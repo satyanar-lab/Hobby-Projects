@@ -78,6 +78,7 @@ constexpr std::uint16_t kRoutineIdFaultMax             {0xB005U};
 
 constexpr std::uint8_t kNrcServiceNotSupported              {0x11U};
 constexpr std::uint8_t kNrcSubFunctionNotSupported          {0x12U};
+constexpr std::uint8_t kNrcIncorrectMessageLengthOrInvalidFormat {0x13U};
 constexpr std::uint8_t kNrcConditionsNotCorrect             {0x22U};
 constexpr std::uint8_t kNrcRequestOutOfRange                {0x31U};
 constexpr std::uint8_t kNrcUploadDownloadNotAccepted        {0x70U};

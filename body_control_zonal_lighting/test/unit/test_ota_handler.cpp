@@ -13,6 +13,7 @@ using body_control::lighting::domain::uds::kNrcRequestOutOfRange;
 using body_control::lighting::domain::uds::kNrcUploadDownloadNotAccepted;
 using body_control::lighting::domain::uds::kNrcWrongBlockSequenceCounter;
 using body_control::lighting::domain::uds::kNrcGeneralProgrammingFailure;
+using body_control::lighting::domain::uds::kNrcIncorrectMessageLengthOrInvalidFormat;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -195,8 +196,11 @@ TEST_F(OtaHandlerTest, RequestTransferExit_CrcMismatch_ReturnsNrc)
         0x37U, kNrcGeneralProgrammingFailure);
 }
 
-TEST_F(OtaHandlerTest, FullTransfer_NoCrc_SuccessAndBecomesIdle)
+TEST_F(OtaHandlerTest, RequestTransferExit_WithoutCrc_ReturnsNrc)
 {
+    // Intentional hardening beyond ISO 14229-1: the spec makes parameterRecord
+    // in 0x37 optional, but we require the 4-byte CRC so a bare SID-only 0x37
+    // cannot silently bypass CRC validation. Expect NRC 0x13.
     const std::vector<std::uint8_t> firmware {0x01U, 0x02U, 0x03U, 0x04U};
     static_cast<void>(ota.HandleRequestDownload(MakeRequestDownload(4U)));
     static_cast<void>(ota.HandleTransferData(
@@ -204,10 +208,7 @@ TEST_F(OtaHandlerTest, FullTransfer_NoCrc_SuccessAndBecomesIdle)
 
     const auto resp = ota.HandleRequestTransferExit({0x37U});
 
-    ASSERT_EQ(resp.size(), 1U);
-    EXPECT_EQ(resp[0], 0x77U) << "positive response 0x37+0x40=0x77";
-    EXPECT_EQ(ota.GetState(), OtaSessionManager::OtaState::kComplete);
-    EXPECT_FALSE(ota.IsOtaModeActive());
+    ExpectNegativeResponse(resp, 0x37U, kNrcIncorrectMessageLengthOrInvalidFormat);
 }
 
 TEST_F(OtaHandlerTest, FullTransfer_WithCrc_SuccessAndBecomesIdle)
@@ -227,9 +228,10 @@ TEST_F(OtaHandlerTest, FullTransfer_WithCrc_SuccessAndBecomesIdle)
 
 TEST_F(OtaHandlerTest, IsOtaModeActive_AfterComplete_ReturnsFalse)
 {
+    const std::vector<std::uint8_t> firmware {0xFFU};
     static_cast<void>(ota.HandleRequestDownload(MakeRequestDownload(1U)));
     static_cast<void>(ota.HandleTransferData({0x36U, 0x01U, 0xFFU}));
-    static_cast<void>(ota.HandleRequestTransferExit({0x37U}));
+    static_cast<void>(ota.HandleRequestTransferExit(MakeRequestTransferExitWithCrc(firmware)));
 
     EXPECT_FALSE(ota.IsOtaModeActive());
     EXPECT_EQ(ota.GetState(), OtaSessionManager::OtaState::kComplete);
@@ -238,11 +240,12 @@ TEST_F(OtaHandlerTest, IsOtaModeActive_AfterComplete_ReturnsFalse)
 TEST_F(OtaHandlerTest, MultipleBlocks_SequenceWrapsCorrectly)
 {
     // 3 blocks of 1 byte each.
+    const std::vector<std::uint8_t> firmware {0xAAU, 0xBBU, 0xCCU};
     static_cast<void>(ota.HandleRequestDownload(MakeRequestDownload(3U)));
     EXPECT_EQ(ota.HandleTransferData({0x36U, 0x01U, 0xAAU})[1], 0x01U);
     EXPECT_EQ(ota.HandleTransferData({0x36U, 0x02U, 0xBBU})[1], 0x02U);
     EXPECT_EQ(ota.HandleTransferData({0x36U, 0x03U, 0xCCU})[1], 0x03U);
 
-    const auto resp = ota.HandleRequestTransferExit({0x37U});
+    const auto resp = ota.HandleRequestTransferExit(MakeRequestTransferExitWithCrc(firmware));
     EXPECT_EQ(resp[0], 0x77U);
 }
