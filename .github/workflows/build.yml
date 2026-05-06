@@ -91,6 +91,46 @@ jobs:
             -I include/ \
             src/ app/ 2>&1
 
+  static-analysis-sanitizers:
+    name: ASan + UBSan
+    runs-on: ubuntu-24.04
+    needs: linux-build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install vss-tools
+        run: pip install -r vss/requirements.txt
+
+      - name: Configure
+        run: |
+          cmake -S . -B build-san \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g -O1" \
+            -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g -O1" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" \
+            -DBODY_CONTROL_LIGHTING_BUILD_VSS=ON
+
+      - name: Build
+        run: cmake --build build-san -j$(nproc)
+
+      - name: Run tests under ASan + UBSan
+        env:
+          ASAN_OPTIONS: "detect_leaks=1:halt_on_error=1:print_stacktrace=1:symbolize=1"
+          UBSAN_OPTIONS: "halt_on_error=1:print_stacktrace=1:print_summary=1"
+        run: ctest --test-dir build-san --output-on-failure
+
   static-analysis-clang-tidy:
     name: clang-tidy
     runs-on: ubuntu-24.04

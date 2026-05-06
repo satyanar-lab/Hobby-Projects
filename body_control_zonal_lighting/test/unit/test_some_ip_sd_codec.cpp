@@ -71,8 +71,8 @@ TEST(SomeIpSdCodecTest, EncodeOfferServiceIdInEntry)
 {
     const auto frame = EncodeOffer(MakeOffer(0x5100U, 0x0001U), 0x0001U);
     // Entry starts at frame[24]; service_id at entry[4..5] = frame[28..29]
-    const std::uint16_t svc =
-        (static_cast<std::uint16_t>(frame[28]) << 8U) | frame[29];
+    const std::uint16_t svc = static_cast<std::uint16_t>(
+        (static_cast<std::uint16_t>(frame[28]) << 8U) | frame[29]);
     EXPECT_EQ(svc, 0x5100U);
 }
 
@@ -88,8 +88,8 @@ TEST(SomeIpSdCodecTest, EncodeOfferPortInOption)
 {
     const auto frame = EncodeOffer(MakeOffer(0x5100U, 0x0001U, "192.168.0.20", 41001U), 0x0001U);
     // opt[10..11] = port 41001 = 0xA029
-    const std::uint16_t port =
-        (static_cast<std::uint16_t>(frame[44 + 10]) << 8U) | frame[44 + 11];
+    const std::uint16_t port = static_cast<std::uint16_t>(
+        (static_cast<std::uint16_t>(frame[44 + 10]) << 8U) | frame[44 + 11]);
     EXPECT_EQ(port, 41001U);
 }
 
