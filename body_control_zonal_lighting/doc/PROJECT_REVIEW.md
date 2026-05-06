@@ -896,7 +896,7 @@ The same `ExteriorLightingFunctionManager`, `CommandArbitrator`,
 STM32 bare-metal (LwIP), and Zephyr RTOS (BSD sockets). The
 `TransportAdapterInterface`
 (`include/body_control/lighting/transport/transport_adapter_interface.hpp`) is
-the mechanism. In an interview: point to this file and walk through the
+the mechanism. In an interview I'd point to this file and walk through the
 dependency inversion — service layer depends on an interface, platform layer
 provides the concrete implementation, no `#ifdef` in the logic.
 
@@ -933,33 +933,33 @@ explicitly demonstrate the discipline that production programs require.
 
 **Probe 1:** "Walk me through how a LampCommand gets from the HMI button press
 to the GPIO toggle on the NUCLEO." This tests end-to-end system understanding.
-Expected answer: HMI → OperatorServiceConsumer → UDP → OperatorServiceProvider
+My answer: HMI → OperatorServiceConsumer → UDP → OperatorServiceProvider
 (CZC) → CommandArbitrator → FunctionManager → SOME/IP event → Zephyr UDP RX
 thread → g_lamp_cmd_queue → cmd_thread → BlinkManager → ZephyrGpioDriver.
 Cite `app/zephyr_nucleo_h753zi/main.cpp:693–713` for the cmd_thread dequeue
 loop.
 
 **Probe 2:** "The ARXML descriptions — are they inputs to a code generator or
-documentation only?" Expected answer: documentation only; the proxy/skeleton
+documentation only?" My answer: documentation only; the proxy/skeleton
 facades are hand-written. An interviewer from an Adaptive AUTOSAR toolchain
 background (Vector, ETAS) will respect the honest answer over an inflated claim.
 
 **Probe 3:** "How does MCUboot know the new image is good before permanently
-committing it?" Expected answer: `BOOT_UPGRADE_TEST` marks slot1 as
+committing it?" My answer: `BOOT_UPGRADE_TEST` marks slot1 as
 trial-boot; the application must call `boot_write_img_confirmed()` before the
 next reboot or MCUboot reverts to slot0. Confirmation is gated on a successful
 health event transmission in `HealthThread`.
 
 **Probe 4:** "You have `health.lamp_driver_fault_present = false` hard-coded in
-the health thread — what would you do to fix that?" This probes whether the
-candidate has read their own code at depth. Expected answer: call
+the health thread — what would you do to fix that?" This probes whether I've
+read my own code at depth. My answer: call
 `g_lamp_mgr.GetFaultStatus()` inside the mutex in HealthThread, then call
 `FaultManager::PopulateHealth()` on the result before building the
 `NodeHealthStatus` message.
 
 **Probe 5:** "Why does `EncodeNodeHealth` hard-code `eth_link` and `svc_avail`
 as always-up?" (`uds_request_handler.cpp:354`: `flags = 0x03U | fault_bit`.)
-Expected answer: the UDS handler does not have access to the transport layer's
+My answer: the UDS handler does not have access to the transport layer's
 link state. Fixing this requires injecting a link-status callback or querying
 `ZephyrUdpTransportAdapter` for its `NET_IF_RUNNING` state. It is a
 known gap between the UDS diagnostic view and actual runtime state.
