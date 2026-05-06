@@ -38,7 +38,7 @@ links to specific evidence in the codebase.
 | **STM32 bare-metal** | LwIP raw API TCP server, HAL GPIO, custom linker script with MCUboot-compatible offsets, USART3 retarget. See [app/stm32_nucleo_h753zi/](app/stm32_nucleo_h753zi/). |
 | **HMI / Qt6** | QML-based control panel with atomic state and 80ms poll timer. Drives all three backends interchangeably. See [app/hmi_control_panel/](app/hmi_control_panel/). |
 | **Build systems** | CMake for Linux + STM32 bare-metal cross-compilation. Zephyr west sysbuild for MCUboot child image build. CI/CD with GitHub Actions. |
-| **Testing** | 15 GoogleTest unit tests covering arbitrator, function manager, fault manager, UDS handler, OTA handler, payload codec, SOME/IP-SD codec, VSS overlay. Runs in CI on every push. |
+| **Testing** | 16 GoogleTest unit tests covering arbitrator, function manager, fault manager, UDS handler, OTA handler, payload codec, SOME/IP-SD codec, SOME/IP message parser, VSS overlay. Runs in CI on every push. |
 | **Static analysis** | cppcheck (warning/style/performance/portability) and clang-tidy (bugprone-\*, cert-\*, performance-\*, portability-\*) run as separate CI jobs on every push and PR. Suppressions curated in `cppcheck-suppressions.txt` and `.clang-tidy`; platform files (STM32 HAL, Zephyr kernel, LwIP raw API) excluded from clang-tidy since they do not build on Linux. |
 | **SDV signal modeling** | COVESA VSS v6.0 vocabulary integration; vspec authoring; build-time C++ codegen; Vehicle.Private.* vendor extension; runtime overlay adapter exposed via diagnostic_console --vss-snapshot |
 | **Tooling** | Python UDS client, Python OTA client, Wireshark dissector, sysbuild, west, STM32CubeProgrammer integration, Lauterbach-friendly elf output. |
