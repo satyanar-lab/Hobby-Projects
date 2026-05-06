@@ -48,7 +48,7 @@ constexpr PinAssignment kLeftIndicatorOutput  {GpioPortId::kPortA, 5U};  ///< PA
 constexpr PinAssignment kRightIndicatorOutput {GpioPortId::kPortA, 9U};  ///< PA9
 constexpr PinAssignment kHazardLampOutput     {GpioPortId::kPortB, 5U};  ///< PB5
 constexpr PinAssignment kParkLampOutput       {GpioPortId::kPortA, 3U};  ///< PA3
-constexpr PinAssignment kHeadLampOutput       {GpioPortId::kPortE, 14U}; ///< PE14
+constexpr PinAssignment kHeadLampOutput       {GpioPortId::kPortE, 12U}; ///< PE12
 
 }  // namespace pin_map
 

@@ -78,11 +78,11 @@ GpioDriverStatus GpioOutputDriver::Initialize()
     HAL_GPIO_Init(GPIOB, &gpio_init);
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
 
-    // GPIOE — PE14 (head lamp)
+    // GPIOE — PE12 (head lamp)
     __HAL_RCC_GPIOE_CLK_ENABLE();
-    gpio_init.Pin = GPIO_PIN_14;
+    gpio_init.Pin = GPIO_PIN_12;
     HAL_GPIO_Init(GPIOE, &gpio_init);
-    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_14, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_12, GPIO_PIN_RESET);
 #endif
 
     is_initialized_ = true;
