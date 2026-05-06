@@ -1,9 +1,50 @@
+# Status — P1 follow-up
+
+The P1 findings from section 13 have all been addressed in follow-up commits.
+P2 items remain open and tracked in the same section.
+
+| # | Item | Status | Commit |
+|---|---|---|---|
+| P1 #1 | HealthThread hard-coded fault state (Zephyr) | Fixed and verified on hardware | f9218c8 |
+| P1 #2 | GPIO pin comment header vs DTS discrepancy | Fixed (comment-only, DTS unchanged) | 0a9ff73 |
+| P1 #3 | FMEA stale OTA file/method references | Fixed (broader sweep also caught traceability map drift) | b2e7b6a |
+| P1 #4 | VSS design doc namespace and struct name | Fixed (broader sweep also corrected method signature, vspec filename, field names, test table) | c6c31cd |
+| P1 #5 | README test count and missing roadmap phases | Fixed (count corrected to 15; Phases 13, 14, 15 added) | 157ccb7 |
+
+## P1 #1 hardware verification
+
+The HealthThread fix was verified end-to-end on the NUCLEO-H753ZI at
+192.168.0.20. Three rounds of NodeHealthEvent capture (~5 seconds each)
+bracketing UDS fault inject and clear:
+
+    Baseline (no fault):
+      payload bytes:       01 01 01 00 00 00
+      health_state:        0x01 (kOperational)
+      fault_present:       0
+      active_fault_count:  0
+
+    After UDS fault inject (left_indicator, DTC 0xB001):
+      payload bytes:       03 01 01 01 00 01
+      health_state:        0x03 (kFaulted)
+      fault_present:       1
+      active_fault_count:  1
+
+    After UDS fault clear:
+      payload bytes:       01 01 01 00 00 00
+      (reverts to baseline)
+
+The SOME/IP NodeHealthEvent now carries live fault state from FaultManager.
+The pre-fix hard-coded false/0 fiction is gone; the event tracks UDS fault
+inject and clear in real time.
+
+---
+
 # Body Control Zonal Lighting — Project Review
 
-*Senior automotive software engineer review. All claims cite the source file
-and line number that justifies them. Sections are self-contained; cross-section
-back-references are used where the same artifact is relevant to multiple
-judgements.*
+*End-to-end self-review against senior-engineer review standards. Every
+concrete claim cites the source file and line number that justifies it.
+Sections are self-contained; cross-section back-references are used where
+the same artifact is relevant to multiple judgements.*
 
 ---
 
