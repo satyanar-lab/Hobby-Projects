@@ -63,6 +63,58 @@ soil_moisture_detection/
 
 ---
 
+### 3. Body Control Zonal Lighting
+
+An **automotive C++ portfolio project** demonstrating a zonal-architecture body-control system — indicators, hazard, park, and headlamps — built around real automotive protocols and software-defined vehicle practices.
+
+The same C++17 codebase compiles for three targets: **Linux** (vsomeip, fast iteration), **Zephyr RTOS on STM32 NUCLEO-H753ZI** (MCUboot OTA, BSD sockets), and **STM32 bare-metal** (LwIP, HAL GPIO). End-to-end OTA update is hardware-verified on the NUCLEO.
+
+**Key Features**
+- SOME/IP, SOME/IP-SD, DoIP (ISO 13400-2), and UDS (ISO 14229-1) protocol implementations  
+- Zonal service-oriented architecture with proxy/skeleton pattern  
+- MCUboot dual-bank OTA with ECDSA-P256 signing, hardware-verified  
+- ISO 26262 HARA, FMEA, and safety mechanism traceability  
+- 5 CI jobs: Linux build, cppcheck, clang-tidy, ASan/UBSan, VSS toolchain  
+
+**Technologies Used**
+- C++17, CMake, Zephyr RTOS, MCUboot, west / sysbuild  
+- SOME/IP / SOME/IP-SD, DoIP, UDS  
+- STM32 NUCLEO-H753ZI, LwIP, vsomeip  
+- GitHub Actions, Vehicle Signal Specification (VSS)  
+
+Project Folder:
+```
+body_control_zonal_lighting/
+```
+
+---
+
+### 4. Two-Node BCM Control System
+
+An **embedded C project** demonstrating a two-node Body Control Module (BCM) where a master node reads physical switches and sends lighting commands to a slave node over **CAN FD**.
+
+Both nodes run on **STM32L152RE** with a Microchip MCP2517FD external CAN FD controller over SPI. The design includes heartbeat supervision with automatic fail-safe, frame-level checksum verification, and UART diagnostics.
+
+**Key Features**
+- CAN FD with BRS — arbitration at 500 kbps, data phase at 2 Mbps with TDC  
+- Heartbeat supervision — 100 ms command frames, 350 ms watchdog, automatic fail-safe on timeout  
+- XOR frame checksum — receiver rejects frames where computed byte does not match  
+- Lamp command arbitration — hazard overrides indicators; left and right are mutually exclusive  
+- UART diagnostics via `svc_log` service, timestamped trace over USART2 at 115 200 baud  
+
+**Technologies Used**
+- STM32L152RE (Cortex-M3), STM32 HAL  
+- Microchip MCP2517FD CAN FD controller, SPI bus interface  
+- Embedded C, STM32CubeIDE  
+- UART diagnostics, CAN FD protocol  
+
+Project Folder:
+```
+Two-Node-BCM-Control-System/
+```
+
+---
+
 ## Tech Areas Covered
 
 Projects in this repository demonstrate concepts related to:
@@ -104,7 +156,6 @@ More projects will be added to this repository as part of ongoing work in:
 - Embedded systems  
 - IoT applications  
 - Linux-based development  
-- Automotive software systems  
 
 ---
 
