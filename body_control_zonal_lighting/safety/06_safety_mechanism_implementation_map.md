@@ -24,7 +24,7 @@ a documented gap, the production implementation path is described.
 | Stack overflow detection (MPU guard) | FM-003 | Part 6, clause 9 (memory) | `app/zephyr_nucleo_h753zi/prj.conf` | `CONFIG_HW_STACK_PROTECTION=y` | Cortex-M7 MPU places no-access guard page below each thread stack |
 | SOME/IP payload size validation | FM-008 | Part 6, clause 6 (defensive programming) | `app/zephyr_nucleo_h753zi/main.cpp` | `LampCommandDispatcher::OnTransportMessageReceived()` | Rejects payloads != 5 bytes before parsing; prevents OOB read |
 | OTA CRC-32 on transfer exit | FM-007 | Part 6, clause 9 | `src/application/ota_session_manager_zephyr.cpp` | `HandleTransferExit()` | Optional CRC validated if client sends 4-byte CRC in 0x37 request |
-| Block sequence counter validation | FM-007 | Part 6, clause 9 | `src/application/ota_handler.cpp` | `OtaHandler::ProcessBlock()` | Expected block number tracked; out-of-order blocks rejected |
+| Block sequence counter validation | FM-007 | Part 6, clause 9 | `src/application/ota_session_manager.cpp` | `OtaSessionManager::HandleTransferData()` | Expected block number tracked; out-of-order blocks rejected |
 | Brown-out reset (BOR) | FM-006 | Hardware — Part 5 | STM32H753ZI hardware | BOR hardware block | Resets MCU on Vdd drop; all GPIO outputs de-energise at reset |
 
 ---

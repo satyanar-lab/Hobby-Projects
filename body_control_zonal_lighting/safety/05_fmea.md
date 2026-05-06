@@ -88,7 +88,7 @@ state dependency between FM-003 and FM-010 is noted.
 
 ### FM-007 — UDS sequence counter wraparound (RPN 16, implemented)
 
-`OtaHandler` (`src/application/ota_handler.cpp`) tracks the expected block
+`OtaSessionManager` (`src/application/ota_session_manager.cpp`) tracks the expected block
 sequence counter. On `RequestTransferExit` (UDS 0x37), the CRC-32 of all
 received blocks is compared against the value provided by the client. MCUboot's
 ECDSA-P256 signature validation on the next boot provides a second independent
