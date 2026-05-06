@@ -82,19 +82,19 @@ Standard branches not mapped: `Lights.Running`, `Lights.Backup`,
 
 All five lamp functions map cleanly to standard VSS paths. No BCL-prefixed extension
 branch is required for the command/state signals. A narrow overlay is still authored
-(`Vehicle.Body.Lights.BCL.*`) to carry BCL-specific metadata (fault DTC codes,
+(`Vehicle.Private.BCL.Lighting.*`) to carry BCL-specific metadata (fault DTC codes,
 sequence counter) that have no standard VSS equivalent.
 
-#### Overlay extension: `Vehicle.Body.Lights.BCL`
+#### Overlay extension: `Vehicle.Private.BCL.Lighting`
 
 | VSS path (overlay) | Type | Data type | Description |
 |---|---|---|---|
-| `Vehicle.Body.Lights.BCL.LeftIndicator.ActiveFaultCode` | sensor | uint16 | Active DTC for left indicator (0xB001 or 0x0000). |
-| `Vehicle.Body.Lights.BCL.RightIndicator.ActiveFaultCode` | sensor | uint16 | Active DTC for right indicator (0xB002 or 0x0000). |
-| `Vehicle.Body.Lights.BCL.Hazard.ActiveFaultCode` | sensor | uint16 | Active DTC for hazard lamp (0xB003 or 0x0000). |
-| `Vehicle.Body.Lights.BCL.ParkLamp.ActiveFaultCode` | sensor | uint16 | Active DTC for park lamp (0xB004 or 0x0000). |
-| `Vehicle.Body.Lights.BCL.HeadLamp.ActiveFaultCode` | sensor | uint16 | Active DTC for headlamp (0xB005 or 0x0000). |
-| `Vehicle.Body.Lights.BCL.CommandSequenceCounter` | sensor | uint16 | Last command sequence counter echoed by the exterior node. |
+| `Vehicle.Private.BCL.Lighting.LeftIndicator.ActiveFaultCode` | sensor | uint16 | Active DTC for left indicator (0xB001 or 0x0000). |
+| `Vehicle.Private.BCL.Lighting.RightIndicator.ActiveFaultCode` | sensor | uint16 | Active DTC for right indicator (0xB002 or 0x0000). |
+| `Vehicle.Private.BCL.Lighting.Hazard.ActiveFaultCode` | sensor | uint16 | Active DTC for hazard lamp (0xB003 or 0x0000). |
+| `Vehicle.Private.BCL.Lighting.ParkLamp.ActiveFaultCode` | sensor | uint16 | Active DTC for park lamp (0xB004 or 0x0000). |
+| `Vehicle.Private.BCL.Lighting.HeadLamp.ActiveFaultCode` | sensor | uint16 | Active DTC for headlamp (0xB005 or 0x0000). |
+| `Vehicle.Private.BCL.Lighting.CommandSequenceCounter` | sensor | uint16 | Last command sequence counter echoed by the exterior node. |
 
 ---
 
@@ -107,7 +107,7 @@ This is **not** a runtime databroker or telemetry pipeline.
 
 ### In scope
 
-- Authoring `vss/spec/Vehicle.Body.Lights.BCL.vspec` overlay extension
+- Authoring `vss/spec/bcl_extension.vspec` overlay extension
 - Pinned vss-tools invocation in CMake to emit `vss_body_lights.hpp` at configure time
 - `body_control::lighting::vss::VssLampOverlay` adapter class (no transport dependency)
 - Unit tests for all five lamp functions and the JSON serialiser
@@ -131,7 +131,7 @@ This is **not** a runtime databroker or telemetry pipeline.
 ```
 vss/
   spec/
-    Vehicle.Body.Lights.BCL.vspec     # BCL overlay extension (custom signals)
+    bcl_extension.vspec     # BCL overlay extension (custom signals)
   generated/
     vss_body_lights.hpp               # generated at build — gitignored
 src/
@@ -194,7 +194,7 @@ if(BODY_CONTROL_LIGHTING_BUILD_VSS)
 
             add_custom_target(vss_generate
                 COMMAND ${Python3_EXECUTABLE} -m vss_tools export json
-                    --vspec "${VSS_SPEC_DIR}/Vehicle.Body.Lights.BCL.vspec"
+                    --vspec "${VSS_SPEC_DIR}/bcl_extension.vspec"
                     --output "${VSS_GENERATED_DIR}/vss_body_lights.json" --pretty
                 COMMAND ${CMAKE_COMMAND} -P
                     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/GenerateVssHeader.cmake"
@@ -227,34 +227,33 @@ and no vsomeip dependency; it is testable in isolation with GoogleTest.
 ```cpp
 namespace body_control::lighting::vss {
 
-// Field names mirror the last VSS path element.
-struct VssLightSignals {
-    bool is_signaling_left  {false};   // DirectionIndicator.Left.IsSignaling
-    bool is_signaling_right {false};   // DirectionIndicator.Right.IsSignaling
-    bool is_hazard_on       {false};   // Hazard.IsSignaling
-    bool is_parking_on      {false};   // Parking.IsOn
-    bool is_beam_low_on     {false};   // Beam.Low.IsOn
-    std::uint16_t dtc_left_indicator  {0U};  // BCL.LeftIndicator.ActiveFaultCode
-    std::uint16_t dtc_right_indicator {0U};  // BCL.RightIndicator.ActiveFaultCode
-    std::uint16_t dtc_hazard          {0U};  // BCL.Hazard.ActiveFaultCode
-    std::uint16_t dtc_park_lamp       {0U};  // BCL.ParkLamp.ActiveFaultCode
-    std::uint16_t dtc_headlamp        {0U};  // BCL.HeadLamp.ActiveFaultCode
-    std::uint16_t command_seq_counter {0U};  // BCL.CommandSequenceCounter
+// Fields ordered alphabetically by VSS path, matching ToJson() output order.
+struct VssSnapshot {
+    bool beam_low_is_on                           {false};  // Vehicle.Body.Lights.Beam.Low.IsOn
+    bool direction_indicator_left_is_signaling    {false};  // Vehicle.Body.Lights.DirectionIndicator.Left.IsSignaling
+    bool direction_indicator_right_is_signaling   {false};  // Vehicle.Body.Lights.DirectionIndicator.Right.IsSignaling
+    bool hazard_is_signaling                      {false};  // Vehicle.Body.Lights.Hazard.IsSignaling
+    bool parking_is_on                            {false};  // Vehicle.Body.Lights.Parking.IsOn
+    std::uint16_t bcl_command_sequence_counter    {0U};     // Vehicle.Private.BCL.Lighting.CommandSequenceCounter
+    std::uint16_t bcl_hazard_active_fault_code    {0U};     // Vehicle.Private.BCL.Lighting.Hazard.ActiveFaultCode
+    std::uint16_t bcl_head_lamp_active_fault_code {0U};     // Vehicle.Private.BCL.Lighting.HeadLamp.ActiveFaultCode
+    std::uint16_t bcl_left_indicator_active_fault_code  {0U};  // Vehicle.Private.BCL.Lighting.LeftIndicator.ActiveFaultCode
+    std::uint16_t bcl_park_lamp_active_fault_code {0U};     // Vehicle.Private.BCL.Lighting.ParkLamp.ActiveFaultCode
+    std::uint16_t bcl_right_indicator_active_fault_code {0U};  // Vehicle.Private.BCL.Lighting.RightIndicator.ActiveFaultCode
 };
 
 // No transport dependency. No vsomeip dependency. Unit-testable in isolation.
 class VssLampOverlay {
 public:
-    VssLampOverlay() noexcept = default;
+    VssLampOverlay() = default;
 
-    // Maps LampStatus array + fault table + seq_counter to VssLightSignals.
-    [[nodiscard]] VssLightSignals Translate(
+    // Build a VssSnapshot from current domain state (lamp statuses + fault table).
+    [[nodiscard]] VssSnapshot Snapshot(
         const std::array<domain::LampStatus, 5U>& lamp_statuses,
-        const domain::LampFaultStatus& fault_status,
-        std::uint16_t seq_counter) const noexcept;
+        const domain::LampFaultStatus& fault_status) const noexcept;
 
     // Flat JSON object keyed by full VSS path strings. Allocates; Linux only.
-    [[nodiscard]] std::string ToJson(const VssLightSignals& signals) const;
+    [[nodiscard]] static std::string ToJson(const VssSnapshot& snapshot);
 };
 
 } // namespace body_control::lighting::vss
@@ -264,7 +263,7 @@ public:
 
 ```
 app/diagnostic_console  ─┐
-                          │  calls VssLampOverlay::Translate() + ToJson()
+                          │  calls VssLampOverlay::Snapshot() + ToJson()
                           ▼
                     vss::VssLampOverlay          ← NEW (application layer peer)
                           │
@@ -301,7 +300,7 @@ When `./diagnostic_console --vss-snapshot` is passed:
 1. The console connects to the operator service as normal.
 2. After the service reports availability, it reads the cached lamp statuses for
    all five functions and the cached fault status.
-3. `VssLampOverlay::Translate()` maps them to `VssLightSignals`.
+3. `VssLampOverlay::Snapshot()` builds a `VssSnapshot` from the domain state.
 4. `VssLampOverlay::ToJson()` serialises to stdout and the process exits with 0.
 
 No interactive menu is shown. The flag is mutually exclusive with interactive mode.
@@ -315,12 +314,12 @@ Example output:
   "Vehicle.Body.Lights.Hazard.IsSignaling": false,
   "Vehicle.Body.Lights.Parking.IsOn": true,
   "Vehicle.Body.Lights.Beam.Low.IsOn": true,
-  "Vehicle.Body.Lights.BCL.LeftIndicator.ActiveFaultCode": 0,
-  "Vehicle.Body.Lights.BCL.RightIndicator.ActiveFaultCode": 0,
-  "Vehicle.Body.Lights.BCL.Hazard.ActiveFaultCode": 0,
-  "Vehicle.Body.Lights.BCL.ParkLamp.ActiveFaultCode": 0,
-  "Vehicle.Body.Lights.BCL.HeadLamp.ActiveFaultCode": 0,
-  "Vehicle.Body.Lights.BCL.CommandSequenceCounter": 7
+  "Vehicle.Private.BCL.Lighting.LeftIndicator.ActiveFaultCode": 0,
+  "Vehicle.Private.BCL.Lighting.RightIndicator.ActiveFaultCode": 0,
+  "Vehicle.Private.BCL.Lighting.Hazard.ActiveFaultCode": 0,
+  "Vehicle.Private.BCL.Lighting.ParkLamp.ActiveFaultCode": 0,
+  "Vehicle.Private.BCL.Lighting.HeadLamp.ActiveFaultCode": 0,
+  "Vehicle.Private.BCL.Lighting.CommandSequenceCounter": 7
 }
 ```
 
@@ -351,7 +350,7 @@ The following are explicitly unchanged by this integration:
 ## 5. Deliverables and Acceptance Criteria
 
 ```
-NEW  vss/spec/Vehicle.Body.Lights.BCL.vspec
+NEW  vss/spec/bcl_extension.vspec
 NEW  vss/generated/vss_body_lights.hpp          (gitignored; generated at configure)
 NEW  vss/requirements.txt                       (pins vss-tools version)
 NEW  src/vss/vss_lamp_overlay.hpp
@@ -368,12 +367,12 @@ MOD  README.md                                  (Skills Demonstrated row)
 
 | Test | What it verifies |
 |---|---|
-| `TranslateLeftIndicatorOn` | `kLeftIndicator` kOn → `is_signaling_left = true` |
-| `TranslateRightIndicatorOn` | `kRightIndicator` kOn → `is_signaling_right = true` |
-| `TranslateHazardOn` | `kHazardLamp` kOn → `is_hazard_on = true` |
-| `TranslateParkLampOn` | `kParkLamp` kOn → `is_parking_on = true` |
-| `TranslateHeadLampOn` | `kHeadLamp` kOn → `is_beam_low_on = true` |
-| `TranslateActiveFaultCode` | `FaultCode::kParkLamp` active → `dtc_park_lamp = 0xB004` |
+| `LeftIndicatorMapping` | `kLeftIndicator` kOn → `direction_indicator_left_is_signaling = true` |
+| `RightIndicatorMapping` | `kRightIndicator` kOn → `direction_indicator_right_is_signaling = true` |
+| `HazardMapping` | `kHazardLamp` kOn → `hazard_is_signaling = true` |
+| `ParkingMapping` | `kParkLamp` kOn → `parking_is_on = true` |
+| `HeadlampMapping` | `kHeadLamp` kOn → `beam_low_is_on = true` |
+| `FaultCodeMappingAndSequenceCounter` | `FaultCode::kParkLamp` active → `bcl_park_lamp_active_fault_code = 0xB004` |
 | `ToJsonFormatCheck` | JSON output contains all 11 expected keys with correct types |
 
 All **14 existing unit tests** (pre-VSS integration) must keep passing.
