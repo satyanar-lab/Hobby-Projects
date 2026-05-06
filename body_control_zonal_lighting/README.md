@@ -38,7 +38,7 @@ links to specific evidence in the codebase.
 | **STM32 bare-metal** | LwIP raw API TCP server, HAL GPIO, custom linker script with MCUboot-compatible offsets, USART3 retarget. See [app/stm32_nucleo_h753zi/](app/stm32_nucleo_h753zi/). |
 | **HMI / Qt6** | QML-based control panel with atomic state and 80ms poll timer. Drives all three backends interchangeably. See [app/hmi_control_panel/](app/hmi_control_panel/). |
 | **Build systems** | CMake for Linux + STM32 bare-metal cross-compilation. Zephyr west sysbuild for MCUboot child image build. CI/CD with GitHub Actions. |
-| **Testing** | 14 GoogleTest unit tests covering arbitrator, function manager, fault manager, UDS handler, OTA handler, payload codec, SOME/IP-SD codec. Runs in CI on every push. |
+| **Testing** | 15 GoogleTest unit tests covering arbitrator, function manager, fault manager, UDS handler, OTA handler, payload codec, SOME/IP-SD codec, VSS overlay. Runs in CI on every push. |
 | **Static analysis** | cppcheck (warning/style/performance/portability) and clang-tidy (bugprone-\*, cert-\*, performance-\*, portability-\*) run as separate CI jobs on every push and PR. Suppressions curated in `cppcheck-suppressions.txt` and `.clang-tidy`; platform files (STM32 HAL, Zephyr kernel, LwIP raw API) excluded from clang-tidy since they do not build on Linux. |
 | **SDV signal modeling** | COVESA VSS v6.0 vocabulary integration; vspec authoring; build-time C++ codegen; Vehicle.Private.* vendor extension; runtime overlay adapter exposed via diagnostic_console --vss-snapshot |
 | **Tooling** | Python UDS client, Python OTA client, Wireshark dissector, sysbuild, west, STM32CubeProgrammer integration, Lauterbach-friendly elf output. |
@@ -233,6 +233,9 @@ standard is "would this look in place in a real automotive program":
 | 10 — Fault injection | ✅ Complete | FaultManager (DTC storage, inject/clear/clear-all); fault commands on both service paths; NodeHealthStatus fault fields + Qt HMI fault panel; diagnostic console fault menu; 17 new unit tests |
 | 11 — UDS diagnostics | ✅ Complete | DoIP TCP server (ISO 13400-2) on rear node; UDS services 0x10/0x14/0x19/0x22/0x31; Python diagnostic client; 14 new unit tests |
 | 12 — OTA firmware update | ✅ Complete | UDS 0x34/0x36/0x37 over DoIP; OtaSessionManager with CRC-32 validation; Python OTA client; kUpdating health state; 12 new unit tests |
+| 13 — MCUboot OTA on Zephyr | ✅ Complete | End-to-end OTA pipeline on NUCLEO-H753ZI: sysbuild + MCUboot dual-bank; ECDSA-P256 signed images; swap-using-move; UDS-over-DoIP transfer from Python client to slot1; boot_write_img_confirmed on first healthy health event |
+| 14 — Exterior rename | ✅ Complete | OEM-accurate rename of rear_lighting → exterior_lighting across 476 occurrences in 65 files; version bump to 1.0.2; all tests and hardware verification pass |
+| 15 — SDV polish | ✅ Complete | Wireshark Lua dissector; SOME/IP-SD OfferService/FindService per AUTOSAR PRS + hardware capture; security architecture doc (ISO/SAE 21434, UN R155/R156); ISO 26262 functional safety stub; cppcheck + clang-tidy CI jobs; COVESA VSS v6.0 vocabulary integration (VssLampOverlay, build-time codegen, --vss-snapshot CLI) |
 
 ## License
 
