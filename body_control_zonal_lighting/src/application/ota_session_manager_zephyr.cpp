@@ -250,6 +250,10 @@ std::vector<std::uint8_t> OtaSessionManager::HandleRequestTransferExit(
     // a bare 0x37 cannot bypass CRC validation.
     if (req.size() != 5U)
     {
+        LOG_ERR("[OTA] 0x37 rejected: expected 5 bytes, got %zu", req.size());
+        state_ = OtaState::kFailed;
+        CloseStaging();
+        Reset();
         return NegativeResponse(domain::uds::kSidRequestTransferExit,
                                 domain::uds::kNrcIncorrectMessageLengthOrInvalidFormat);
     }

@@ -211,6 +211,26 @@ TEST_F(OtaHandlerTest, RequestTransferExit_WithoutCrc_ReturnsNrc)
     ExpectNegativeResponse(resp, 0x37U, kNrcIncorrectMessageLengthOrInvalidFormat);
 }
 
+TEST_F(OtaHandlerTest, RequestTransferExit_WithoutCrc_CleansUpAndAllowsNewDownload)
+{
+    // Drive to the point where 0x37 would legitimately be sent.
+    static_cast<void>(ota.HandleRequestDownload(MakeRequestDownload(4U)));
+    static_cast<void>(ota.HandleTransferData(
+        {0x36U, 0x01U, 0x01U, 0x02U, 0x03U, 0x04U}));
+
+    // Send a malformed 0x37 — SID only, no CRC bytes.
+    const auto resp = ota.HandleRequestTransferExit({0x37U});
+    ExpectNegativeResponse(resp, 0x37U, kNrcIncorrectMessageLengthOrInvalidFormat);
+
+    // Session must be fully reset — not still active.
+    EXPECT_FALSE(ota.IsOtaModeActive());
+
+    // A fresh 0x34 must succeed, proving staging was cleaned up and state was reset.
+    const auto resp2 = ota.HandleRequestDownload(MakeRequestDownload(1U));
+    ASSERT_EQ(resp2.size(), 4U);
+    EXPECT_EQ(resp2[0], 0x74U);
+}
+
 TEST_F(OtaHandlerTest, FullTransfer_WithCrc_SuccessAndBecomesIdle)
 {
     const std::vector<std::uint8_t> firmware {0xDEU, 0xADU, 0xBEU, 0xEFU};
