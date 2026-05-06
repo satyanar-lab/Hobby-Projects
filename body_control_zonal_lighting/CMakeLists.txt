@@ -29,6 +29,22 @@ option(BODY_CONTROL_LIGHTING_WARNINGS_AS_ERRORS
     "Promote all compiler warnings to errors" ON)
 
 # ----------------------------------------------------------------------------
+# VSS integration — tri-state cache variable
+#
+# AUTO (default): probes at configure time for Python3 + vss-tools. Enables
+#   VSS generation if both are found; emits STATUS and continues if not.
+# ON:  requires vss-tools; FATAL_ERROR if not found (CI must-have mode).
+# OFF: skips entirely — no probe, no generation.
+#
+# The generated header (${CMAKE_BINARY_DIR}/include/vss/bcl_vss_paths.hpp)
+# is a build output and is covered by the top-level .gitignore build/ entry.
+# ----------------------------------------------------------------------------
+set(BODY_CONTROL_LIGHTING_BUILD_VSS "AUTO"
+    CACHE STRING "VSS path-constant generation: AUTO, ON, or OFF")
+set_property(CACHE BODY_CONTROL_LIGHTING_BUILD_VSS
+    PROPERTY STRINGS "AUTO" "ON" "OFF")
+
+# ----------------------------------------------------------------------------
 # Target platform detection
 #
 # The project supports two target platforms:
@@ -113,6 +129,7 @@ if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "stm32")
     add_subdirectory(target/stm32_nucleo_h753zi)
 endif()
 
+add_subdirectory(vss)
 add_subdirectory(src)
 
 if(BODY_CONTROL_LIGHTING_BUILD_APPS)

@@ -1,0 +1,128 @@
+# BCL Lighting — VSS v6.0 vocabulary overlay
+#
+# This file defines the standard VSS signal paths this project maps its five
+# exterior lamp functions to. Signal definitions (datatype, type, description)
+# are verbatim from COVESA vehicle_signal_specification v6.0 (2026-01-16).
+# No paths are invented; every signal listed here exists in the upstream catalog.
+#
+# vss-tools pinned version: 6.0.0 (pip install vss-tools==6.0.0)
+#
+# Lamp-to-signal mapping:
+#   kLeftIndicator  -> Vehicle.Body.Lights.DirectionIndicator.Left.IsSignaling
+#   kRightIndicator -> Vehicle.Body.Lights.DirectionIndicator.Right.IsSignaling
+#   kHazardLamp     -> Vehicle.Body.Lights.Hazard.IsSignaling
+#   kParkLamp       -> Vehicle.Body.Lights.Parking.IsOn
+#   kHeadLamp       -> Vehicle.Body.Lights.Beam.Low.IsOn
+#
+# Headlamp mapping decision:
+#   The project domain models kHeadLamp as a single generic on/off signal.
+#   VSS v6.0 provides only Beam.Low.IsOn and Beam.High.IsOn; there is no
+#   generic "headlamp" signal. We map kHeadLamp to Beam.Low.IsOn because
+#   low-beam is the standard dipped/daytime configuration that corresponds
+#   to what a driver means by "headlamps on". This is a documentation
+#   decision, not an assertion of canonical equivalence; OEM implementations
+#   would split the domain into distinct low-beam and high-beam functions.
+#   Vehicle.Body.Lights.Beam.High.IsOn is intentionally absent from this
+#   overlay: the project domain does not model high-beam, so emitting a
+#   constant false would mislead signal consumers about live vehicle state.
+#
+# SPDX-License-Identifier: MPL-2.0
+
+Vehicle:
+  type: branch
+  description: High-level vehicle signals.
+
+Vehicle.Body:
+  type: branch
+  description: All body signals and attributes.
+
+Vehicle.Body.Lights:
+  type: branch
+  description: Exterior lights.
+
+# ── Direction indicators ───────────────────────────────────────────────────────
+
+Vehicle.Body.Lights.DirectionIndicator:
+  type: branch
+  description: Indicator lights.
+
+Vehicle.Body.Lights.DirectionIndicator.Left:
+  type: branch
+  description: Left direction indicator.
+
+Vehicle.Body.Lights.DirectionIndicator.Left.IsSignaling:
+  datatype: boolean
+  type: actuator
+  description: Indicates if light is signaling or off. True = signaling. False = Off.
+
+Vehicle.Body.Lights.DirectionIndicator.Left.IsDefect:
+  datatype: boolean
+  type: sensor
+  description: Indicates if light is defect. True = Light is defect. False = Light has no defect.
+
+Vehicle.Body.Lights.DirectionIndicator.Right:
+  type: branch
+  description: Right direction indicator.
+
+Vehicle.Body.Lights.DirectionIndicator.Right.IsSignaling:
+  datatype: boolean
+  type: actuator
+  description: Indicates if light is signaling or off. True = signaling. False = Off.
+
+Vehicle.Body.Lights.DirectionIndicator.Right.IsDefect:
+  datatype: boolean
+  type: sensor
+  description: Indicates if light is defect. True = Light is defect. False = Light has no defect.
+
+# ── Hazard ────────────────────────────────────────────────────────────────────
+
+Vehicle.Body.Lights.Hazard:
+  type: branch
+  description: Hazard lights.
+
+Vehicle.Body.Lights.Hazard.IsSignaling:
+  datatype: boolean
+  type: actuator
+  description: Indicates if light is signaling or off. True = signaling. False = Off.
+
+Vehicle.Body.Lights.Hazard.IsDefect:
+  datatype: boolean
+  type: sensor
+  description: Indicates if light is defect. True = Light is defect. False = Light has no defect.
+
+# ── Parking lamp ──────────────────────────────────────────────────────────────
+
+Vehicle.Body.Lights.Parking:
+  type: branch
+  description: Parking lights.
+
+Vehicle.Body.Lights.Parking.IsOn:
+  datatype: boolean
+  type: actuator
+  description: Indicates if light is on or off. True = On. False = Off.
+
+Vehicle.Body.Lights.Parking.IsDefect:
+  datatype: boolean
+  type: sensor
+  description: Indicates if light is defect. True = Light is defect. False = Light has no defect.
+
+# ── Headlamp — low beam only ──────────────────────────────────────────────────
+# kHeadLamp maps to Beam.Low.IsOn. Beam.High is absent; see mapping decision above.
+
+Vehicle.Body.Lights.Beam:
+  type: branch
+  description: Beam lights.
+
+Vehicle.Body.Lights.Beam.Low:
+  type: branch
+  description: Low-beam headlamp.
+
+Vehicle.Body.Lights.Beam.Low.IsOn:
+  datatype: boolean
+  type: actuator
+  description: Indicates if light is on or off. True = On. False = Off.
+
+Vehicle.Body.Lights.Beam.Low.IsDefect:
+  datatype: boolean
+  type: sensor
+  description: Indicates if light is defect. True = Light is defect. False = Light has no defect.

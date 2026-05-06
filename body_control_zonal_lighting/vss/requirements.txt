@@ -1,0 +1,8 @@
+# vss-tools pinned version for BCL project VSS generation.
+# Install with: pip install -r vss/requirements.txt
+# Used by: CMakeLists.txt (BODY_CONTROL_LIGHTING_BUILD_VSS=ON/AUTO)
+# Used by: .github/workflows/build.yml (static-analysis-vss job)
+#
+# Pinned to 6.0.0 — matches VSS v6.0 (2026-01-16) signal catalog.
+# Upgrade policy: re-verify all signal paths in vss/spec/ on each VSS major release.
+vss-tools==6.0.0

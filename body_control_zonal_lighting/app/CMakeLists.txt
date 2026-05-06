@@ -76,6 +76,13 @@ if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "linux")
         diagnostic_console/main.cpp
     )
 
+    if(BCL_VSS_ENABLED)
+        target_link_libraries(diagnostic_console
+            PRIVATE body_control_lighting::vss_overlay)
+        target_compile_definitions(diagnostic_console
+            PRIVATE BCL_VSS_INTEGRATION_ENABLED=1)
+    endif()
+
     body_control_lighting_add_application(
         exterior_lighting_node_simulator
         exterior_lighting_node_simulator/main.cpp

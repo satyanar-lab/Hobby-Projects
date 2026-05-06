@@ -1,3 +1,4 @@
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -5,6 +6,7 @@
 #include <limits>
 #include <memory>
 #include <mutex>
+#include <string_view>
 
 #include "body_control/lighting/domain/fault_types.hpp"
 #include "body_control/lighting/domain/lamp_command_types.hpp"
@@ -14,6 +16,10 @@
 #include "body_control/lighting/service/operator_service_consumer.hpp"
 #include "body_control/lighting/service/operator_service_interface.hpp"
 #include "body_control/lighting/transport/transport_adapter_interface.hpp"
+
+#ifdef BCL_VSS_INTEGRATION_ENABLED
+#include "vss_lamp_overlay.hpp"
+#endif
 
 namespace body_control
 {
@@ -35,30 +41,35 @@ CreateOperatorClientVsomeipClientAdapter();
 namespace
 {
 
-void PrintMenu()
+void PrintHelp()
 {
-    std::cout << "\n=== Diagnostic Console ===\n";
-    std::cout << "1  -> Activate left indicator\n";
-    std::cout << "2  -> Deactivate left indicator\n";
-    std::cout << "3  -> Activate right indicator\n";
-    std::cout << "4  -> Deactivate right indicator\n";
-    std::cout << "5  -> Activate hazard lamp\n";
-    std::cout << "6  -> Deactivate hazard lamp\n";
-    std::cout << "7  -> Activate park lamp\n";
-    std::cout << "8  -> Deactivate park lamp\n";
-    std::cout << "9  -> Activate head lamp\n";
-    std::cout << "10 -> Deactivate head lamp\n";
-    std::cout << "11 -> Request node health\n";
-    std::cout << "12 -> Inject fault (select lamp)\n";
-    std::cout << "13 -> Clear fault (select lamp)\n";
-    std::cout << "14 -> Clear all faults\n";
-    std::cout << "15 -> Get fault status\n";
-    std::cout << "0  -> Exit\n";
-    std::cout << "Selection: ";
+    std::cout <<
+        "Usage: diagnostic_console [--help] [--vss-snapshot]\n"
+        "\n"
+        "Options:\n"
+        "  --help, -h      Show this help and exit.\n"
+        "  --vss-snapshot  Connect to the running controller, read current lamp\n"
+        "                  state and fault summary, and print a VSS-format JSON\n"
+        "                  snapshot to stdout (single line, 11 keys), then exit.\n"
+        "\n"
+        "                  11 keys in the output (alphabetical order):\n"
+        "                    5 bool  — Vehicle.Body.Lights.* IsSignaling / IsOn\n"
+        "                    6 uint  — Vehicle.Private.BCL.Lighting.* ActiveFaultCode\n"
+        "                              (5 per-lamp codes) + CommandSequenceCounter\n"
+        "\n"
+        "                  Note: per-function DTC codes require the UDS/DoIP path\n"
+        "                  (services 0x19/0x22 over port 13400). Via the operator\n"
+        "                  service used here, ActiveFaultCode fields are always\n"
+        "                  0 — use the UDS python client for per-function DTCs.\n"
+        "\n"
+        "                  Exit codes:\n"
+        "                    0  success, JSON on stdout\n"
+        "                    2  VSS integration not built (rebuild with vss-tools)\n"
+        "                    3  controller or exterior node unreachable\n"
+        "\n"
+        "Without options: starts the interactive diagnostic menu.\n";
 }
 
-// Reads from the consumer's local cache, which is updated asynchronously by
-// OnLampStatusUpdated events.  May lag by up to one event cycle after a command.
 void PrintCachedLampStatus(
     const body_control::lighting::service::OperatorServiceConsumer& consumer,
     const body_control::lighting::domain::LampFunction lamp_function)
@@ -81,7 +92,6 @@ void PrintCachedLampStatus(
     }
 }
 
-// Prompts the user to select a LampFunction for fault inject/clear operations.
 body_control::lighting::domain::LampFunction SelectLampFunction()
 {
     using body_control::lighting::domain::LampFunction;
@@ -170,10 +180,247 @@ private:
     std::atomic<bool>       controller_available_ {false};
 };
 
+// ─── VSS snapshot support ────────────────────────────────────────────────────
+
+#ifdef BCL_VSS_INTEGRATION_ENABLED
+
+// Event listener for the one-shot --vss-snapshot flow.
+// Tracks controller availability, all-five-lamps-received, and health-received.
+class VssSnapshotListener final
+    : public body_control::lighting::service::OperatorServiceEventListenerInterface
+{
+public:
+    bool WaitForController(std::chrono::seconds timeout)
+    {
+        std::unique_lock<std::mutex> lock {mutex_};
+        return cv_.wait_for(lock, timeout, [this]{ return controller_available_; });
+    }
+
+    bool WaitForAllLamps(std::chrono::seconds timeout)
+    {
+        std::unique_lock<std::mutex> lock {mutex_};
+        return cv_.wait_for(lock, timeout,
+            [this]{ return lamp_received_count_ >= static_cast<int>(kFunctionCount); });
+    }
+
+    bool WaitForHealth(std::chrono::seconds timeout)
+    {
+        std::unique_lock<std::mutex> lock {mutex_};
+        return cv_.wait_for(lock, timeout, [this]{ return health_received_; });
+    }
+
+    void OnLampStatusUpdated(
+        const body_control::lighting::domain::LampStatus& s) override
+    {
+        const std::size_t idx = LampFunctionToIndex(s.function);
+        if (idx < kFunctionCount)
+        {
+            {
+                const std::lock_guard<std::mutex> lock {mutex_};
+                if (!lamp_received_[idx])
+                {
+                    lamp_received_[idx] = true;
+                    lamp_received_count_++;
+                }
+            }
+            cv_.notify_all();
+        }
+    }
+
+    void OnNodeHealthUpdated(
+        const body_control::lighting::domain::NodeHealthStatus&) override
+    {
+        {
+            const std::lock_guard<std::mutex> lock {mutex_};
+            health_received_ = true;
+        }
+        cv_.notify_all();
+    }
+
+    void OnControllerAvailabilityChanged(bool is_available) override
+    {
+        if (is_available)
+        {
+            {
+                const std::lock_guard<std::mutex> lock {mutex_};
+                controller_available_ = true;
+            }
+            cv_.notify_all();
+        }
+    }
+
+private:
+    static constexpr std::size_t kFunctionCount {5U};
+
+    // Maps LampFunction enum value (1–5) to a zero-based index (0–4).
+    // Returns kFunctionCount as a sentinel for kUnknown or out-of-range values.
+    [[nodiscard]] static std::size_t LampFunctionToIndex(
+        body_control::lighting::domain::LampFunction f) noexcept
+    {
+        const auto val = static_cast<std::uint8_t>(f);
+        if (val == 0U || val > static_cast<std::uint8_t>(kFunctionCount))
+        {
+            return kFunctionCount;
+        }
+        return static_cast<std::size_t>(val) - std::size_t{1};
+    }
+
+    std::mutex              mutex_ {};
+    std::condition_variable cv_ {};
+    bool                    controller_available_ {false};
+    bool                    health_received_       {false};
+    int                     lamp_received_count_   {0};
+    std::array<bool, kFunctionCount> lamp_received_ {};
+};
+
+// One-shot VSS snapshot: connect → collect → emit → exit.
+// Returns an exit code suitable for main().
+[[nodiscard]] static int RunVssSnapshot()
+{
+    using namespace body_control::lighting;
+
+    std::unique_ptr<transport::TransportAdapterInterface> transport_adapter =
+        transport::vsomeip::CreateOperatorClientVsomeipClientAdapter();
+
+    if (!transport_adapter)
+    {
+        std::cerr << "error: failed to create transport adapter.\n";
+        return 3;
+    }
+
+    service::OperatorServiceConsumer consumer {
+        *transport_adapter,
+        domain::operator_service::kDiagnosticConsoleApplicationId};
+
+    VssSnapshotListener listener {};
+    consumer.SetEventListener(&listener);
+
+    if (consumer.Initialize() != service::OperatorServiceStatus::kSuccess)
+    {
+        std::cerr << "error: failed to initialize operator service consumer.\n";
+        return 3;
+    }
+
+    // Wait for the controller to become reachable.
+    if (!listener.WaitForController(std::chrono::seconds{10}))
+    {
+        std::cerr << "error: controller not reachable after 10 s. "
+                     "Is central_zone_controller_app running?\n";
+        static_cast<void>(consumer.Shutdown());
+        return 3;
+    }
+
+    // Request fresh state: all lamp statuses + current health.
+    static_cast<void>(consumer.RequestGetAllLampStates());
+    static_cast<void>(consumer.RequestNodeHealth());
+
+    // Wait for all 5 lamp functions to arrive in the cache.
+    if (!listener.WaitForAllLamps(std::chrono::seconds{5}))
+    {
+        std::cerr << "error: lamp state incomplete after 5 s. "
+                     "Is the exterior_lighting_node running?\n";
+        static_cast<void>(consumer.Shutdown());
+        return 3;
+    }
+
+    // Wait for a health event (controller publishes periodically + on request).
+    if (!listener.WaitForHealth(std::chrono::seconds{3}))
+    {
+        std::cerr << "error: health status not received after 3 s.\n";
+        static_cast<void>(consumer.Shutdown());
+        return 3;
+    }
+
+    // ── Collect lamp statuses from the consumer cache ────────────────────────
+
+    constexpr std::array<domain::LampFunction, vss::VssLampOverlay::kLampFunctionCount>
+        kAllFunctions {{
+            domain::LampFunction::kLeftIndicator,
+            domain::LampFunction::kRightIndicator,
+            domain::LampFunction::kHazardLamp,
+            domain::LampFunction::kParkLamp,
+            domain::LampFunction::kHeadLamp,
+        }};
+
+    std::array<domain::LampStatus, vss::VssLampOverlay::kLampFunctionCount>
+        lamp_statuses {};
+
+    for (std::size_t i = 0U; i < kAllFunctions.size(); ++i)
+    {
+        // Pre-set function so the entry is valid even if GetLampStatus returns
+        // false (no status received yet → output_state stays kUnknown → not on).
+        lamp_statuses[i].function = kAllFunctions[i];
+        static_cast<void>(consumer.GetLampStatus(kAllFunctions[i], lamp_statuses[i]));
+    }
+
+    // ── Build LampFaultStatus from NodeHealthStatus ──────────────────────────
+    //
+    // NodeHealthStatus exposes fault_present and active_fault_count but not
+    // individual DTC codes. The per-function ActiveFaultCode signals (0xB001–
+    // 0xB005) require the UDS/DoIP path (services 0x22/0x19 over port 13400).
+    // Via the operator service, active_faults[] stays kNoFault, so all
+    // ActiveFaultCode fields will be 0x0000 in the snapshot.
+
+    domain::NodeHealthStatus health {};
+    consumer.GetNodeHealthStatus(health);
+
+    domain::LampFaultStatus fault_status {};
+    fault_status.fault_present = health.lamp_driver_fault_present;
+    // Clamp: NodeHealthStatus.active_fault_count is uint16; LampFaultStatus
+    // uses uint8 with a maximum of 5 (one per lamp function).
+    const std::uint16_t raw_count = health.active_fault_count;
+    fault_status.active_fault_count =
+        (raw_count > std::uint16_t{5U})
+        ? std::uint8_t{5U}
+        : static_cast<std::uint8_t>(raw_count);
+    // active_faults[] intentionally left as kNoFault — see note above.
+
+    // ── Produce and emit the snapshot ────────────────────────────────────────
+
+    const vss::VssLampOverlay overlay {};
+    const vss::VssSnapshot snapshot = overlay.Snapshot(lamp_statuses, fault_status);
+    std::cout << vss::VssLampOverlay::ToJson(snapshot) << '\n';
+
+    static_cast<void>(consumer.Shutdown());
+    return 0;
+}
+
+#endif  // BCL_VSS_INTEGRATION_ENABLED
+
 }  // namespace
 
-int main()
+int main(int argc, char** argv)
 {
+    // ── Parse CLI flags ───────────────────────────────────────────────────────
+    bool vss_snapshot {false};
+    bool show_help    {false};
+
+    for (int i = 1; i < argc; ++i)
+    {
+        const std::string_view arg {argv[i]};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        if (arg == "--vss-snapshot")         { vss_snapshot = true; }
+        else if (arg == "--help" || arg == "-h") { show_help = true; }
+    }
+
+    if (show_help)
+    {
+        PrintHelp();
+        return 0;
+    }
+
+    if (vss_snapshot)
+    {
+#ifdef BCL_VSS_INTEGRATION_ENABLED
+        return RunVssSnapshot();
+#else
+        std::cerr << "VSS integration not built; rebuild with vss-tools installed "
+                     "(see vss/requirements.txt)\n";
+        return 2;
+#endif
+    }
+
+    // ── Interactive diagnostic menu ───────────────────────────────────────────
+
     using body_control::lighting::domain::LampFunction;
     using body_control::lighting::domain::operator_service::
         kDiagnosticConsoleApplicationId;
@@ -219,7 +466,24 @@ int main()
 
     while (keep_running)
     {
-        PrintMenu();
+        std::cout << "\n=== Diagnostic Console ===\n";
+        std::cout << "1  -> Activate left indicator\n";
+        std::cout << "2  -> Deactivate left indicator\n";
+        std::cout << "3  -> Activate right indicator\n";
+        std::cout << "4  -> Deactivate right indicator\n";
+        std::cout << "5  -> Activate hazard lamp\n";
+        std::cout << "6  -> Deactivate hazard lamp\n";
+        std::cout << "7  -> Activate park lamp\n";
+        std::cout << "8  -> Deactivate park lamp\n";
+        std::cout << "9  -> Activate head lamp\n";
+        std::cout << "10 -> Deactivate head lamp\n";
+        std::cout << "11 -> Request node health\n";
+        std::cout << "12 -> Inject fault (select lamp)\n";
+        std::cout << "13 -> Clear fault (select lamp)\n";
+        std::cout << "14 -> Clear all faults\n";
+        std::cout << "15 -> Get fault status\n";
+        std::cout << "0  -> Exit\n";
+        std::cout << "Selection: ";
 
         int selection {0};
         if (!(std::cin >> selection))
@@ -311,8 +575,6 @@ int main()
         {
             operator_status = operator_service.RequestNodeHealth();
 
-            // GetNodeHealthStatus returns the locally cached value; the live
-            // response will arrive via the event listener callback separately.
             body_control::lighting::domain::NodeHealthStatus node_health_status {};
             operator_service.GetNodeHealthStatus(node_health_status);
 
@@ -359,8 +621,6 @@ int main()
 
         case 14:
         {
-            // Clear all faults by sending clear for each function.
-            using body_control::lighting::domain::LampFunction;
             const LampFunction kAllFunctions[] {
                 LampFunction::kLeftIndicator,
                 LampFunction::kRightIndicator,
@@ -379,7 +639,6 @@ int main()
         {
             operator_status = operator_service.RequestGetFaultStatus();
 
-            // Print the fault summary from the locally cached NodeHealthStatus.
             body_control::lighting::domain::NodeHealthStatus nh {};
             operator_service.GetNodeHealthStatus(nh);
 

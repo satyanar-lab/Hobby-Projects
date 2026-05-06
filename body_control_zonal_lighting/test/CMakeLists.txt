@@ -45,3 +45,21 @@ endfunction()
 
 add_subdirectory(unit)
 add_subdirectory(integration)
+
+# ----------------------------------------------------------------------------
+# VSS overlay test — only registered when VSS generation is enabled.
+# Uses a custom registration (not body_control_lighting_add_test) because it
+# links the additional body_control_lighting::vss_overlay target.
+# ----------------------------------------------------------------------------
+if(BCL_VSS_ENABLED)
+    add_executable(test_vss_lamp_overlay "test_vss_lamp_overlay.cpp")
+    target_link_libraries(test_vss_lamp_overlay
+        PRIVATE
+            body_control_lighting::core
+            body_control_lighting::vss_overlay
+            body_control_lighting::project_options
+            GTest::gtest
+            GTest::gtest_main
+    )
+    add_test(NAME test_vss_lamp_overlay COMMAND test_vss_lamp_overlay)
+endif()

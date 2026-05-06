@@ -222,3 +222,7 @@ if(BODY_CONTROL_LIGHTING_TARGET_PLATFORM STREQUAL "linux")
             body_control_lighting_vsomeip_transport
     )
 endif()
+
+if(BCL_VSS_ENABLED)
+    add_subdirectory(vss)
+endif()

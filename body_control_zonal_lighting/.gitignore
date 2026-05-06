@@ -1,7 +1,6 @@
 
 # CMake build output (generated — never tracked)
-build/
-build-*/
+build*/
 cmake-build-*/
 
 # Editor

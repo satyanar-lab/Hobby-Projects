@@ -1,0 +1,103 @@
+# BCL Extension — vendor-specific overlay signals
+# Vendor extensions in Vehicle.Private.* per VSS extension conventions; not part of standard COVESA VSS catalog.
+#
+# VSS v6.0 reserves Vehicle.Private.* for OEM/vendor signals that have no
+# equivalent in the standard catalog. Placing BCL-specific signals here (rather
+# than splicing them into Vehicle.Body.Lights.*) keeps the standard catalog
+# branch clean and signals to any consumer that these are not standard signals.
+#
+# Signals in this file:
+#   - ActiveFaultCode per lamp (DTC codes 0xB001–0xB005 from fault_types.hpp)
+#   - CommandSequenceCounter (last seq counter echoed by the exterior node)
+#
+# vss-tools pinned version: 6.0.0 (pip install vss-tools==6.0.0)
+#
+# SPDX-License-Identifier: MPL-2.0
+
+Vehicle:
+  type: branch
+  description: High-level vehicle signals.
+
+Vehicle.Private:
+  type: branch
+  description: Signals not part of the COVESA VSS standard catalog. For OEM and vendor extensions.
+
+Vehicle.Private.BCL:
+  type: branch
+  description: Body Control Lighting project extensions.
+
+Vehicle.Private.BCL.Lighting:
+  type: branch
+  description: Exterior lighting extension signals specific to the BCL project.
+
+# ── Per-lamp DTC fault codes ──────────────────────────────────────────────────
+
+Vehicle.Private.BCL.Lighting.LeftIndicator:
+  type: branch
+  description: BCL extension signals for the left direction indicator function.
+
+Vehicle.Private.BCL.Lighting.LeftIndicator.ActiveFaultCode:
+  datatype: uint16
+  type: sensor
+  description: >
+    Active DTC for the left indicator circuit.
+    0x0000 = no fault. 0xB001 = left indicator driver fault (short/open circuit).
+    Corresponds to domain::FaultCode::kLeftIndicator.
+
+Vehicle.Private.BCL.Lighting.RightIndicator:
+  type: branch
+  description: BCL extension signals for the right direction indicator function.
+
+Vehicle.Private.BCL.Lighting.RightIndicator.ActiveFaultCode:
+  datatype: uint16
+  type: sensor
+  description: >
+    Active DTC for the right indicator circuit.
+    0x0000 = no fault. 0xB002 = right indicator driver fault.
+    Corresponds to domain::FaultCode::kRightIndicator.
+
+Vehicle.Private.BCL.Lighting.Hazard:
+  type: branch
+  description: BCL extension signals for the hazard lamp function.
+
+Vehicle.Private.BCL.Lighting.Hazard.ActiveFaultCode:
+  datatype: uint16
+  type: sensor
+  description: >
+    Active DTC for the hazard lamp circuit.
+    0x0000 = no fault. 0xB003 = hazard lamp driver fault.
+    Corresponds to domain::FaultCode::kHazardLamp.
+
+Vehicle.Private.BCL.Lighting.ParkLamp:
+  type: branch
+  description: BCL extension signals for the park lamp function.
+
+Vehicle.Private.BCL.Lighting.ParkLamp.ActiveFaultCode:
+  datatype: uint16
+  type: sensor
+  description: >
+    Active DTC for the park lamp circuit.
+    0x0000 = no fault. 0xB004 = park lamp driver fault.
+    Corresponds to domain::FaultCode::kParkLamp.
+
+Vehicle.Private.BCL.Lighting.HeadLamp:
+  type: branch
+  description: BCL extension signals for the headlamp function.
+
+Vehicle.Private.BCL.Lighting.HeadLamp.ActiveFaultCode:
+  datatype: uint16
+  type: sensor
+  description: >
+    Active DTC for the headlamp circuit.
+    0x0000 = no fault. 0xB005 = headlamp driver fault.
+    Corresponds to domain::FaultCode::kHeadLamp.
+
+# ── Command sequence counter ───────────────────────────────────────────────────
+
+Vehicle.Private.BCL.Lighting.CommandSequenceCounter:
+  datatype: uint16
+  type: sensor
+  description: >
+    Last command sequence counter echoed back by the exterior lighting node
+    in its most recent LampStatus publish. Wraps at 65535.
+    Corresponds to domain::LampStatus::last_sequence_counter.
