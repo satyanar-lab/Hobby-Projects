@@ -1,0 +1,15 @@
+# Compiled binaries
+a.out.
+*.out
+udp_server
+udp_client
+
+
+# Object files
+*.o
+
+
+# Editor / IDE files
+.vscode/
+*.swp
+.DS_Store
