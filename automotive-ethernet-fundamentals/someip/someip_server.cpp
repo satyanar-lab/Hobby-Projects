@@ -22,6 +22,14 @@ uint32_t read_u32_be(const uint8_t* buf, size_t offset) {
          |  static_cast<uint32_t>(buf[offset + 3]);
 }
 
+constexpr uint8_t MESSAGE_TYPE_RESPONSE = 0x80;
+constexpr uint8_t STATUS_COMMAND_ACCEPTED = 0x01;
+
+// Module-level state - tracks how many requests we've handled.
+// In a real ECU this would be per-session state.
+static uint8_t response_sequence_counter = 0;
+
+
 int main()
 {
 	int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -118,21 +126,62 @@ int main()
     	std::cout << "  Payload: (empty)" << std::endl;
 	}
 
-	ssize_t bytes_sent = sendto
-		(
-		 sockfd,
-		 buffer,
-		 bytes_received,
-		 0,
-		 (struct sockaddr*)&client_addr,
-		 client_addr_len
+	
+	
+	// Build a SOME/IP RESPONSE message (16-byte header + 4-byte payload)
+	constexpr size_t RESPONSE_SIZE = 20;
+	constexpr uint32_t RESPONSE_LENGTH_FIELD = 12;  // 8 header tail + 4 payload
+
+	uint8_t response[RESPONSE_SIZE];
+
+	// Service ID — same as request (offset 0, 2 bytes, big-endian)
+	response[0] = (service_id >> 8) & 0xFF;
+	response[1] =  service_id       & 0xFF;
+
+	// Method ID — same as request
+	response[2] = (method_id >> 8) & 0xFF;
+	response[3] =  method_id       & 0xFF;
+
+	// Length (offset 4, 4 bytes, big-endian)
+	response[4] = (RESPONSE_LENGTH_FIELD >> 24) & 0xFF;
+	response[5] = (RESPONSE_LENGTH_FIELD >> 16) & 0xFF;
+	response[6] = (RESPONSE_LENGTH_FIELD >>  8) & 0xFF;
+	response[7] =  RESPONSE_LENGTH_FIELD        & 0xFF;
+
+	// Client ID — same as request
+	response[8] = (client_id >> 8) & 0xFF;
+	response[9] =  client_id       & 0xFF;
+
+	// Session ID — same as request
+	response[10] = (session_id >> 8) & 0xFF;
+	response[11] =  session_id       & 0xFF;
+
+	// Single-byte header fields — this is where it differs from a REQUEST
+	response[12] = 0x01;                       // Protocol Version
+	response[13] = 0x01;                       // Interface Version
+	response[14] = MESSAGE_TYPE_RESPONSE;      // 0x80 — for response
+	response[15] = 0x00;                       // Return Code E_OK
+
+	// Payload — status + echoes + sequence counter
+	response[16] = STATUS_COMMAND_ACCEPTED;
+	response[17] = buffer[16];                 // echo back the lamp function
+	response[18] = buffer[17];                 // echo back the lamp state
+	response[19] = response_sequence_counter;
+	response_sequence_counter++;
+
+	// Send the response
+	ssize_t bytes_sent = sendto(
+    		sockfd,
+    		response,
+    		RESPONSE_SIZE,
+    		0,
+    		(struct sockaddr*)&client_addr,
+    		client_addr_len
 		);
-	
-	if(bytes_sent < 0)
-	{
-		std::cerr << "sendto() failed: " << strerror(errno) << std::endl;
+	if (bytes_sent < 0) {
+    		std::cerr << "sendto() failed: " << strerror(errno) << std::endl;
 	}
-	
+
 	}
 
 	close(sockfd);
