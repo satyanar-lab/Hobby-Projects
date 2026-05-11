@@ -1,8 +1,8 @@
 # Compiled binaries
 a.out.
 *.out
-udp_server
-udp_client
+someip_server
+someip_client
 
 
 # Object files

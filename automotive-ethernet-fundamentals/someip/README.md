@@ -117,11 +117,21 @@ Server bound to port 5000, waiting for messages...
 
 Client output:
 Sending 20 bytes: 51 00 00 01 00 00 00 0C 00 01 00 01 01 01 00 00 01 01 64 00
-Received reply: "Q" (20 bytes)
-
-(The reply is garbled when printed as a string because the server
-currently echoes raw bytes — adding a proper SOME/IP RESPONSE is on
-the to-do list.)
+Received 20 bytes:
+Service ID:        0x5100
+Method ID:         0x0001
+Length:            12
+Client ID:         0x0001
+Session ID:        0x0001
+Protocol Version:  0x01
+Interface Version: 0x01
+Message Type:      0x80 (RESPONSE)
+Return Code:       0x00
+Payload (4 bytes): 01 01 01 00
+Status:            0x01 (COMMAND ACCEPTED)
+Lamp function:     0x01 (echoed)
+Lamp state:        0x01 (echoed)
+Sequence counter:  0
 
 Server output:
 Received 20 bytes from 127.0.0.1:46889
@@ -168,8 +178,6 @@ implementation matches the AUTOSAR PRS.
 
 ## What's missing (honest list)
 
-- **No SOME/IP RESPONSE.** The server currently echoes raw bytes back
-  rather than constructing a proper RESPONSE message (Message Type 0x80).
 - **No Service Discovery.** A real SOME/IP system uses multicast SD
   (`OfferService`, `FindService`, `SubscribeEventgroup`) to find services
   dynamically. Here the client just hardcodes the server address.
