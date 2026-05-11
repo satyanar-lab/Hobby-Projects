@@ -130,11 +130,14 @@ wire level, not production-grade automotive software.
 
 **What's implemented:**
 - SOME/IP REQUEST construction with full 16-byte header (client)
-- SOME/IP header parsing field-by-field (server)
+- SOME/IP RESPONSE construction with Message Type 0x80 (server)
+- Bidirectional protocol: server parses request, builds response;
+  client parses response semantically (status, echoes, sequence counter)
+- Server-side state: sequence counter persists across requests via
+  file-scope static
 - Wireshark capture and dissection for independent verification
 
 **What's deliberately NOT implemented (yet):**
-- SOME/IP RESPONSE (message type 0x80) — server currently echoes raw bytes
 - SOME/IP Service Discovery (SD) — no `OfferService`, `FindService`,
   `SubscribeEventgroup` exchange
 - Event/notification messages — only method calls
