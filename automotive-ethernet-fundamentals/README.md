@@ -136,12 +136,14 @@ wire level, not production-grade automotive software.
 - Server-side state: sequence counter persists across requests via
   file-scope static
 - Wireshark capture and dissection for independent verification
+- UDS over UDP (toy): Read Data By Identifier (SID 0x22 → 0x62)
+  with VIN read for DID 0xF190, plus negative responses (NRC 0x11
+  service not supported, 0x13 incorrect length, 0x31 out of range)
 
 **What's deliberately NOT implemented (yet):**
 - SOME/IP Service Discovery (SD) — no `OfferService`, `FindService`,
   `SubscribeEventgroup` exchange
 - Event/notification messages — only method calls
-- UDS / ISO 14229 diagnostic services
 - DoIP / ISO 13400 transport for diagnostics
 - ara::com / vsomeip middleware integration
 - AUTOSAR Adaptive ARXML service description
