@@ -10,6 +10,28 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_compile_options(-Wall -Wextra)
 
+# ============================================================
+# Build-time options (opt-in via -D flags at configure time)
+# ============================================================
+
+option(ENABLE_WERROR     "Treat warnings as errors"   OFF)
+option(ENABLE_SANITIZERS "Build with ASan and UBSan"  OFF)
+option(ENABLE_COVERAGE   "Build with coverage flags"  OFF)
+
+if(ENABLE_WERROR)
+    add_compile_options(-Werror)
+endif()
+
+if(ENABLE_SANITIZERS)
+    add_compile_options(-fsanitize=address,undefined -g -O1)
+    add_link_options(-fsanitize=address,undefined)
+endif()
+
+if(ENABLE_COVERAGE)
+    add_compile_options(--coverage -O0 -g)
+    add_link_options(--coverage)
+endif()
+
 add_executable(someip_server someip/someip_server.cpp)
 add_executable(someip_client someip/someip_client.cpp)
 add_executable(uds_server    uds/uds_server.cpp)

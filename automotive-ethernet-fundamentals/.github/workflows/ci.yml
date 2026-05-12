@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  build-and-test:
+    name: Build and run tests
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ libgtest-dev
+
+      - name: Build GoogleTest library
+        run: |
+          cd /usr/src/googletest
+          sudo cmake -B build
+          sudo cmake --build build
+          sudo cp build/lib/*.a /usr/lib/
+
+      - name: Configure CMake
+        run: cmake -B build -DENABLE_WERROR=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Run tests
+        working-directory: build
+        run: ctest --output-on-failure
+
+  sanitizers:
+    name: ASan + UBSan
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ libgtest-dev
+
+      - name: Build GoogleTest library
+        run: |
+          cd /usr/src/googletest
+          sudo cmake -B build
+          sudo cmake --build build
+          sudo cp build/lib/*.a /usr/lib/
+
+      - name: Configure CMake (sanitizers)
+        run: cmake -B build-asan -DENABLE_SANITIZERS=ON
+
+      - name: Build
+        run: cmake --build build-asan
+
+      - name: Run tests under sanitizers
+        working-directory: build-asan
+        run: ctest --output-on-failure
+  
+  coverage:
+    name: Code coverage
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ libgtest-dev lcov
+
+      - name: Build GoogleTest library
+        run: |
+          cd /usr/src/googletest
+          sudo cmake -B build
+          sudo cmake --build build
+          sudo cp build/lib/*.a /usr/lib/
+
+      - name: Configure CMake (coverage)
+        run: cmake -B build-coverage -DENABLE_COVERAGE=ON
+
+      - name: Build
+        run: cmake --build build-coverage
+
+      - name: Run tests
+        working-directory: build-coverage
+        run: ctest --output-on-failure
+
+      - name: Generate coverage report
+        working-directory: build-coverage
+        run: |
+          lcov --capture --directory . --output-file coverage.info \
+               --rc geninfo_unexecuted_blocks=1 \
+               --ignore-errors mismatch,unused
+          lcov --remove coverage.info '/usr/*' '*/tests/*' \
+               --output-file coverage.info \
+               --ignore-errors unused
+          lcov --summary coverage.info
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: build-coverage/coverage.info       
