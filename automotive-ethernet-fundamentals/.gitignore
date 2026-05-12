@@ -1,0 +1,10 @@
+# CMake build directory
+build/
+
+# Editor swap files
+*.swp
+*.swo
+
+# OS junk
+.DS_Store
+Thumbs.db
