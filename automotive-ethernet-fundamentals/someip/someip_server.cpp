@@ -6,21 +6,8 @@
 #include <arpa/inet.h>	 	// for htons(), htonl()
 #include <unistd.h> 		// for close()
 #include <cerrno>		// for errno
-
-// Read a 16-bit big-endian value from buffer starting at offset
-uint16_t read_u16_be(const uint8_t* buf, size_t offset)
-{
-	return (static_cast<uint16_t>(buf[offset]) << 8)
-         |  static_cast<uint16_t>(buf[offset + 1]);
-}
-
-// Read a 32-bit big-endian value from buffer starting at offset
-uint32_t read_u32_be(const uint8_t* buf, size_t offset) {
-    return (static_cast<uint32_t>(buf[offset])     << 24)
-         | (static_cast<uint32_t>(buf[offset + 1]) << 16)
-         | (static_cast<uint32_t>(buf[offset + 2]) << 8)
-         |  static_cast<uint32_t>(buf[offset + 3]);
-}
+				//
+#include "../common/byte_order.hpp"
 
 constexpr uint8_t MESSAGE_TYPE_RESPONSE = 0x80;
 constexpr uint8_t STATUS_COMMAND_ACCEPTED = 0x01;
@@ -135,26 +122,19 @@ int main()
 	uint8_t response[RESPONSE_SIZE];
 
 	// Service ID — same as request (offset 0, 2 bytes, big-endian)
-	response[0] = (service_id >> 8) & 0xFF;
-	response[1] =  service_id       & 0xFF;
+	write_u16_be(response, 0, service_id);
 
 	// Method ID — same as request
-	response[2] = (method_id >> 8) & 0xFF;
-	response[3] =  method_id       & 0xFF;
+	write_u16_be(response, 2, method_id);
 
 	// Length (offset 4, 4 bytes, big-endian)
-	response[4] = (RESPONSE_LENGTH_FIELD >> 24) & 0xFF;
-	response[5] = (RESPONSE_LENGTH_FIELD >> 16) & 0xFF;
-	response[6] = (RESPONSE_LENGTH_FIELD >>  8) & 0xFF;
-	response[7] =  RESPONSE_LENGTH_FIELD        & 0xFF;
+	write_u32_be(response, 4, RESPONSE_LENGTH_FIELD);
 
 	// Client ID — same as request
-	response[8] = (client_id >> 8) & 0xFF;
-	response[9] =  client_id       & 0xFF;
+	write_u16_be(response, 8, client_id);
 
 	// Session ID — same as request
-	response[10] = (session_id >> 8) & 0xFF;
-	response[11] =  session_id       & 0xFF;
+	write_u16_be(response, 10, session_id);
 
 	// Single-byte header fields — this is where it differs from a REQUEST
 	response[12] = 0x01;                       // Protocol Version

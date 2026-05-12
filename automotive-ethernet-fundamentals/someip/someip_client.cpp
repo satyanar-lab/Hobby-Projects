@@ -8,6 +8,8 @@
 #include <unistd.h>             // for close()
 #include <cerrno>               // for errno
 
+#include "../common/byte_order.hpp"
+
 // SOME/IP protocol constants
 constexpr uint16_t SERVICE_ID_EXTERIOR_LIGHTING  = 0x5100;
 constexpr uint16_t METHOD_ID_SET_LAMP_COMMAND    = 0x0001;
@@ -23,21 +25,6 @@ constexpr uint8_t  LAMP_FUNCTION_LEFT_INDICATOR  = 0x01;
 constexpr uint8_t  LAMP_STATE_ON                 = 0x01;
 constexpr uint8_t  LAMP_INTENSITY_FULL           = 0x64;  // 100 = 100%
 
-// Read a 16-bit big-endian value from buffer starting at offset
-uint16_t read_u16_be(const uint8_t* buf, size_t offset)
-{
-    return (static_cast<uint16_t>(buf[offset]) << 8)
-         |  static_cast<uint16_t>(buf[offset + 1]);
-}
-
-// Read a 32-bit big-endian value from buffer starting at offset
-uint32_t read_u32_be(const uint8_t* buf, size_t offset)
-{
-    return (static_cast<uint32_t>(buf[offset])     << 24)
-         | (static_cast<uint32_t>(buf[offset + 1]) << 16)
-         | (static_cast<uint32_t>(buf[offset + 2]) << 8)
-         |  static_cast<uint32_t>(buf[offset + 3]);
-}
 
 int main()
 {
@@ -48,26 +35,19 @@ int main()
 	uint8_t message[MESSAGE_SIZE];
 
 	// Service ID (offset 0, 2 bytes, big-endian)
-	message[0] = (SERVICE_ID_EXTERIOR_LIGHTING >> 8) & 0xFF;
-	message[1] = SERVICE_ID_EXTERIOR_LIGHTING & 0xFF;
+	write_u16_be(message, 0, SERVICE_ID_EXTERIOR_LIGHTING);
 
 	// Method ID (offset 2, 2 bytes, big-endian)
-	message[2] = (METHOD_ID_SET_LAMP_COMMAND >> 8) & 0xFF;
-	message[3] = METHOD_ID_SET_LAMP_COMMAND & 0xFF;
+	write_u16_be(message, 2, METHOD_ID_SET_LAMP_COMMAND);
 
 	// Length (offset 4, 4 bytes, big-endian)
-	message[4] = (LENGTH_FIELD_VALUE >> 24) & 0xFF;
-	message[5] = (LENGTH_FIELD_VALUE >> 16) & 0xFF;
-	message[6] = (LENGTH_FIELD_VALUE >> 8) & 0xFF;
-	message[7] = LENGTH_FIELD_VALUE & 0xFF;
+	write_u32_be(message, 4, LENGTH_FIELD_VALUE);
 
 	// Client ID (offset 8, 2 bytes, big-endian)
-	message[8] = (CLIENT_ID >> 8) & 0xFF;
-	message[9] = CLIENT_ID & 0xFF;
+	write_u16_be(message, 8, CLIENT_ID);
 
 	// Session ID (offset 10, 2 bytes, big-endian)
-	message[10] = (SESSION_ID >> 8) & 0xFF;
-	message[11] = SESSION_ID & 0xFF;
+	write_u16_be(message, 10, SESSION_ID);
 
 	// Single-byte fields (offset 12-15)
 	message[12] = PROTOCOL_VERSION;
