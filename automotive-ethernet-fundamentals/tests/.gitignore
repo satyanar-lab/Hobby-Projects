@@ -1,4 +1,0 @@
-# Compiled test binaries
-test_*
-!test_*.cpp
-*.o
