@@ -80,28 +80,35 @@ Return Code) plus the payload. A message with a 4-byte payload has
 Length = 12.
 
 ---
+## Build
 
-## Build and run
+Requires: Linux (or WSL2 with Ubuntu), g++ with C++17 support, CMake 3.14+,
+and GoogleTest (`apt install libgtest-dev`).
 
-Requires: Linux (or WSL2 with Ubuntu), g++ with C++17 support.
+    cmake -B build
+    cmake --build build
 
-```bash
-cd someip
-g++ -std=c++17 -Wall -Wextra -o someip_server someip_server.cpp
-g++ -std=c++17 -Wall -Wextra -o someip_client someip_client.cpp
-```
+This builds all binaries and test executables under `build/`.
 
-Terminal 1 — start the server:
-```bash
-./someip_server
-```
+## Run
 
-Terminal 2 — run the client:
-```bash
-./someip_client
-```
+From the `build/` directory:
 
----
+    ./someip_server      # in one terminal
+    ./someip_client      # in another
+
+For UDS:
+
+    ./uds_server         # in one terminal
+    ./uds_client         # in another
+
+## Run tests
+
+From `build/`:
+
+    ctest --output-on-failure
+
+All 50 unit tests across three suites must pass.
 
 ## What I learned
 
@@ -139,6 +146,8 @@ wire level, not production-grade automotive software.
 - UDS over UDP (toy): Read Data By Identifier (SID 0x22 → 0x62)
   with VIN read for DID 0xF190, plus negative responses (NRC 0x11
   service not supported, 0x13 incorrect length, 0x31 out of range)
+- CMake build system with out-of-source builds, find_package(GTest),
+  and gtest_discover_tests registering all 50 tests with CTest
 
 **What's deliberately NOT implemented (yet):**
 - SOME/IP Service Discovery (SD) — no `OfferService`, `FindService`,
