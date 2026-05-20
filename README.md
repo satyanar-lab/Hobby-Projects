@@ -115,7 +115,10 @@ Hobby-Projects
 ├── DC_Motor_SpeedControl_PWM
 │   └── README.md
 │
-└── soil_moisture_detection
+├── soil_moisture_detection
+│   └── README.md
+│
+└── body_control_zonal_lighting
     └── README.md
 ```
 
