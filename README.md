@@ -89,32 +89,6 @@ body_control_zonal_lighting/
 
 ---
 
-### 4. Two-Node BCM Control System
-
-An **embedded C project** demonstrating a two-node Body Control Module (BCM) where a master node reads physical switches and sends lighting commands to a slave node over **CAN FD**.
-
-Both nodes run on **STM32L152RE** with a Microchip MCP2517FD external CAN FD controller over SPI. The design includes heartbeat supervision with automatic fail-safe, frame-level checksum verification, and UART diagnostics.
-
-**Key Features**
-- CAN FD with BRS — arbitration at 500 kbps, data phase at 2 Mbps with TDC  
-- Heartbeat supervision — 100 ms command frames, 350 ms watchdog, automatic fail-safe on timeout  
-- XOR frame checksum — receiver rejects frames where computed byte does not match  
-- Lamp command arbitration — hazard overrides indicators; left and right are mutually exclusive  
-- UART diagnostics via `svc_log` service, timestamped trace over USART2 at 115 200 baud  
-
-**Technologies Used**
-- STM32L152RE (Cortex-M3), STM32 HAL  
-- Microchip MCP2517FD CAN FD controller, SPI bus interface  
-- Embedded C, STM32CubeIDE  
-- UART diagnostics, CAN FD protocol  
-
-Project Folder:
-```
-Two-Node-BCM-Control-System/
-```
-
----
-
 ## Tech Areas Covered
 
 Projects in this repository demonstrate concepts related to:
