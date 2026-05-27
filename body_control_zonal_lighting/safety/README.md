@@ -39,6 +39,7 @@ brake-by-wire, steer-by-wire, and propulsion control — not lighting.
 | [04_safety_concept.md](04_safety_concept.md) | Part 3, clause 8 | Functional Safety Concept — mechanism-to-code mapping |
 | [05_fmea.md](05_fmea.md) | ISO 26262-9 / AIAG FMEA | Component-level FMEA with RPN scoring and gap analysis |
 | [06_safety_mechanism_implementation_map.md](06_safety_mechanism_implementation_map.md) | ISO 26262-6, -9 | Direct mapping of safety mechanisms to source files |
+| [07_fta.md](07_fta.md) | ISO 26262-9, clause 8 (Annex B) | Fault Tree Analysis — one tree per safety goal, minimal cut sets, SPOF roll-up |
 
 ---
 
